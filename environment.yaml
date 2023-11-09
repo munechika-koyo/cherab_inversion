@@ -1,22 +1,19 @@
 # To use:
 #   $ conda env create -f environment.yaml  # `mamba` works too for this command
-#   $ conda activate cherab-phix-dev
+#   $ conda activate cherab-inv-dev
 #
-name: cherab-phix-dev
+name: cherab-inv-dev
 channels:
 - conda-forge
-- default
 dependencies:
-- python = 3.9  # raysect has no built dist for 3.10+
-- setuptools
+- python >= 3.10
+- meson-python >= 0.13.0
+- cython >= 3.0
 - numpy
 - scipy
 - cupy  # for GPU acceleration of SVD
-- cython >= 3.0
-- matplotlib < 3.6  # for raysect v0.7.1 dependency (which is dependency of cherab 1.4.0)
+- matplotlib
 - plotly
-- numpy-stl
-- contourpy
 - scikit-sparse
   # for developper tools
 - black
@@ -26,6 +23,7 @@ dependencies:
 - pre-commit
 - cython-lint
 - pytest
+- setuptools
   # for documentation
 - docutils
 - ipython
@@ -46,6 +44,4 @@ dependencies:
 # pip-install dependencies
 - pip
 - pip:
-  - cherab == 1.4.0
-  - calcam
   - sphinx-github-style

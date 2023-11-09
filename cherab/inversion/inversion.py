@@ -16,7 +16,7 @@ from scipy.sparse import csr_matrix as sp_csr_matrix
 from scipy.sparse import issparse
 from sksparse.cholmod import cholesky
 
-from ..tools.spinner import DummySpinner, Spinner
+from .tools.spinner import DummySpinner, Spinner
 
 __all__ = ["_SVDBase", "compute_svd"]
 

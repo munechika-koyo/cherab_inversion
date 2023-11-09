@@ -1,12 +1,13 @@
 py.install_sources(
   [
     '__init__.py',
-    'gcv.oy',
+    'gcv.py',
     'inversion.py',
     'lcurve.py',
-    'mfr',
+    'mfr.py',
   ],
   subdir: 'cherab/inversion',
 )
 
+subdir('tools')
 subdir('tests')

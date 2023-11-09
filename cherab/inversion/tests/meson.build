@@ -1,6 +1,6 @@
 python_sources = [
     '__init__.py',
-    'conftest.py'
+    'conftest.py',
     'test_gcv.py',
     'test_inversion.py',
     'test_lcurve.py',

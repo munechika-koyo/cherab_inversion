@@ -33,7 +33,7 @@ For Developpers
 If you would like to develop `cherab-inversion`, it is much easier to create a conda environment after cloning repository.
 ```Shell
 conda env create -f environment.yaml
-conda activate cherab-inversion-dev
+conda activate cherab-inv-dev
 python dev.py build
 python dev.py install
 ```

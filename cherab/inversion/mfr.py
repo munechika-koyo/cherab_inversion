@@ -11,9 +11,9 @@ import numpy as np
 from scipy.sparse import csc_matrix, issparse, spmatrix
 from scipy.sparse import diags as spdiags
 
-from ..tools import Spinner
 from .inversion import _SVDBase, compute_svd
 from .lcurve import Lcurve
+from .tools import Spinner
 
 __all__ = ["Mfr"]
 
