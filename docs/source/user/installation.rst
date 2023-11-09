@@ -9,13 +9,11 @@ Installation
 
 Installing using pip
 ====================
-Using ``pip`` command allows us to install cherab-lhd including dependencies.
-For now, it is only available from `Cherab-inversion's GitHub repository`_.
+Using ``pip`` command allows us to install cherab-inversion including dependencies.
 
 .. prompt:: bash
 
-    python -m pip install git+https://github.com/munechika-koyo/cherab_inversion
-
+    python -m pip install cherab-inversion
 
 
 
@@ -23,7 +21,7 @@ Installing for Developper
 ==========================
 If you plan to make any modifications to do any development work on CHERAB-Inversion,
 and want to be able to edit the source code without having to run the setup script again
-to have your changes take effect, you can install CHERAB-Inversion on eidtable mode.
+to have your changes take effect, you can install CHERAB-Inversion on editable mode.
 
 Manually downloading source
 ---------------------------
@@ -44,7 +42,7 @@ The easiest way is to create a conda development environment:
 .. prompt:: bash
 
     conda env create -f environment.yaml  # `mamba` works too for this command
-    conda activate cherab-lhd-dev
+    conda activate cherab-inv-dev
 
 you need to build this package using the ``dev.py`` CLI:
 

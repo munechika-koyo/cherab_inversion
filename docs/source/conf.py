@@ -14,7 +14,7 @@ from datetime import datetime
 
 from packaging.version import parse
 
-from cherab.lhd import __version__
+from cherab.inversion import __version__
 
 sys.path.insert(0, os.path.abspath("."))
 
@@ -44,6 +44,7 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_codeautolink",
     "sphinx_github_style",
+    "doi_role",
 ]
 
 default_role = "obj"
