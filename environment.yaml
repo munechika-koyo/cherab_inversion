@@ -1,0 +1,51 @@
+# To use:
+#   $ conda env create -f environment.yaml  # `mamba` works too for this command
+#   $ conda activate cherab-phix-dev
+#
+name: cherab-phix-dev
+channels:
+- conda-forge
+- default
+dependencies:
+- python = 3.9  # raysect has no built dist for 3.10+
+- setuptools
+- numpy
+- scipy
+- cupy  # for GPU acceleration of SVD
+- cython >= 3.0
+- matplotlib < 3.6  # for raysect v0.7.1 dependency (which is dependency of cherab 1.4.0)
+- plotly
+- numpy-stl
+- contourpy
+- scikit-sparse
+  # for developper tools
+- black
+- ruff
+- mypy
+- rich-click
+- pre-commit
+- cython-lint
+- pytest
+  # for documentation
+- docutils
+- ipython
+- ipykernel
+- ipywidgets
+- nbconvert > 7.3
+- nbsphinx
+- pillow
+- pygments >= 2.11.0
+- sphinx >= 7.0, < 8.0
+- sphinx-prompt
+- sphinx-copybutton
+- pydata-sphinx-theme < 0.15  # for custom css dependency
+- sphinx-design
+- sphinx-codeautolink
+- pandoc
+- jinja2 < 3.1
+# pip-install dependencies
+- pip
+- pip:
+  - cherab == 1.4.0
+  - calcam
+  - sphinx-github-style

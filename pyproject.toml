@@ -1,0 +1,125 @@
+[build-system]
+requires = [
+    "wheel",
+    "numpy",
+    "meson-python >= 0.13",
+    "cython >= 3.0",
+]
+build-backend = "mesonpy"
+
+[project]
+name = "cherab-inversion"
+description = "Cherab inversion framework"
+version = "0.1.dev0"
+readme = "README.md"
+authors = [
+    { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
+]
+maintainers = [
+    { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">= 3.9"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "scikit-sparse",
+    "plotly",
+]
+license = { file = "LICENSE.md" }
+
+[project.optional-dependencies]
+docs = [
+    "docutils",
+    "ipykernel",
+    "ipywidgets",
+    "jinja2 < 3.1",
+    "nbconvert >= 7.3",
+    "nbsphinx",
+    "pillow",
+    "pygments >= 2.11.0",
+    "sphinx < 8.0",
+    "sphinx-prompt",
+    "sphinx-copybutton",
+    "pydata-sphinx-theme < 0.15",
+    "sphinx-design",
+    "pandoc",
+    "sphinx-codeautolink",
+    "sphinx-github-style",
+]
+dev = [
+    "ipython",
+    "black",
+    "ruff",
+    "mypy",
+    "rich-click",
+    "cython-lint",
+    "pre-commit",
+    "cython >= 3.0",
+    "meson-python >= 0.13",
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://cherab-inversion.readthedocs.io/"
+documentation = "https://cherab-inversion.readthedocs.io/"
+repository = "https://github.com/munechika-koyo/cherab_inversion"
+
+[tool.cython-lint]
+max-line-length = 140
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+# Enable Pyflakes `E` and `F` codes by default.
+select = ["E", "F", "W", "I", "N", "B", "NPY"]
+ignore = ["E501", "N802", "N803", "N806"]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["E", "F", "W", "I", "B", "NPY"]
+unfixable = ["E501"]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10
+target-version = "py310"
+
+# namespace package setting
+namespace-packages = ["cherab/inversion"]
+
+[tool.ruff.per-file-ignores]
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.mypy]
+follow-imports = "silent"
+ignore-missing-imports = true
+show-column-numbers = true
+no-pretty = true
+
+[tool.docformatter]
+recursive = true
+wrap-summaries = 100
+wrap-descriptions = 100
+blank = false
