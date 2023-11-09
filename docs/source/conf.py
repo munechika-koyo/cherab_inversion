@@ -177,8 +177,7 @@ nbsphinx_prolog = """
         This page was generated from `{{ docname }}`__.
     __ https://github.com/munechika-koyo/cherab_inversion/blob/main/docs/notebooks/{{ docname }}
 """
-nbsphinx_thumbnails = {
-}
+nbsphinx_thumbnails = {}
 
 # === sphinx_github_style configuration ============================================
 # get tag name which exists in GitHub
