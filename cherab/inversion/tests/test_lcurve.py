@@ -3,7 +3,7 @@ import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from cherab.phix.inversion import Lcurve
+from cherab.inversion import Lcurve
 
 
 class TestLcurve:
