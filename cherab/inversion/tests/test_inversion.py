@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from scipy.sparse import csc_matrix
 
-from cherab.phix.inversion import _SVDBase, compute_svd
+from cherab.inversion import _SVDBase, compute_svd
 
 
 @pytest.mark.parametrize("use_gpu", [False])

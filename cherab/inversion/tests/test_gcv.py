@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from cherab.phix.inversion.gcv import GCV
+from cherab.inversion.gcv import GCV
 
 
 class TestGCV:

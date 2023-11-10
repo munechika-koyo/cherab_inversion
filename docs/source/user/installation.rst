@@ -7,6 +7,18 @@ Installation
 ============
 
 
+Prerequisites
+=============
+If you want install ``pip``, you need to install suite-sparse library for `scikit-sparse` package.
+
+.. prompt:: bash
+
+    # debian
+    sudo apt-get install libsuitesparse-dev
+
+If you install by ``conda``, it is not required to install suite-sparse library.
+
+
 Installing using pip
 ====================
 Using ``pip`` command allows us to install cherab-inversion including dependencies.

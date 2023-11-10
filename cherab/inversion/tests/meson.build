@@ -5,6 +5,7 @@ python_sources = [
     'test_inversion.py',
     'test_lcurve.py',
     'test_mfr.py',
+    'test_derivative.py',
 ]
 
 py.install_sources(

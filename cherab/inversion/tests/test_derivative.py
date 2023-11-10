@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from cherab.inversion.tools.derivative import compute_dmat
+from cherab.inversion.derivative import compute_dmat
 
 # valid cases
 CASES = [

@@ -184,9 +184,7 @@ def doc(parallel: int, targets: str):
 
 @cli.command()
 def format():
-    """:art: Run ruff linting & formatting
-    The default options are defined in pyproject.toml
-    """
+    """:art: Run ruff linting & formatting The default options are defined in pyproject.toml."""
     cmd = ["ruff", "check", "--fix", str(SRC_PATH)]
     click.echo(" ".join([str(p) for p in cmd]))
     ret = subprocess.call(cmd)
@@ -200,8 +198,10 @@ def format():
 
 @cli.command()
 def cython_lint():
-    """:art: Cython linter. Checking all .pyx files in the source directory.
-    The default options are defined at the cython-lint table in pyproject.toml
+    """:art: Cython linter.
+
+    Checking all .pyx files in the source directory. The default options are defined at the cython-
+    lint table in pyproject.toml
     """
     # list of .pyx files
     pyx_files = [str(pyx_path) for pyx_path in SRC_PATH.glob("**/*.pyx")]

@@ -77,7 +77,7 @@ cpdef object compute_dmat(
 
         >>> from raysect.optical import World
         >>> from cherab.phix.tools.raytransfer import import_phix_rtc
-        >>> from cherab.phix.tools import compute_dmat
+        >>> from cherab.inversion.tools import compute_dmat
         >>>
         >>> world = World()
         >>> rtc = import_phix_rtc(world)
