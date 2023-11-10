@@ -25,7 +25,7 @@ jobs:
 
     - name: Set up Python 🐍 ${{ matrix.python }}
       run: |
-        mamba install -y python=${{ matrix.python }}
+        micromamba install -y python=${{ matrix.python }}
 
     - name: Build & Install package 📦
       run: |
