@@ -18,19 +18,19 @@ jobs:
         fetch-depth: 0
         lfs: true
 
-    - name: Set up Python 🐍 ${{ matrix.python }}
-      uses: actions/setup-python@v4
+    - name: Set up micromamba 🐍
+      uses: mamba-org/setup-micromamba@v1
       with:
-        python-version: ${{ matrix.python }}
+        environment-file: environment.yaml
 
-    - name: Install suite-sparse library for scikit-sparse
+    - name: Set up Python 🐍 ${{ matrix.python }}
       run: |
-        sudo apt-get install libsuitesparse-dev
+        mamba install -y python=${{ matrix.python }}
 
-    - name: Install dependencies
+    - name: Build & Install package 📦
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install -e .[dev]
+        python dev.py build
+        python dev.py install
 
     # pytest -> JUnit xml format
     - name: Execute pytest ✅
