@@ -6,12 +6,12 @@ name: cherab-inv-dev
 channels:
 - conda-forge
 dependencies:
-- python >= 3.10
+- python >= 3.9
 - meson-python >= 0.13.0
 - cython >= 3.0
 - numpy
 - scipy
-- cupy  # for GPU acceleration of SVD
+# - cupy  # manually install for GPU acceleration of SVD
 - matplotlib
 - plotly
 - scikit-sparse
