@@ -15,3 +15,4 @@ This guide is an overview and explains the important features.
 
    installation
    contribution
+   citation
