@@ -19,8 +19,8 @@ endforeach
 py.install_sources(
   [
     '__init__.py',
+    'core.py',
     'gcv.py',
-    'inversion.py',
     'lcurve.py',
     'mfr.py',
   ],

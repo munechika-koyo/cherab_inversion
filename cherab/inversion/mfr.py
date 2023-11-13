@@ -11,7 +11,7 @@ import numpy as np
 from scipy.sparse import csc_matrix, issparse, spmatrix
 from scipy.sparse import diags as spdiags
 
-from .inversion import _SVDBase, compute_svd
+from .core import _SVDBase, compute_svd
 from .lcurve import Lcurve
 from .tools import Spinner
 
@@ -175,7 +175,7 @@ class Mfr:
         miter
             maximum number of MFR iterations, by default 20
         regularizer
-            regularizer class to use, by default :obj:`~cherab.phix.inversion.Lcurve`
+            regularizer class to use, by default :obj:`~.Lcurve`
         store_regularizers
             if True, store regularizer objects at each iteration, by default False.
             The path to store regularizer objects can be specified using `path` argument.
@@ -184,7 +184,7 @@ class Mfr:
             If `path` is None, the regularizer objects will be stored in the current directory
             if `store_regularizers` is True.
         use_gpu
-            same as :obj:`~cherab.phix.inversion.inversion.compute_svd`'s `use_gpu` argument,
+            same as :obj:`~.compute_svd`'s `use_gpu` argument,
             by default True
         verbose
             If True, print iteration information regarding SVD computation, by default False

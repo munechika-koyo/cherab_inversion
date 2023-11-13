@@ -1,4 +1,4 @@
-"""Module to offer the Base class for various inversion methods.
+"""Module to offer the Core functionalities for the ill-posed inversion calculation.
 
 Additionally, this module offers the usefull functions for inversion calculation, such as computing
 the singular value decomposition (SVD) components with the geometry matrix and regularization matrix
