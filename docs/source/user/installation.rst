@@ -78,3 +78,13 @@ run the following command:
 
 In this CLI, the ``setuptools`` shall install it into the ``**/site-packages/`` directory
 as a namespace package with the develop (editable) mode.
+
+Alternatively, you can use the ``meson-python``'s editable mode to install this package:
+
+.. prompt:: bash
+
+    python -m pip install --no-build-isolation --editable .
+
+This editable install enable us to make the editted codes effective without re-installation.
+Please see `meson-python documentation <https://meson-python.readthedocs.io/en/latest/how-to-guides/editable-installs.html>`_
+for more details.

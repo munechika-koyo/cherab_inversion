@@ -1,0 +1,12 @@
+[
+  {
+    "version": "dev",
+    "url": "https://cherab-inversion.readthedocs.io/en/latest/"
+  },
+  {
+    "name": "0.1",
+    "version": "v0.1",
+    "url": "https://cherab-inversion.readthedocs.io/en/v0.1/",
+    "preferred": true
+  }
+]
