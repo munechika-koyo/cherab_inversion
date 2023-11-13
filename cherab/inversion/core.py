@@ -1,8 +1,7 @@
 """Module to offer the Core functionalities for the ill-posed inversion calculation.
 
-Additionally, this module offers the usefull functions for inversion calculation, such as computing
-the singular value decomposition (SVD) components with the geometry matrix and regularization matrix
-using the cholesky decomposition.
+This module includes the usefull functions or base classes for the ill-posed inversion calculation
+based on Singular Value Decomposition (SVD) method.
 """
 from __future__ import annotations
 
@@ -577,13 +576,13 @@ def compute_svd(
               &= \\left(
                     T^\\mathsf{T} T + \\lambda P^\\mathsf{T} L L^\\mathsf{T} P
                  \\right)^{-1} T^\\mathsf{T} b \\\\
-              &= \\left\\{
+              &= \\left[
                     P^\\mathsf{T} L
                         \\left(
                             L^{-1}P T^\\mathsf{T}\\ TP^\\mathsf{T} L^{-\\mathsf{T}} + \\lambda I_n
                         \\right)
                     L^\\mathsf{T} P
-                  \\right\\}^{-1} T^\\mathsf{T} b \\\\
+                  \\right]^{-1} T^\\mathsf{T} b \\\\
               &= P^\\mathsf{T} L^{-\\mathsf{T}}\\left(A^\\mathsf{T}A + \\lambda I_n\\right)^{-1}
                     A^\\mathsf{T} b \\quad(\\because A\\equiv TP^\\mathsf{T}L^{-\\mathsf{T}})\\\\
               &= P^\\mathsf{T} L^{-\\mathsf{T}}
