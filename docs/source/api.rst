@@ -2,7 +2,7 @@
 API Reference
 =============
 
-Here we show the list of top sub-packages. They are available in the same namespace `cherab.inversion`.
+Here we show the list of functionality available in the `cherab.inversion` package.
 
 .. currentmodule:: cherab.inversion
 
