@@ -12,7 +12,7 @@ project(
 )
 
 # https://mesonbuild.com/Python-module.html
-py = import('python').find_installation()
+py = import('python').find_installation(pure: false)
 py_dep = py.dependency()
 
 
