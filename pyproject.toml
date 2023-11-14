@@ -140,4 +140,8 @@ select = "*-musllinux*"
 before-all = "apk add suitesparse-dev"
 
 [tool.cibuildwheel.macos]
-before-all = "brew install suite-sparse"
+before-all = [
+    "brew install gcc",
+    "export PATH=/opt/homebrew/bin:$PATH",
+    "brew install suite-sparse",
+]
