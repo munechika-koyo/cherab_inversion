@@ -10,7 +10,7 @@ build-backend = "mesonpy"
 [project]
 name = "cherab-inversion"
 description = "Cherab inversion framework"
-version = "0.1.dev0"
+version = "0.1"
 readme = "README.md"
 authors = [
     { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
@@ -19,7 +19,7 @@ maintainers = [
     { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Education",
     "Intended Audience :: Developers",
