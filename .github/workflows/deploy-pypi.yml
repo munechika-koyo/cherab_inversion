@@ -20,37 +20,37 @@ jobs:
         os: [ubuntu-22.04, macos-11]
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
+    - name: Check out repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        lfs: true
 
-      - name: Build 🐍 wheels
-        uses: pypa/cibuildwheel@v2.16.2
+    - name: Build 🐍 wheels
+      uses: pypa/cibuildwheel@v2.16.2
 
-      - name: Upload distribution 📦 as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          path: ./wheelhouse/*.whl
+    - name: Upload distribution 📦 as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        path: ./wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution 📦
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
+    - name: Check out repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        lfs: true
 
-      - name: Build sdist 📦
-        run: pipx run build --sdist
+    - name: Build sdist 📦
+      run: pipx run build --sdist
 
-      - name: Upload distribution 📦 as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          path: dist/*.tar.gz
+    - name: Upload distribution 📦 as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.tar.gz
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
@@ -60,13 +60,13 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Download distribution 📦 from artifact
-        uses: actions/download-artifact@v3
-        with:
+    - name: Download distribution 📦 from artifact
+      uses: actions/download-artifact@v3
+      with:
           # unpacks default artifact into dist/
           # if `name: artifact` is omitted, the action will create extra parent dir
-          name: artifact
-          path: dist
+        name: artifact
+        path: dist
 
-      - name: Publish 🐍 distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish 🐍 distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
