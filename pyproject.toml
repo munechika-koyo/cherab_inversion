@@ -25,15 +25,14 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
-    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: Linux :: MacOS",
     "Programming Language :: Cython",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Physics",
 ]
-requires-python = ">= 3.9"
+requires-python = ">= 3.9, < 3.12"
 dependencies = [
     "numpy",
     "scipy",
@@ -123,3 +122,20 @@ recursive = true
 wrap-summaries = 100
 wrap-descriptions = 100
 blank = false
+
+
+[tool.cibuildwheel]
+skip = "pp* *_ppc64le *_i686 *_s390x"
+build-frontend = "build"
+test-requires = "pytest"
+test-command = "pytest {project}"
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y suitesparse-devel"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = "apk add suitesparse-dev"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install suite-sparse"

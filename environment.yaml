@@ -6,7 +6,7 @@ name: cherab-inv-dev
 channels:
 - conda-forge
 dependencies:
-- python >= 3.9
+- python >= 3.9, < 3.12
 - meson-python >= 0.13.0
 - cython >= 3.0
 - numpy
