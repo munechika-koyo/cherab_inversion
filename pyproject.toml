@@ -141,7 +141,6 @@ before-all = "apk add suitesparse-dev"
 
 [tool.cibuildwheel.macos]
 before-all = [
-    "brew install gcc",
-    "export PATH=/opt/homebrew/bin:$PATH",
     "brew install suite-sparse",
 ]
+environment = {CC="gcc-12", CXX="gcc-12"}
