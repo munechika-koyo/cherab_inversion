@@ -165,3 +165,7 @@ cython_debug/
 
 # Python object files (.pickle)
 **/regularizer*.pickle
+
+# Python distribution / packaging
+/wheelhouse
+**/*.whl

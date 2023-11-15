@@ -140,4 +140,11 @@ select = "*-musllinux*"
 before-all = "apk add suitesparse-dev"
 
 [tool.cibuildwheel.macos]
-before-all = "brew install suite-sparse"
+before-all = [
+    "brew install suite-sparse",
+]
+[tool.cibuildwheel.macos.environment]
+CC = "gcc-12"
+CXX = "gcc-12"
+SUITESPARSE_INCLUDE_DIR="$(brew --prefix suite-sparse)/include"
+SUITESPARSE_LIBRARY_DIR="$(brew --prefix suite-sparse)/lib"
