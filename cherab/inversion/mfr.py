@@ -154,7 +154,7 @@ class Mfr:
         regularizer: Type["_SVDBase"] = Lcurve,
         store_regularizers: bool = False,
         path: str | Path | None = None,
-        use_gpu: bool = True,
+        use_gpu: bool = False,
         verbose: bool = False,
         **kwargs,
     ) -> tuple[np.ndarray, dict]:
@@ -184,8 +184,7 @@ class Mfr:
             If `path` is None, the regularizer objects will be stored in the current directory
             if `store_regularizers` is True.
         use_gpu
-            same as :obj:`~.compute_svd`'s `use_gpu` argument,
-            by default True
+            same as :obj:`~.compute_svd`'s `use_gpu` argument, by default False
         verbose
             If True, print iteration information regarding SVD computation, by default False
         **kwargs
