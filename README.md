@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/cherab-inversion?label=PyPI&logo=PyPI)](https://pypi.org/project/cherab-inversion/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/cherab-inversion?logo=Python)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10118753.svg)](https://doi.org/10.5281/zenodo.10118753)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10118752.svg)](https://doi.org/10.5281/zenodo.10118752)
 [![GitHub](https://img.shields.io/github/license/munechika-koyo/cherab_inversion)](https://opensource.org/licenses/BSD-3-Clause)
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/munechika-koyo/cherab_inversion/main.svg)](https://results.pre-commit.ci/latest/github/munechika-koyo/cherab_inversion/main)
