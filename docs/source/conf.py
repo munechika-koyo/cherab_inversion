@@ -112,11 +112,7 @@ version_match = os.environ.get("READTHEDOCS_VERSION")
 # If it is an integer, we're in a PR build and the version isn't correct.
 # If it's "latest" → change to "dev" (that's what we want the switcher to call it)
 if not version_match or version_match.isdigit() or version_match == "latest":
-    # For local development, infer the version to match from the package.
-    if version_obj.is_prerelease:
-        version_match = "dev"
-    else:
-        version_match = f"v{release}"
+    version_match = "dev"
 elif version_match == "stable":
     version_match = f"v{release}"
 
