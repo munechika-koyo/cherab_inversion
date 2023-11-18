@@ -194,6 +194,10 @@ class Mfr:
         if not issubclass(regularizer, _SVDBase):
             raise TypeError("regularizer must be a subclass of _SVDBase")
 
+        # check data attribute
+        if self._data is None:
+            raise ValueError("data attribute is not set")
+
         # check initial solution
         if x0 is None:
             x0 = np.ones(self._gmat.shape[1])
@@ -218,7 +222,7 @@ class Mfr:
         self._converged = False
         errors = []
         reg = None
-        x = 0.0
+        x = None
 
         # set timer
         start_time = time()
