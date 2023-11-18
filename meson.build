@@ -2,7 +2,7 @@ project(
   'cherab-inversion',
   'cython',
   # Note that version cannot dinamically changed now.
-  version: '0.1.2.dev0',
+  version: '0.1.2',
   meson_version: '>= 0.64.0',
   default_options: [
     'cython_args=-3',
