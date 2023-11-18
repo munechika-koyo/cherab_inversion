@@ -40,7 +40,6 @@ dependencies = [
     "scipy",
     "matplotlib",
     "scikit-sparse",
-    "plotly",
 ]
 license = { file = "LICENSE.md" }
 

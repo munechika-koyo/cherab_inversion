@@ -12,8 +12,7 @@ dependencies:
 - numpy
 - scipy
 # - cupy  # manually install for GPU acceleration of SVD
-- matplotlib
-- plotly
+- matplotlib-base
 - scikit-sparse
   # for developper tools
 - black
