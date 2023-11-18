@@ -212,50 +212,62 @@ class Mfr:
             else:
                 path: Path = Path(path)
 
-        # MFR loop
+        # set iteration counter and status
         niter = 0
         status = {}
         self._converged = False
         errors = []
+        reg = None
+        x = 0.0
+
+        # set timer
         start_time = time()
+
+        # start MFR iteration
         while niter < miter and not self._converged:
             with Spinner(f"{niter:02}-th MFR iteration", timer=True) as sp:
-                sp_base_text = sp.text + " "
+                try:
+                    sp_base_text = sp.text + " "
 
-                # compute regularization matrix
-                hmat = self.regularization_matrix(
-                    x0, eps=eps, derivative_weights=derivative_weights
-                )
+                    # compute regularization matrix
+                    hmat = self.regularization_matrix(
+                        x0, eps=eps, derivative_weights=derivative_weights
+                    )
 
-                # compute SVD components
-                spinner = sp if verbose else None
-                singular, u_vecs, basis = compute_svd(self._gmat, hmat, use_gpu=use_gpu, sp=spinner)
+                    # compute SVD components
+                    spinner = sp if verbose else None
+                    singular, u_vecs, basis = compute_svd(self._gmat, hmat, use_gpu=use_gpu, sp=spinner)
 
-                # find optimal solution using regularizer class
-                sp.text = sp_base_text + " (Solving regularizer)"
-                reg = regularizer(singular, u_vecs, basis, data=self._data)
-                x, _ = reg.solve(bounds=bounds, **kwargs)
+                    # find optimal solution using regularizer class
+                    sp.text = sp_base_text + " (Solving regularizer)"
+                    reg = regularizer(singular, u_vecs, basis, data=self._data)
+                    x, _ = reg.solve(bounds=bounds, **kwargs)
 
-                # check convergence
-                diff = np.linalg.norm(x - x0)
-                errors.append(diff)
-                self._converged = bool(diff < tol)
+                    # check convergence
+                    diff = np.linalg.norm(x - x0)
+                    errors.append(diff)
+                    self._converged = bool(diff < tol)
 
-                # update solution
-                x0 = x
+                    # update solution
+                    x0 = x
 
-                # store regularizer object at each iteration
-                if store_regularizers:
-                    with (path / f"regularizer_{niter}.pickle").open("wb") as f:
-                        pickle.dump(reg, f)
+                    # store regularizer object at each iteration
+                    if store_regularizers:
+                        with (path / f"regularizer_{niter}.pickle").open("wb") as f:
+                            pickle.dump(reg, f)
 
-                # print iteration information
-                _text = f"(Diff: {diff:.3e}, Tolerance: {tol:.3e}, lambda: {reg.lambda_opt:.3e})"
-                sp.text = sp_base_text + _text
-                sp.ok()
+                    # print iteration information
+                    _text = f"(Diff: {diff:.3e}, Tolerance: {tol:.3e}, lambda: {reg.lambda_opt:.3e})"
+                    sp.text = sp_base_text + _text
+                    sp.ok()
 
-                # update iteration counter
-                niter += 1
+                    # update iteration counter
+                    niter += 1
+
+                except Exception as e:
+                    sp.fail()
+                    print(e)
+                    break
 
         elapsed_time = time() - start_time
 
