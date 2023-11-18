@@ -240,7 +240,9 @@ class Mfr:
 
                     # compute SVD components
                     spinner = sp if verbose else None
-                    singular, u_vecs, basis = compute_svd(self._gmat, hmat, use_gpu=use_gpu, sp=spinner)
+                    singular, u_vecs, basis = compute_svd(
+                        self._gmat, hmat, use_gpu=use_gpu, sp=spinner
+                    )
 
                     # find optimal solution using regularizer class
                     sp.text = sp_base_text + " (Solving regularizer)"
@@ -261,7 +263,9 @@ class Mfr:
                             pickle.dump(reg, f)
 
                     # print iteration information
-                    _text = f"(Diff: {diff:.3e}, Tolerance: {tol:.3e}, lambda: {reg.lambda_opt:.3e})"
+                    _text = (
+                        f"(Diff: {diff:.3e}, Tolerance: {tol:.3e}, lambda: {reg.lambda_opt:.3e})"
+                    )
                     sp.text = sp_base_text + _text
                     sp.ok()
 
