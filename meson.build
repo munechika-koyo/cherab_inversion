@@ -1,13 +1,12 @@
 project(
   'cherab-inversion',
+  'c',
   'cython',
   # Note that version cannot dinamically changed now.
   version: '0.1.2',
   meson_version: '>= 0.64.0',
   default_options: [
     'cython_args=-3',
-    'c_args=-fopenmp',
-    'c_link_args=-fopenmp',
   ],
 )
 
@@ -15,6 +14,9 @@ project(
 py = import('python').find_installation(pure: false)
 py_dep = py.dependency()
 
+# OpenMP dependency
+# NOTE: uncomment if you want to use prange in cython
+# omp_dep = dependency('openmp')
 
 # NumPy include directory - needed in all submodules
 incdir_numpy = run_command(
