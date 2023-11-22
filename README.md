@@ -22,18 +22,30 @@ For more information, see the [documentation pages](https://cherab-inversion.rea
 
 Quick installation
 -------------------
-`pip` command enables us to install `cherab-inversion` from [PyPI](https://pypi.org/project/cherab-inversion/) repository.
-
+`mamba`/`conda` is recommended to install `cherab-inversion`.
 ```Shell
-python -m pip install cherab-inversion
+mamba install -c conda-forge cherab-inversion
+```
+
+If you want to use `pip`, please install `suitesparse` at first, then install `cherab-inversion`.
+```Shell
+# Linux (Debian/Ubuntu)
+sudo apt install libsuitesparse-dev
+```
+```Shell
+# macOS
+brew install suite-sparse
+```
+```Shell
+pip install cherab-inversion
 ```
 
 For Developpers
 ---
 If you would like to develop `cherab-inversion`, it is much easier to create a conda environment after cloning repository.
 ```Shell
-conda env create -f environment.yaml
-conda activate cherab-inv-dev
+mamba env create -f environment.yaml
+mamba activate cherab-inv-dev
 python dev.py build
 python dev.py install
 ```
