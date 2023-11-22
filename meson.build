@@ -3,7 +3,7 @@ project(
   'c',
   'cython',
   # Note that version cannot dinamically changed now.
-  version: '0.1.2',
+  version: '0.1.3',
   meson_version: '>= 0.64.0',
   default_options: [
     'cython_args=-3',
