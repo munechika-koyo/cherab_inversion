@@ -7,21 +7,31 @@ Installation
 ============
 
 
-Prerequisites
-=============
-If you want install ``pip``, you need to install suite-sparse library for `scikit-sparse` package.
+Installing via Conda
+====================
+`conda` (or `mamba`, a faster `conda` alternative) is the most recommended way to install
+CHERAB-Inversion.
 
 .. prompt:: bash
 
-    # debian
+    conda install -c conda-forge cherab-inversion
+
+
+
+Installing with Pip
+===================
+If you want install ``pip``, you need to install `suitesparse` library for `scikit-sparse` package
+firstly.
+
+.. prompt:: bash
+
+    # Linux (Debian/Ubuntu)
     sudo apt-get install libsuitesparse-dev
 
-If you install by ``conda``, it is not required to install suite-sparse library.
+    # macOS
+    brew install suite-sparse
 
-
-Installing using pip
-====================
-Using ``pip`` command allows us to install cherab-inversion including dependencies.
+Then, you can install CHERAB-Inversion by ``pip``:
 
 .. prompt:: bash
 
@@ -53,7 +63,7 @@ The easiest way is to create a conda development environment:
 
 .. prompt:: bash
 
-    conda env create -f environment.yaml  # `mamba` works too for this command
+    conda env create -f environment.yaml
     conda activate cherab-inv-dev
 
 you need to build this package using the ``dev.py`` CLI:
