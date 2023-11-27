@@ -188,7 +188,8 @@ class Mfr:
         verbose
             If True, print iteration information regarding SVD computation, by default False
         **kwargs
-            additional keyword arguments passed to the regularizer class's :meth:`solve` method
+            additional keyword arguments passed to the regularizer class's :obj:`~._SVDBase.solve`
+            method
         """
         # validate regularizer
         if not issubclass(regularizer, _SVDBase):

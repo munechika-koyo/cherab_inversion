@@ -562,7 +562,7 @@ def compute_svd(
 
         .. math::
 
-            PHP^\\mathsf{T} = L^\\mathsf{T} L,
+            PHP^\\mathsf{T} = LL^\\mathsf{T},
 
         where :math:`L` is a lower triangular matrix and :math:`P` is a fill-reducing permutation.
 

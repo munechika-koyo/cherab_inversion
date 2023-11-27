@@ -3,10 +3,12 @@ project(
   'c',
   'cython',
   # Note that version cannot dinamically changed now.
-  version: '0.1.3',
+  version: '0.1.4',
   meson_version: '>= 0.64.0',
   default_options: [
     'cython_args=-3',
+    'c_std=c99',
+    'buildtype=debugoptimized',
   ],
 )
 

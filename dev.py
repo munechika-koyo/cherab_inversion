@@ -80,13 +80,14 @@ def build(build_dir: str, parallel: int):
         os.remove(temp_init)
         sys.exit(1)
 
-    # === install .so files in source tree ==========================
-    for so_path in BUILD_DIR.glob("**/*.so"):
+    # === install .so/.pyd files in source tree ==========================
+    ext = ".pyd" if sys.platform == "win32" else ".so"
+    for so_path in BUILD_DIR.glob(f"**/*{ext}"):
         src = so_path.resolve()
         dst = BASE_DIR / so_path.relative_to(BUILD_DIR)
         shutil.copy(src, dst)
         print(f"copy {src} into {dst}")
-    print("Install .so files in place.")
+    print(f"Install {ext} files in place.")
 
     # delete temporary __init__.py
     os.remove(temp_init)
