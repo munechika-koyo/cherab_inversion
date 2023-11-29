@@ -2,8 +2,10 @@ project(
   'cherab-inversion',
   'c',
   'cython',
-  # Note that version cannot dinamically changed now.
-  version: '0.1.4',
+  version: run_command(
+    ['cherab/inversion/_build_utils/gitversion.py'],
+    check: true
+  ).stdout().strip(),
   meson_version: '>= 0.64.0',
   default_options: [
     'cython_args=-3',
@@ -11,6 +13,8 @@ project(
     'buildtype=debugoptimized',
   ],
 )
+
+fs = import ('fs')
 
 # https://mesonbuild.com/Python-module.html
 py = import('python').find_installation(pure: false)

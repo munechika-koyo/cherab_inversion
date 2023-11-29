@@ -89,6 +89,13 @@ def build(build_dir: str, parallel: int):
         print(f"copy {src} into {dst}")
     print(f"Install {ext} files in place.")
 
+    # copy version.py
+    for version_path in BUILD_DIR.glob("**/version.py"):
+        src = version_path.resolve()
+        dst = BASE_DIR / version_path.relative_to(BUILD_DIR)
+        shutil.copy(src, dst)
+        print(f"copy {src} into {dst}")
+
     # delete temporary __init__.py
     os.remove(temp_init)
 
