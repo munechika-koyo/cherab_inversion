@@ -79,7 +79,7 @@ if __name__ == "__main__":
             outfile = Path(environ.get("MESON_DIST_ROOT", "")) / outfile
 
         with outfile.open("w") as f:
-            print(f"Saving veersion to {outfile}")
+            print(f"Saving version to {outfile}")
             f.write(template)
     else:
         print(version)
