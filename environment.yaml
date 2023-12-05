@@ -15,6 +15,7 @@ dependencies:
 - matplotlib-base
 - scikit-sparse
   # for developper tools
+- tomli  # for python < 3.11
 - black
 - ruff
 - mypy

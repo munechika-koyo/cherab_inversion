@@ -25,7 +25,7 @@ project = "cherab-inversion"
 author = "Koyo Munechika"
 copyright = f"2020-{datetime.now().year}, {author}"
 version_obj = parse(__version__)
-release = str(version_obj)
+release = version_obj.base_version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

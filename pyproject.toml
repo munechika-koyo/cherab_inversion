@@ -4,13 +4,14 @@ requires = [
     "numpy",
     "meson-python >= 0.13",
     "cython >= 3.0",
+    "tomli; python_version < '3.11'",
 ]
 build-backend = "mesonpy"
 
 [project]
 name = "cherab-inversion"
 description = "Cherab inversion framework"
-version = "0.1.4"
+version = "0.1.5.dev"
 readme = "README.md"
 authors = [
     { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
@@ -63,6 +64,7 @@ docs = [
     "sphinx-github-style",
 ]
 dev = [
+    "tomli; python_version < '3.11'",
     "ipython",
     "black",
     "ruff",

@@ -169,3 +169,6 @@ cython_debug/
 # Python distribution / packaging
 /wheelhouse
 **/*.whl
+
+# version.py created at build time
+**/version.py

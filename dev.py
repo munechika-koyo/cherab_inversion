@@ -58,6 +58,8 @@ def build(build_dir: str, parallel: int):
         print("Meson build setup OK")
     else:
         print("Meson build setup failed!")
+        with (Path(build_dir) / "meson-logs" / "meson-log.txt").open("r") as file:
+            print(file.read())
         sys.exit(1)
 
     # add __init__.py under cherab/
@@ -88,6 +90,13 @@ def build(build_dir: str, parallel: int):
         shutil.copy(src, dst)
         print(f"copy {src} into {dst}")
     print(f"Install {ext} files in place.")
+
+    # copy version.py
+    for version_path in BUILD_DIR.glob("**/version.py"):
+        src = version_path.resolve()
+        dst = BASE_DIR / version_path.relative_to(BUILD_DIR)
+        shutil.copy(src, dst)
+        print(f"copy {src} into {dst}")
 
     # delete temporary __init__.py
     os.remove(temp_init)
