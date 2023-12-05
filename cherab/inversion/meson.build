@@ -8,8 +8,7 @@ foreach file : cython_sources
     file[0],
     file[1],
     # c_args: [numpy_nodepr_api],
-    dependencies: [py_dep],
-    include_directories: [inc_np],
+    dependencies: [py_dep, np_dep],
     install: true,
     install_dir: py.get_install_dir() / 'cherab/inversion',
   )

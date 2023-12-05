@@ -14,17 +14,17 @@ project(
   ],
 )
 
-fs = import ('fs')
-
-# https://mesonbuild.com/Python-module.html
+fs = import('fs')
 py = import('python').find_installation(pure: false)
+
+# Python dependency
 py_dep = py.dependency()
 
 # OpenMP dependency
 # NOTE: uncomment if you want to use prange in cython
 # omp_dep = dependency('openmp')
 
-# NumPy include directory - needed in all submodules
+# NumPy dependency
 incdir_numpy = run_command(
   py,
   [
@@ -33,8 +33,8 @@ incdir_numpy = run_command(
   ],
   check: true
 ).stdout().strip()
-
 inc_np = include_directories(incdir_numpy)
+np_dep = declare_dependency(include_directories: inc_np)
 
 # Numpy deprecated api (if errors is occurred, comment out in module section)
 numpy_nodepr_api = '-DNPY_NO_DEPRECATED_API=NPY_1_9_API_VERSION'
