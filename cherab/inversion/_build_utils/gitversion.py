@@ -7,7 +7,7 @@ from textwrap import dedent
 if sys.version_info < (3, 11):
     import tomli as tomllib
 else:
-    import toml as tomllib
+    import tomllib
 
 
 def init_version() -> str:
