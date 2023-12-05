@@ -13,7 +13,7 @@ else:
 def init_version() -> str:
     """Load the version from the pyproject.toml file."""
     init = Path(__file__).parent.parent.parent.parent / "pyproject.toml"
-    with init.open() as f:
+    with init.open("rb") as f:
         pyproject = tomllib.load(f)
 
     version = pyproject["project"]["version"]
