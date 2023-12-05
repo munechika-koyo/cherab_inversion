@@ -58,6 +58,8 @@ def build(build_dir: str, parallel: int):
         print("Meson build setup OK")
     else:
         print("Meson build setup failed!")
+        with (Path(build_dir) / "meson-logs" / "meson-log.txt").open("r") as file:
+            print(file.read())
         sys.exit(1)
 
     # add __init__.py under cherab/
