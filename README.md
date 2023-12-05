@@ -1,6 +1,7 @@
 # CHERAB-Inversion
 
 [![PyPI](https://img.shields.io/pypi/v/cherab-inversion?label=PyPI&logo=PyPI)](https://pypi.org/project/cherab-inversion/)
+[![Conda](https://img.shields.io/conda/v/conda-forge/cherab-inversion?logo=anaconda)](https://anaconda.org/conda-forge/cherab-inversion)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/cherab-inversion?logo=Python)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10118752.svg)](https://doi.org/10.5281/zenodo.10118752)
