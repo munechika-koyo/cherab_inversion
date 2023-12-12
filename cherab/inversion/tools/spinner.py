@@ -44,7 +44,7 @@ class Spinner:
     .. code-block:: python
 
         import time
-        from cherab.phix.tools import Spinner
+        from cherab.inversion.tools import Spinner
 
 
         # Use as a context manager
