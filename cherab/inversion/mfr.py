@@ -358,7 +358,7 @@ class Mfr:
 
         regularization = csc_matrix(self._dmats[0][0].shape, dtype=float)
 
-        for (dmat1, dmat2), aniso in zip(self._dmats, derivative_weights, strict=True):
+        for (dmat1, dmat2), aniso in zip(self._dmats, derivative_weights):  # noqa: B905  for py39
             regularization += aniso * dmat1.T @ w @ dmat2
 
         return regularization
