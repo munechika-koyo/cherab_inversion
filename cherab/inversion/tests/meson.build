@@ -12,3 +12,10 @@ py.install_sources(
   python_sources,
   subdir: 'cherab/inversion/tests',
 )
+
+py.install_sources(
+  [
+    'data/raytransfer_grid_data.npz',
+  ],
+  subdir: 'cherab/inversion/tests/data',
+)
