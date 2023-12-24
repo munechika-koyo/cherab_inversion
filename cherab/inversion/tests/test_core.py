@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
-from scipy.sparse import csc_matrix
+from scipy.sparse import csc_matrix, csr_matrix
 
 from cherab.inversion import _SVDBase, compute_svd
 
 
 @pytest.mark.parametrize("use_gpu", [False])
 def test_compute_svd(test_data, computed_svd, use_gpu):
-    hmat = csc_matrix(np.eye(test_data.matrix.shape[0]))
+    hmat = csc_matrix(np.eye(test_data.matrix.shape[1]))
     s, u, v = compute_svd(test_data.matrix, hmat, use_gpu=use_gpu)
 
     # compute svd by numpy
@@ -17,10 +17,22 @@ def test_compute_svd(test_data, computed_svd, use_gpu):
     rank = np.linalg.matrix_rank(test_data.matrix)
     np.testing.assert_allclose(s[:rank], s_np[:rank], rtol=0, atol=1.0e-10)
 
+    # TODO: check u and v
 
-# TODO: in case the matrix is a sparse matrix
-def test_compute_svd_sparse():
-    pass
+
+def test_compute_svd_sparse(test_tomography_data):
+    matrix = csr_matrix(test_tomography_data.matrix)
+    hmat = csc_matrix(np.eye(matrix.shape[1]))
+    s, u, v = compute_svd(matrix, hmat, use_gpu=False)
+
+    # compute svd by numpy
+    u_np, s_np, vh_np = np.linalg.svd(test_tomography_data.matrix, full_matrices=False)
+
+    # check singular values in the range of matrix rank - 1
+    rank = np.linalg.matrix_rank(test_tomography_data.matrix)
+    np.testing.assert_allclose(s[:rank], s_np[:rank - 1], rtol=0, atol=1.0e-10)
+
+    # TODO: check u and v
 
 
 @pytest.fixture
@@ -66,9 +78,3 @@ class TestSVDBase:
     def test_inverted_solution(self, svdbase, lambdas):
         for beta in lambdas:
             svdbase.inverted_solution(beta)
-
-
-if __name__ == "__main__":
-    from cherab.phix.inversion.tests.conftest import TestData
-
-    test_compute_svd(TestData())
