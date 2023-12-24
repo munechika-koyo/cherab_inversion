@@ -119,7 +119,7 @@ class Mfr:
         self.data = data
 
     @property
-    def gmats(self) -> np.ndarray | spmatrix:
+    def gmat(self) -> np.ndarray | spmatrix:
         """Geometry matrix :math:`T` of the forward problem."""
         return self._gmat
 
