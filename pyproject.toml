@@ -131,7 +131,7 @@ blank = false
 skip = "pp* *_ppc64le *_i686 *_s390x"
 build-frontend = "build"
 test-requires = "pytest"
-test-command = "pytest {project}"
+test-command = "pytest --pyargs cherab.inversion"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y suitesparse-devel"
