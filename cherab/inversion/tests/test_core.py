@@ -30,7 +30,7 @@ def test_compute_svd_sparse(test_tomography_data):
 
     # check singular values in the range of matrix rank - 1
     rank = np.linalg.matrix_rank(test_tomography_data.matrix)
-    np.testing.assert_allclose(s[:rank], s_np[:rank - 1], rtol=0, atol=1.0e-10)
+    np.testing.assert_allclose(s[:rank], s_np[: rank - 1], rtol=0, atol=1.0e-10)
 
     # TODO: check u and v
 

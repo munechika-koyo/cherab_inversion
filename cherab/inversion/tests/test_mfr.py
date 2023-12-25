@@ -67,4 +67,3 @@ class TestMfr:
 
         if regularizers_dir is not None:
             assert len(list(regularizers_dir.glob("*.pickle"))) == status["niter"]
-
