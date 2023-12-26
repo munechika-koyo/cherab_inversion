@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 wheels/
+wheelhouse/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -165,10 +166,6 @@ cython_debug/
 
 # Python object files (.pickle)
 **/regularizer*.pickle
-
-# Python distribution / packaging
-/wheelhouse
-**/*.whl
 
 # version.py created at build time
 **/version.py
