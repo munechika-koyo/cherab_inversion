@@ -403,7 +403,7 @@ cpdef object derivative_matrix(
 @cython.cdivision(True)
 cpdef object laplacian_matrix(
     (int, int) grid_shape,
-    (double, double) grid_step = (1.0, 1.0),
+    (double, double) grid_steps = (1.0, 1.0),
     bint diagonal = True,
     object mask = None,
 ):
@@ -418,7 +418,7 @@ cpdef object laplacian_matrix(
     grid_shape : tuple[int, int]
         shape of the grid (N0, N1), where N0 and N1 are the number of grid points along the axis 0
         and 1 respectively.
-    grid_step : tuple[double, double], optional
+    grid_steps : tuple[double, double], optional
         step size of the grid (h0, h1), where h0 and h1 are the step size along the axis 0 and 1
         respectively, by default (1.0, 1.0)
     diagonal : bool, optional
@@ -479,12 +479,12 @@ cpdef object laplacian_matrix(
         raise TypeError("mask must be None or numpy.ndarray")
 
     n0, n1 = grid_shape
-    h0, h1 = grid_step
+    h0, h1 = grid_steps
 
     if n0 < 1 or n1 < 1:
         raise ValueError("element of grid_shape must be positive integer")
     if h0 <= 0 or h1 <= 0:
-        raise ValueError("element of grid_step must be positive float")
+        raise ValueError("element of grid_steps must be positive float")
 
     # Compute laplacian matrix
     diag = diag_dict(grid_shape)
