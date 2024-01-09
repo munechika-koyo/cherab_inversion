@@ -1,10 +1,11 @@
+from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import numpy as np
 import pytest
 from scipy.sparse import csr_matrix
 
-from cherab.inversion.derivative import compute_dmat
+from cherab.inversion.derivative import derivative_matrix
 from cherab.inversion.gcv import GCV
 from cherab.inversion.lcurve import Lcurve
 from cherab.inversion.mfr import Mfr
@@ -17,25 +18,33 @@ def mfr(test_tomography_data):
     gmat = csr_matrix(test_tomography_data.matrix)
 
     # compute derivative matrices
-    voxel_map = test_tomography_data.voxel_map
-    dmat_r = compute_dmat(voxel_map, kernel_type="r")
-    dmat_z = compute_dmat(voxel_map, kernel_type="z")
+    vmap = test_tomography_data.voxel_map
+    mask = test_tomography_data.mask
+    dmat_r = derivative_matrix(vmap.shape, axis=0, scheme="backward", mask=mask)
+    dmat_z = derivative_matrix(vmap.shape, axis=1, scheme="backward", mask=mask)
     dmat_pair = [(dmat_r, dmat_r), (dmat_z, dmat_z)]
 
     return Mfr(gmat, dmat_pair, test_tomography_data.b)
 
 
 class TestMfr:
-    def test_regularization_matrix(self, mfr):
+    @pytest.mark.parametrize(
+        ["kwargs", "expectation"],
+        [
+            pytest.param({}, does_not_raise(), id="valid (default)"),
+            pytest.param(dict(eps=-1.0), pytest.raises(ValueError), id="invalid (negative eps)"),
+            pytest.param(
+                dict(derivative_weights=[1]),
+                pytest.raises(ValueError),
+                id="invalid (less length of derivative weights)",
+            ),
+        ],
+    )
+    def test_regularization_matrix(self, mfr, kwargs, expectation):
         x0 = np.ones(mfr.gmat.shape[1])
+        with expectation:
+            mfr.regularization_matrix(x0, **kwargs)
 
-        mfr.regularization_matrix(x0)
-
-        with pytest.raises(ValueError):
-            mfr.regularization_matrix(x0, derivative_weights=[1.0])
-
-        with pytest.raises(ValueError):
-            mfr.regularization_matrix(x0, eps=-1.0)
 
     @pytest.mark.parametrize(
         ("regularizer", "store_regularizers"),
