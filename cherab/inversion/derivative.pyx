@@ -292,6 +292,7 @@ cpdef object derivative_matrix(
     """Generate derivative matrix.
 
     This compute the derivative matrix for a regular orthogonal coordinate grid.
+    The grid points must be equally spaced along the given axis.
     The numerical scheme is based on the finite difference method of forward, backward, or
     central difference.
     The dirichlet boundary condition is applied to the edge of the grid.
@@ -410,6 +411,7 @@ cpdef object laplacian_matrix(
     """Generate laplacian matrix.
 
     This compute the laplacian matrix for a regular orthogonal coordinate grid.
+    The grid points must be equally spaced along the given axis.
     The numerical scheme is based on the finite difference method.
     The dirichlet boundary condition is applied to the edge of the grid.
 
