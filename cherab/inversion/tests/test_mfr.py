@@ -45,7 +45,6 @@ class TestMfr:
         with expectation:
             mfr.regularization_matrix(x0, **kwargs)
 
-
     @pytest.mark.parametrize(
         ("regularizer", "store_regularizers"),
         [
