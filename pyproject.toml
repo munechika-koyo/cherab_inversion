@@ -2,7 +2,7 @@
 requires = [
     "wheel",
     "numpy",
-    "meson-python >= 0.13",
+    "meson-python >= 0.15",
     "cython >= 3.0",
     "tomli; python_version < '3.11'",
 ]
@@ -11,7 +11,7 @@ build-backend = "mesonpy"
 [project]
 name = "cherab-inversion"
 description = "Cherab inversion framework"
-version = "0.1.6.dev0"
+version = "0.2.0.dev0"
 readme = "README.md"
 authors = [
     { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
@@ -57,7 +57,7 @@ docs = [
     "sphinx < 8.0",
     "sphinx-prompt",
     "sphinx-copybutton",
-    "pydata-sphinx-theme < 0.15",
+    "pydata-sphinx-theme < 0.16",
     "sphinx-design",
     "pandoc",
     "sphinx-codeautolink",
@@ -73,7 +73,7 @@ dev = [
     "cython-lint",
     "pre-commit",
     "cython >= 3.0",
-    "meson-python >= 0.13",
+    "meson-python >= 0.15",
     "pytest",
 ]
 
