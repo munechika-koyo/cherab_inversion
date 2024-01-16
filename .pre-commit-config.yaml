@@ -14,7 +14,7 @@ repos:
   - id: check-ast
   - id: trailing-whitespace
   - id: end-of-file-fixer
-    exclude: VERSION
+    exclude: .*\.svg
   - id: check-merge-conflict
     exclude: .*\.rst
   - id: check-symlinks

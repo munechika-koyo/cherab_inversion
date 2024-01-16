@@ -337,6 +337,13 @@ cpdef object derivative_matrix(
                [ 0.,  0.,  0.,  0.,  0.,  0., -1.,  0.,  0.],
                [ 0.,  0.,  0.,  0.,  0.,  0.,  0., -1.,  0.],
                [ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., -1.]])
+
+    Note
+    ----
+    The detailed explanation of the derivative matrix can be found in the
+    `theory of the derivative matrix`_.
+
+    .. _theory of the derivative matrix: ../user/theory/derivative.ipynb
     """
 
     cdef:
@@ -465,6 +472,14 @@ cpdef object laplacian_matrix(
                [ 0. ,  0. ,  0. ,  1. ,  0.5,  0. , -6. ,  1. ,  0. ],
                [ 0. ,  0. ,  0. ,  0.5,  1. ,  0.5,  1. , -6. ,  1. ],
                [ 0. ,  0. ,  0. ,  0. ,  0.5,  1. ,  0. ,  1. , -6. ]])
+
+    Note
+    ----
+    The detailed explanation of the laplacian matrix can be found in the
+    `theory of the laplacian matrix`_.
+
+    .. _theory of the laplacian matrix: ../user/theory/derivative.ipynb
+
     """
 
     cdef:

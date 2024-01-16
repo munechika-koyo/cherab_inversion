@@ -51,7 +51,7 @@ so this documentation is gradually updated, and welcome your contribution.
         ^^^^^^^^^^
 
         The user guide provides in-depth information on the
-        key concepts of CHERAB-Inversion with useful tutorials.
+        key concepts of CHERAB-Inversion with some inversion theory.
 
         +++
 

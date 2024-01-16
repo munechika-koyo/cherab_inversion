@@ -11,8 +11,9 @@ This guide is an overview and explains the important features.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    installation
+   theory/index
    contribution
    citation

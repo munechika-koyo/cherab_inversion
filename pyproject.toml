@@ -62,6 +62,7 @@ docs = [
     "pandoc",
     "sphinx-codeautolink",
     "sphinx-github-style",
+    "sphinxcontrib-bibtex",
 ]
 dev = [
     "tomli; python_version < '3.11'",
