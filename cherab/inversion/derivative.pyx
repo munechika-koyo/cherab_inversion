@@ -197,11 +197,11 @@ cpdef dict diag_dict((int, int) grid_shape):
     .. code-block:: none
 
         bb ─── bc ─── bf    --> axis 1
-        │       │      │
-        │       │      │
+        │       │       │
+        │       │       │
         cb ─── cc ─── cf
-        │       │      │
-        │       │      │
+        │       │       │
+        │       │       │
         fb ─── fc ─── ff
 
         |
@@ -277,6 +277,7 @@ cpdef dict diag_dict((int, int) grid_shape):
         "fc": diags([1], n1, shape=(bins, bins)),
         "ff": diags(ff, n1 + 1, shape=(bins, bins)),
     }
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -398,6 +399,7 @@ cpdef object derivative_matrix(
 
     return dmat.tocsc()
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
@@ -492,12 +494,12 @@ cpdef object laplacian_matrix(
     diag = diag_dict(grid_shape)
 
     lmat = (diag["fc"] - 2 * diag["cc"] + diag["bc"]) / (h0 ** 2) \
-         + (diag["cf"] - 2 * diag["cc"] + diag["cb"]) / (h1 ** 2)
+         + (diag["cf"] - 2 * diag["cc"] + diag["cb"]) / (h1 ** 2)  # noqa: E127
 
     if diagonal:
         step = h0 ** 2 + h1 ** 2
         lmat += (diag["ff"] - 2 * diag["cc"] + diag["bb"]) / step \
-              + (diag["fb"] - 2 * diag["cc"] + diag["bf"]) / step
+              + (diag["fb"] - 2 * diag["cc"] + diag["bf"]) / step  # noqa: E127
 
     # masking
     if mask is not None:
