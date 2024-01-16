@@ -2,7 +2,7 @@
 import warnings
 
 import numpy as np
-from scipy.sparse import lil_matrix, csc_matrix, diags
+from scipy.sparse import lil_matrix, dia_matrix, diags
 
 cimport cython
 from numpy cimport import_array, ndarray
@@ -197,11 +197,11 @@ cpdef dict diag_dict((int, int) grid_shape):
     .. code-block:: none
 
         bb ─── bc ─── bf    --> axis 1
-        │       │        │
-        │       │        │
+        │       │      │
+        │       │      │
         cb ─── cc ─── cf
-        │       │        │
-        │       │        │
+        │       │      │
+        │       │      │
         fb ─── fc ─── ff
 
         |
@@ -223,7 +223,7 @@ cpdef dict diag_dict((int, int) grid_shape):
 
     Returns
     -------
-    dict[str, `scipy.sparse.csc_matrix`]
+    dict[str, `scipy.sparse.dia_matrix`]
         dictionary of diagonal matrices, the keys of which are ``"bb"``, ``"bc"``, ``"bf"``,
         ``"cb"``, ``"cc"``, ``"cf"``, ``"fb"``, ``"fc"``, and ``"ff"``.
 
@@ -267,15 +267,15 @@ cpdef dict diag_dict((int, int) grid_shape):
     ff = bb = np.tile([1] * (n1 - 1) + [0], n0)[:bins - n1 - 1]
 
     return {
-        "bb": diags(bb, -n1 - 1, shape=(bins, bins), format="csc"),
-        "bc": diags([1], -n1, shape=(bins, bins), format="csc"),
-        "bf": diags(bf, -n1 + 1, shape=(bins, bins), format="csc"),
-        "cb": diags(cb, -1, shape=(bins, bins), format="csc"),
-        "cc": diags([1], 0, shape=(bins, bins), format="csc"),
-        "cf": diags(cf, 1, shape=(bins, bins), format="csc"),
-        "fb": diags(fb, n1 - 1, shape=(bins, bins), format="csc"),
-        "fc": diags([1], n1, shape=(bins, bins), format="csc"),
-        "ff": diags(ff, n1 + 1, shape=(bins, bins), format="csc"),
+        "bb": diags(bb, -n1 - 1, shape=(bins, bins)),
+        "bc": diags([1], -n1, shape=(bins, bins)),
+        "bf": diags(bf, -n1 + 1, shape=(bins, bins)),
+        "cb": diags(cb, -1, shape=(bins, bins)),
+        "cc": diags([1], 0, shape=(bins, bins)),
+        "cf": diags(cf, 1, shape=(bins, bins)),
+        "fb": diags(fb, n1 - 1, shape=(bins, bins)),
+        "fc": diags([1], n1, shape=(bins, bins)),
+        "ff": diags(ff, n1 + 1, shape=(bins, bins)),
     }
 
 @cython.boundscheck(False)
@@ -291,7 +291,7 @@ cpdef object derivative_matrix(
 ):
     """Generate derivative matrix.
 
-    This compute the derivative matrix for a regular orthogonal coordinate grid.
+    This function computes the derivative matrix for a regular orthogonal coordinate grid.
     The grid points must be equally spaced along the given axis.
     The numerical scheme is based on the finite difference method of forward, backward, or
     central difference.
@@ -312,7 +312,7 @@ cpdef object derivative_matrix(
         Choose from "forward", "backward", or "central".
     mask : numpy.ndarray, optional
         mask array. Default is None.
-        If masking a certain grid point, the corresponding row and column is set to False in the
+        If masking a certain grid point, the corresponding row and column is set to `False` in the
         mask array.
 
     Returns
@@ -340,7 +340,7 @@ cpdef object derivative_matrix(
 
     cdef:
         int n0, n1
-        dict[str, csc_matrix] diag
+        dict[str, dia_matrix] diag
         object dmat
 
     # validation
@@ -396,7 +396,7 @@ cpdef object derivative_matrix(
         mask = mask.flatten()
         dmat = dmat[mask, :][:, mask]
 
-    return dmat
+    return dmat.tocsc()
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -410,7 +410,7 @@ cpdef object laplacian_matrix(
 ):
     """Generate laplacian matrix.
 
-    This compute the laplacian matrix for a regular orthogonal coordinate grid.
+    This function computes the laplacian matrix for a regular orthogonal coordinate grid.
     The grid points must be equally spaced along the given axis.
     The numerical scheme is based on the finite difference method.
     The dirichlet boundary condition is applied to the edge of the grid.
@@ -427,7 +427,7 @@ cpdef object laplacian_matrix(
         whether to include the diagonal term or not. Default is True.
     mask : numpy.ndarray, optional
         mask array. Default is None.
-        If masking a certain grid point, the corresponding row and column is set to False in the
+        If masking a certain grid point, the corresponding row and column is set to `False` in the
         mask array.
 
     Returns
@@ -468,7 +468,7 @@ cpdef object laplacian_matrix(
     cdef:
         int n0, n1
         double h0, h1, step
-        dict[str, csc_matrix] diag
+        dict[str, dia_matrix] diag
         object lmat
 
     # validation
@@ -504,4 +504,4 @@ cpdef object laplacian_matrix(
         mask = mask.flatten()
         lmat = lmat[mask, :][:, mask]
 
-    return lmat
+    return lmat.tocsc()
