@@ -1,5 +1,6 @@
-"""Module offering terminal spinner Spinner implementation is referred by the `yaspin` package:
+"""Module offering terminal spinner.
 
+Spinner implementation is referred by the `yaspin` package:
 https://github.com/pavdmyt/yaspin
 """
 from __future__ import annotations
@@ -21,7 +22,7 @@ SPINNERS = ["⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣟", "⡿"]
 
 class Spinner:
     """Implements a context manager that spawns a child process to write spinner frames into a tty
-    (stdout) duringcontext execution.
+    (stdout) during context execution.
 
     Parameters
     ----------
