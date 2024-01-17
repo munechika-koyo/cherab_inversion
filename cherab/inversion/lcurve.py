@@ -97,14 +97,12 @@ class Lcurve(_SVDBase):
 
         # plot some points of L curve and annotate with regularization parameters label
         if isinstance(scatter_plot, int) and scatter_plot > 0:
-            lambdas = 10 ** np.linspace(
-                np.log10(lambdas.min()), np.log10(lambdas.max()), scatter_plot
-            )
-            for beta in lambdas:
-                point = (self.residual_norm(beta), self.regularization_norm(beta))
+            betas = np.logspace(*bounds, scatter_plot)
+            for beta in betas:
+                x, y = self.residual_norm(beta), self.regularization_norm(beta)
                 axes.scatter(
-                    point[0],
-                    point[1],
+                    x,
+                    y,
                     edgecolors="C0",
                     marker="o",
                     facecolor="none",
@@ -112,8 +110,10 @@ class Lcurve(_SVDBase):
                 )
                 if scatter_annotate is True:
                     axes.annotate(
-                        "$\\lambda$ = {:.2e}".format(beta),
-                        xy=point,
+                        "$\\lambda$ = {:.4g}".format(beta),
+                        xy=(x, y),
+                        xytext=(0.25, 0.25),
+                        textcoords="offset fontsize",
                         color="k",
                         zorder=2,
                     )
@@ -142,6 +142,7 @@ class Lcurve(_SVDBase):
         axes: Axes | None = None,
         bounds: tuple[float, float] = (-20.0, 2.0),
         n_beta: int = 100,
+        show_max_curvature_line: bool = True,
     ) -> tuple[Figure, Axes]:
         """Plotting the curvature of L-curve as function of regularization parameter.
 
@@ -157,6 +158,9 @@ class Lcurve(_SVDBase):
             bounds of log10 of regularization parameter, by default (-20.0, 2.0).
         n_beta
             number of regularization parameters, by default 100.
+        show_max_curvature_line
+            whether or not to plot the vertical red dashed line at the maximum curvature point,
+            by default True.
 
         Returns
         -------
@@ -175,27 +179,18 @@ class Lcurve(_SVDBase):
         if not isinstance(axes, Axes):
             axes = fig.add_subplot()
 
-        # plotting
+        # plot the curvature
         axes.semilogx(lambdas, curvatures, color="C0", zorder=0)
 
-        # indicate the maximum point as the optimal point
-        if self.lambda_opt is not None:
-            axes.scatter(
-                self.lambda_opt,
-                self.curvature(self.lambda_opt),
-                c="r",
-                marker="x",
-                zorder=1,
-                label=f"$\\lambda = {self.lambda_opt:.2e}$",
-            )
+        # indicate the maximum curvature point as a vertical red dashed line
+        if self.lambda_opt is not None and show_max_curvature_line is True:
+            axes.axvline(self.lambda_opt, color="r", linestyle="dashed", linewidth=1, zorder=1)
 
-        lambda_range = (lambdas.min(), lambdas.max())
-
-        # Draw a y=0 dashed line
-        axes.plot(lambda_range, [0, 0], color="k", linestyle="dashed", linewidth=1, zorder=-1)
+        # draw a y=0 dashed line
+        axes.axhline(0, color="k", linestyle="dashed", linewidth=1, zorder=-1)
 
         # x range limitation
-        axes.set_xlim(*lambda_range)
+        axes.set_xlim(lambdas.min(), lambdas.max())
 
         # labels
         axes.set_xlabel("Regularization parameter $\\lambda$")
