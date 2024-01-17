@@ -36,20 +36,16 @@ class GCV(_SVDBase):
     """
 
     def __init__(self, *args, **kwargs):
-        # initialize originaly valuables
-        self._lambdas = None
-
-        # inheritation
         super().__init__(*args, **kwargs)
 
     def gcv(self, beta: float) -> float:
         """Calculate of GCV criterion function.
 
-        GCV can be calculated as follows:
+        GCV function :math:`\\mathcal{G}(\\lambda)` can be expressed with SVD components as:
 
         .. math::
 
-            GCV(\\lambda) = \\frac{\\rho}{\\left[1 - \\sum_{i=1}^r f_{\\lambda, i}\\right]^2}.
+            \\mathcal{G}(\\lambda) = \\frac{\\rho}{\\left[1 - \\sum_{i=1}^r f_{\\lambda, i}\\right]^2}.
 
         Parameters
         ----------
@@ -108,10 +104,7 @@ class GCV(_SVDBase):
             (fig, axes), each of which is matplotlib objects applied some properties.
         """
         # define regularization parameters
-        if self._lambdas is None:
-            lambdas = np.logspace(*bounds, n_beta)
-        else:
-            lambdas = self._lambdas
+        lambdas = np.logspace(*bounds, n_beta)
 
         # calculate GCV values
         gcvs = np.array([self.gcv(beta) for beta in lambdas])
@@ -141,6 +134,6 @@ class GCV(_SVDBase):
 
         # labels
         axes.set_xlabel("Regularization parameter $\\lambda$")
-        axes.set_ylabel("$GCV(\\lambda)$")
+        axes.set_ylabel("GCV function")
 
         return (fig, axes)
