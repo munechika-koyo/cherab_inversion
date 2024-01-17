@@ -251,7 +251,7 @@ class Mfr:
                     x, _ = reg.solve(bounds=bounds, **kwargs)
 
                     # check convergence
-                    diff = np.linalg.norm(x - x0)
+                    diff = np.linalg.norm(x - x0, axis=0)
                     errors.append(diff)
                     self._converged = bool(diff < tol)
 
