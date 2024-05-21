@@ -228,7 +228,7 @@ class Lcurve(_SVDBase):
         eta_dif = self.eta_diff(beta)
 
         numerator = -2.0 * rho * eta * (eta * beta**2.0 + beta * rho + rho * eta / eta_dif)
-        denominator = ((beta * eta) ** 2.0 + rho**2.0) ** 2.0
+        denominator = ((beta * eta) ** 2.0 + rho**2.0) ** 1.5
 
         return numerator / denominator
 
