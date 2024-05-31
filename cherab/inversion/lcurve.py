@@ -7,6 +7,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from .core import _SVDBase
+from .tools.scientific_format import parse_scientific_notation
 
 __all__ = ["Lcurve"]
 
@@ -20,7 +21,7 @@ class Lcurve(_SVDBase):
     curvature of the L-curve.
 
     .. note::
-        The theory and implementation of L-curve criterion is described in here_.
+        The theory and implementation of the L-curve criterion are described here_.
 
     .. _here: ../user/theory/lcurve.ipynb
 
@@ -47,10 +48,11 @@ class Lcurve(_SVDBase):
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float, float] = (-20.0, 2.0),
-        n_beta: int = 100,
+        bounds: tuple[float | None, float | None] | None = None,
+        n_beta: int = 500,
         scatter_plot: int | None = None,
         scatter_annotate: bool = True,
+        plot_lambda_opt: bool = True,
     ) -> tuple[Figure, Axes]:
         """Plotting the L-curve in log-log scale.
 
@@ -69,14 +71,16 @@ class Lcurve(_SVDBase):
             :math:`\\log_{10}\\sigma_1^2`.
             Raise an error if a >= b in (a, b).
         n_beta
-            number of regularization parameters, by default 100.
+            number of regularization parameters, by default 500.
         scatter_plot
             whether or not to plot some L-curve points, by default None.
             If you want to manually define the number of points,
-            put in the numbers. e.g.) ``scatter_plot=10``.
+            enter the numbers like ``scatter_plot=10``.
         scatter_annotate
             whether or not to annotate the scatter_points, by default True.
             This key argument is valid if only ``scatter_plot`` is not None.
+        plot_lambda_opt
+            whether or not to plot the L-curve corner point, by default True.
 
         Returns
         -------
@@ -102,9 +106,9 @@ class Lcurve(_SVDBase):
         # plotting
         axes.loglog(residual_norms, regularization_norms, color="C0", zorder=0)
 
-        # plot some points of L curve and annotate with regularization parameters label
+        # plot some points of L-curve and annotate with regularization parameters label
         if isinstance(scatter_plot, int) and scatter_plot > 0:
-            betas = np.logspace(*bounds, scatter_plot)
+            betas = np.logspace(np.ceil(bounds[0]), np.floor(bounds[1]), scatter_plot)
             for beta in betas:
                 x, y = self.residual_norm(beta), self.regularization_norm(beta)
                 axes.scatter(
@@ -116,8 +120,11 @@ class Lcurve(_SVDBase):
                     zorder=1,
                 )
                 if scatter_annotate is True:
+                    _lambda_sci = parse_scientific_notation(
+                        f"{beta:.2e}", scilimits=(-1, -1)
+                    ).split("\\times ")[1]
                     axes.annotate(
-                        "$\\lambda$ = {:.4g}".format(beta),
+                        f"$\\lambda = {_lambda_sci}$",
                         xy=(x, y),
                         xytext=(0.25, 0.25),
                         textcoords="offset fontsize",
@@ -125,21 +132,25 @@ class Lcurve(_SVDBase):
                         zorder=2,
                     )
 
-        # plot L curve corner if already optimize method excuted
-        if self.lambda_opt is not None:
+        # plot L-curve corner if already optimize method excuted
+        if self.lambda_opt is not None and plot_lambda_opt is True:
+            _lambda_opt_sci = parse_scientific_notation(f"{self.lambda_opt:.2e}")
             axes.scatter(
                 self.residual_norm(self.lambda_opt),
                 self.regularization_norm(self.lambda_opt),
                 c="r",
                 marker="x",
                 zorder=2,
-                label=f"$\\lambda = {self.lambda_opt:.2e}$",
+                label=f"$\\lambda = {_lambda_opt_sci}$",
             )
             axes.legend()
 
         # labels
         axes.set_xlabel("Residual norm")
         axes.set_ylabel("Regularization norm")
+
+        # set axis properties
+        axes.tick_params(axis="both", which="both", direction="in", top=True, right=True)
 
         return (fig, axes)
 
@@ -209,6 +220,9 @@ class Lcurve(_SVDBase):
         # labels
         axes.set_xlabel("Regularization parameter $\\lambda$")
         axes.set_ylabel("Curvature of L-curve")
+
+        # set axis properties
+        axes.tick_params(axis="both", which="both", direction="in", top=True, right=True)
 
         return (fig, axes)
 
