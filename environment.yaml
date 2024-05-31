@@ -7,7 +7,7 @@ channels:
 - conda-forge
 dependencies:
 - python >= 3.9, < 3.13
-- meson-python >= 0.15.0
+- meson-python < 0.16  # v0.16 has a error in install
 - cython >= 3.0
 - numpy
 - scipy
@@ -41,7 +41,7 @@ dependencies:
 - sphinx-codeautolink
 - sphinxcontrib-bibtex
 - pandoc
-- jinja2 < 3.1
+- jinja2
 # pip-install dependencies
 - pip
 - pip:
