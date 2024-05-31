@@ -55,9 +55,9 @@ class GCV(_SVDBase):
         Returns
         -------
         float
-            the value of GCV function at given regularization parameter
+            the value of GCV function at a given regularization parameter
         """
-        return self.rho(beta) / (1.0 - np.sum(self.filter(beta))) ** 2.0
+        return self.rho(beta) / (self.s.size - np.sum(self.filter(beta))) ** 2.0
 
     def _objective_function(self, logbeta: float) -> float:
         """Objective function for optimization.
@@ -72,7 +72,7 @@ class GCV(_SVDBase):
         Returns
         -------
         float
-            the value of GCV function at given regularization parameter
+            the value of GCV function at a given regularization parameter
         """
         return self.gcv(10**logbeta)
 
