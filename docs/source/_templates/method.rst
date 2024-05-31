@@ -1,4 +1,5 @@
-{{ name | escape | underline}}
+{{ "`" + name + "()`" }}
+{{ "=" * (name | length + 4) }}
 
 
 .. currentmodule:: {{ module }}
