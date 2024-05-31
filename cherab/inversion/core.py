@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from numpy import arange, asarray, ndarray, ones_like, sqrt
+from numpy import arange, asarray, log10, ndarray, ones_like, sqrt
 from scipy.optimize import basinhopping
 from scipy.sparse import csc_matrix as sp_csc_matrix
 from scipy.sparse import csr_matrix as sp_csr_matrix
@@ -161,6 +161,18 @@ class _SVDBase:
             )
         self._data = data
         self._ub = self._u.T @ data
+
+    @property
+    def bounds(self) -> tuple[float, float]:
+        """Bounds of log10 of regularization parameter :math:`\\lambda`.
+
+        :math:`\\lambda` is defined in the range of this bounds like
+        :math:`\\log_{10}\\lambda \\in (\\log_{10}\\sigma_r^2, \\log_{10}\\sigma_1^2)`,
+        where :math:`\\sigma_i` is the :math:`i`-th singular value.
+
+        If users do not specify the bounds for the optimization, this bounds are used by default.
+        """
+        return (2.0 * log10(self._s[-1]), 2.0 * log10(self._s[0]))
 
     # -------------------------------------------------------------------------
     # Define methods calculating the residual norm, regularization norm, etc.
@@ -337,7 +349,7 @@ class _SVDBase:
 
     def solve(
         self,
-        bounds: tuple[float, float] = (-20.0, 2.0),
+        bounds: tuple[float, float] | None = None,  # TODO: implement only one bound
         stepsize: float = 10,
         **kwargs,
     ) -> tuple[ndarray, dict]:
@@ -351,7 +363,7 @@ class _SVDBase:
         Parameters
         ----------
         bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
+            bounds of log10 of regularization parameter, by default :obj:`.bounds`.
         stepsize
             stepsize of optimization, by default 10.
         **kwargs
@@ -364,6 +376,9 @@ class _SVDBase:
             and `res` is the :obj:`~scipy.optimize.OptimizeResult` object returned by
             :obj:`~scipy.optimize.basinhopping` function.
         """
+        # generate bounds
+        bounds = self._generate_bounds(bounds)
+
         # initial guess of log10 of regularization parameter
         init_logbeta = 0.5 * (bounds[0] + bounds[1])
 
@@ -386,6 +401,33 @@ class _SVDBase:
 
     def _objective_function(self, logbeta: float) -> float:
         raise NotImplementedError("To be defined in subclass.")
+
+    def _generate_bounds(
+        self, bounds: tuple[float | None, float | None] | None
+    ) -> tuple[float, float]:
+        default_lower = self.bounds[0]
+        default_upper = self.bounds[1]
+
+        if bounds is None:
+            bounds = (default_lower, default_upper)
+
+        if not isinstance(bounds, tuple):
+            raise TypeError("bounds must be a tuple.")
+
+        if len(bounds) != 2:
+            raise ValueError("bounds must contain two elements.")
+
+        lower, upper = bounds
+
+        if lower is None:
+            lower = default_lower
+        if upper is None:
+            upper = default_upper
+
+        if lower >= upper:
+            raise ValueError("the first element of bounds must be smaller than the second one.")
+
+        return (lower, upper)
 
 
 def compute_svd(
@@ -424,7 +466,7 @@ def compute_svd(
     Returns
     -------
     tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-        singular value vectors :math:`\\mathbf{s}\\in\\mathbb{R}^r`, left singular vectors
+        singular value vector :math:`\\mathbf{s}\\in\\mathbb{R}^r`, left singular vectors
         :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}` and inverted solution basis
         :math:`\\tilde{\\mathbf{V}}`
 
@@ -548,7 +590,7 @@ def compute_svd(
         A_mat: ndarray = gmat @ Pt_Lt_inv.A
 
         # compute SVD components
-        sp.text = _base_text + f"(computing SVD components directory{_use_gpu_text})"
+        sp.text = _base_text + f"(computing singular value decomposition{_use_gpu_text})"
         kwargs = dict(overwrite_a=True) if not _cupy_available else {}
         u_vecs, singular, vh = svd(asarray(A_mat), full_matrices=False, **kwargs)
 

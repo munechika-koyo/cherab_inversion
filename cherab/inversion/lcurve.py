@@ -63,7 +63,11 @@ class Lcurve(_SVDBase):
         axes
             matplotlib Axes object, by default None.
         bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
+            bounds of log10 of regularization parameter, by default
+            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+            If you set the bounds like ``(-10, None)``, the higher bound is set to
+            :math:`\\log_{10}\\sigma_1^2`.
+            Raise an error if a >= b in (a, b).
         n_beta
             number of regularization parameters, by default 100.
         scatter_plot
@@ -79,6 +83,9 @@ class Lcurve(_SVDBase):
         tuple of :obj:`~matplotlib.figure.Figure` and :obj:`~matplotlib.axes.Axes`
             (fig, axes), each of which is matplotlib objects applied some properties.
         """
+        # get bounds of log10 of regularization parameter
+        bounds = self._generate_bounds(bounds)
+
         # define regularization parameters
         lambdas = np.logspace(*bounds, n_beta)
 
@@ -140,8 +147,8 @@ class Lcurve(_SVDBase):
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float, float] = (-20.0, 2.0),
-        n_beta: int = 100,
+        bounds: tuple[float | None, float | None] | None = None,
+        n_beta: int = 500,
         show_max_curvature_line: bool = True,
     ) -> tuple[Figure, Axes]:
         """Plotting the curvature of L-curve as function of regularization parameter.
@@ -155,9 +162,13 @@ class Lcurve(_SVDBase):
         axes
             matplotlib Axes object, by default None.
         bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
+            bounds of log10 of regularization parameter, by default
+            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+            If you set the bounds like ``(-10, None)``, the higher bound is set to
+            :math:`\\log_{10}\\sigma_1^2`.
+            Raise an error if a >= b in (a, b).
         n_beta
-            number of regularization parameters, by default 100.
+            number of regularization parameters, by default 500.
         show_max_curvature_line
             whether or not to plot the vertical red dashed line at the maximum curvature point,
             by default True.
@@ -167,6 +178,9 @@ class Lcurve(_SVDBase):
         tuple[:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`]
             (fig, axes), each of which is matplotlib objects applied some properties.
         """
+        # get bounds of log10 of regularization parameter
+        bounds = self._generate_bounds(bounds)
+
         # define regularization parameters
         lambdas = np.logspace(*bounds, n_beta)
 
