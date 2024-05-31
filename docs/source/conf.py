@@ -162,6 +162,7 @@ intersphinx_mapping = {
     "raysect": ("http://www.raysect.org", None),
     "cherab": ("https://www.cherab.info", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
+    "cupy": ("https://docs.cupy.dev/en/stable/", None),
 }
 
 intersphinx_timeout = 10
