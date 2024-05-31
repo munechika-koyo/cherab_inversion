@@ -1,4 +1,5 @@
 """Module for GCV crieterion inversion."""
+
 from __future__ import annotations
 
 import numpy as np

@@ -1,4 +1,5 @@
 """Inverses provided data using Minimum Fisher Regularization (MFR) scheme."""
+
 from __future__ import annotations
 
 import pickle

@@ -134,9 +134,7 @@ class TestTomographyData:
 
         # evaluate pedestal -> core function
         if radius_from_axis <= LCFS_RADIUS:
-            central_radiatior = RADIATION_PEAK * np.exp(
-                -(radius_from_axis**2) / CENTRE_PEAK_WIDTH
-            )
+            central_radiatior = RADIATION_PEAK * np.exp(-(radius_from_axis**2) / CENTRE_PEAK_WIDTH)
 
             ring_radiator = (
                 RADIATION_PEAK * np.cos(bearing) * np.exp(-(radius_from_ring**2) / RING_WIDTH)

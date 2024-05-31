@@ -1,4 +1,5 @@
 """Module for L-curve crietrion."""
+
 from __future__ import annotations
 
 import numpy as np

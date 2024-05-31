@@ -1,5 +1,6 @@
 """This module provides a function for parsing a string in scientific notation and returning a
 formatted string."""
+
 from decimal import Decimal
 
 __all__ = ["parse_scientific_notation"]

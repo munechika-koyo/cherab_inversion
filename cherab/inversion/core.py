@@ -7,6 +7,7 @@ The implementation is based on the `inversion theory`_.
 
 .. _inversion theory: ../user/theory/inversion.ipynb
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable
