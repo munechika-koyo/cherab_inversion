@@ -12,5 +12,7 @@ This section describes some of the inversion theory.
 
    inversion
    lcurve
+   press
    gcv
+   mfr
    derivative
