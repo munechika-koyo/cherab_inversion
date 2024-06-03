@@ -102,7 +102,7 @@ html[data-theme=dark] .sd-shadow-sm {
 
 html[data-theme=dark] .sd-card .sd-card-header {
     background-color: var(--pst-color-background);
-    color: #150458 !important;
+    color: #DCDCDC !important;
 }
 
 html[data-theme=dark] .sd-card .sd-card-footer {
