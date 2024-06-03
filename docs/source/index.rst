@@ -27,6 +27,7 @@ so this documentation is gradually updated, and welcome your contribution.
 .. grid:: 2
 
     .. grid-item-card::
+        :columns: 12 6 6 6
         :img-top: _static/images/index-images/getting_started.png
 
         Getting Started
@@ -45,6 +46,7 @@ so this documentation is gradually updated, and welcome your contribution.
             To the installation
 
     .. grid-item-card::
+        :columns: 12 6 6 6
         :img-top: _static/images/index-images/user_guide.png
 
         User Guide
@@ -63,6 +65,7 @@ so this documentation is gradually updated, and welcome your contribution.
             To the user guide
 
     .. grid-item-card::
+        :columns: 12 6 6 6
         :img-top: _static/images/index-images/example_gallery.png
 
         Example Gallery
@@ -81,6 +84,7 @@ so this documentation is gradually updated, and welcome your contribution.
             To the example gallery
 
     .. grid-item-card::
+        :columns: 12 6 6 6
         :img-top: _static/images/index-images/api.png
 
         API Reference
