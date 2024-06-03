@@ -131,8 +131,8 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         },
     ],
-    "pygment_light_style": "default",
-    "pygment_dark_style": "native",
+    "pygments_light_style": "default",
+    "pygments_dark_style": "native",
     "switcher": {
         "json_url": json_url,
         "version_match": version_match,
