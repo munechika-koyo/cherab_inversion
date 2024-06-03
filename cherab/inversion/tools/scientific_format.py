@@ -18,8 +18,8 @@ def parse_scientific_notation(sci_str: str, scilimits: tuple = (-1, 1), useLatex
         A string in scientific notation.
         Must be in the form of 'mantissa' + 'e' + 'exponent'.
     scilimits : tuple, (m, n), optional
-        Scientific notation parsing is conducted only for numbers outside the range :math:`10^m` to
-        :math:`10^n`, by default (-1, 1).
+        Scientific notation parsing is conducted only for numbers outside the range 10 :sup:`m` to
+        10 :sup:`n`, by default (-1, 1).
     useLatex
         If True, the output string will be formatted using LaTeX.
 
