@@ -4,9 +4,14 @@
     "url": "https://cherab-inversion.readthedocs.io/en/latest/"
   },
   {
+    "name": "0.2",
+    "version": "v0.2.0",
+    "url": "https://cherab-inversion.readthedocs.io/en/v0.2.0/",
+    "preferred": true
+  },
+  {
     "name": "0.1",
     "version": "v0.1.5",
-    "url": "https://cherab-inversion.readthedocs.io/en/v0.1.5/",
-    "preferred": true
+    "url": "https://cherab-inversion.readthedocs.io/en/v0.1.5/"
   }
 ]
