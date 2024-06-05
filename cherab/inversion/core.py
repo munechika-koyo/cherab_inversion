@@ -2,13 +2,17 @@
 
 This module includes the usefull functions or base classes for the ill-posed inversion calculation
 based on Singular Value Decomposition (SVD) method.
+
+The implementation is based on the `inversion theory`_.
+
+.. _inversion theory: ../user/theory/inversion.ipynb
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable
 
-from numpy import arange, asarray, floating, ndarray, ones_like, sqrt
-from numpy.linalg import norm
+from numpy import arange, asarray, log10, ndarray, ones_like, sqrt
 from scipy.optimize import basinhopping
 from scipy.sparse import csc_matrix as sp_csc_matrix
 from scipy.sparse import csr_matrix as sp_csr_matrix
@@ -25,6 +29,12 @@ class _SVDBase:
 
     .. note::
 
+        The implementation of this class is based on the `inversion theory`_.
+
+    .. _inversion theory: ../user/theory/inversion.ipynb
+
+    .. note::
+
         This class is designed to be inherited by subclasses which define the objective function
         to optimize the regularization parameter :math:`\\lambda` using the
         :obj:`~scipy.optimize.basinhopping` function.
@@ -33,90 +43,13 @@ class _SVDBase:
     Parameters
     ----------
     s : vector_like
-        singular values of :math:`A`
-        like :math:`\\sigma = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
+        singular values like :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
     u : array_like
-        left singular vectors of :math:`A`
-        like :math:`U = (u_1, u_2, ...) \\in \\mathbb{R}^{m\\times r}`
+        left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
     basis : array_like
-        inverted solution basis :math:`\\tilde{V} \\in \\mathbb{R}^{n\\times r}`.
-        Here, :math:`\\tilde{V} = L^{-1}V`, where :math:`V\\in\\mathbb{R}^{n\\times r}` is
-        the right singular vectors of :math:`A` and :math:`L^{-1}` is the inverse of
-        regularization operator :math:`L \\in \\mathbb{R}^{n\\times n}`.
+        inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
     data : vector_like
-        given data for inversion calculation forms as a vector in :math:`\\mathbb{R}^m`
-
-    Notes
-    -----
-    This class offers the calculation of the inverted solution defined by
-
-    .. math::
-
-        Ax = b,
-
-    where :math:`A` is a matrix in :math:`\\mathbb{R}^{m\\times n}`, :math:`x` is a solution vector
-    in :math:`\\mathbb{R}^n` and :math:`b` is a given data vector in :math:`\\mathbb{R}^m`.
-
-    The solution is usually calculated by the least square method, which is defined by
-
-    .. math::
-
-        x_\\text{ls} :&= \\text{argmin} \\{ ||Ax-b||^2 \\} \\
-
-                      &= ( A^\\mathsf{T} A )^{-1} A^\\mathsf{T} b.
-
-    This problem is often ill-posed, so the solution is estimated by adding the regularization term
-    like :math:`||Lx||^2` to the right hand side of the equation:
-
-    .. math::
-
-        x_\\lambda :&= \\text{argmin} \\{ ||Ax-b||^2 + \\lambda ||Lx||^2 \\} \\
-
-                    &= (A^\\mathsf{T} A + \\lambda L^\\mathsf{T} L)^{-1} A^\\mathsf{T}\\ b,
-
-    where :math:`\\lambda\\in\\mathbb{R}` is the reguralization parameter and
-    :math:`L \\in \\mathbb{R}^{n\\times n}` is a matrix operator in regularization term
-    (e.g. laplacian).
-
-    The SVD components are based on the following equation:
-
-    .. math::
-
-        U\\Sigma V^\\mathsf{T}
-            = \\begin{pmatrix}
-                u_1 & \\cdots & u_r
-              \\end{pmatrix}
-              \\ \\text{diag}(\\sigma_1,..., \\sigma_r)
-              \\ \\begin{pmatrix}
-                v_1 & \\cdots & v_r
-              \\end{pmatrix}^\\mathsf{T}
-            = AL^{-1}
-
-    Using this components allows to reconstruct the estimated solution :math:`x_\\lambda` as follows:
-
-    .. math::
-
-        x_\\lambda &= \\tilde{V}W\\Sigma^{-1}U^\\mathsf{T}b \\\\
-                   &= \\begin{pmatrix} \\tilde{v}_1 & \\cdots & \\tilde{v}_r \\end{pmatrix}
-                      \\ \\text{diag}(w_1(\\lambda), ..., w_r(\\lambda))
-                      \\ \\text{diag}(\\sigma_1^{-1}, ..., \\sigma_r^{-1})
-                      \\begin{pmatrix}
-                        u_1^\\mathsf{T}b \\\\
-                        \\vdots \\\\
-                        u_r^\\mathsf{T}b
-                      \\end{pmatrix} \\\\
-                   &= \\sum_{i=0}^{r} w_i(\\lambda)\\frac{u_i^\\mathsf{T} b}{\\sigma_i} \\tilde{v}_i,
-
-    where :math:`r` is the rank of :math:`A` (:math:`r \\leq \\min(m, n)`), :math:`w_i` is
-    the window function, :math:`\\sigma_i` is the singular value of :math:`A` and
-    :math:`\\tilde{v}_i` is a :math:`i`-th column vector of the inverted solution basis:
-    :math:`\\tilde{V} = L^{-1}V \\in \\mathbb{R}^{n\\times r}`.
-
-    :math:`w_i` is defined as follows:
-
-    .. math::
-
-        w_i(\\lambda) \\equiv \\frac{1}{1 + \\lambda / \\sigma_i^2}.
+        given data as a vector in :math:`\\mathbb{R}^M`, by default None.
     """
 
     def __init__(self, s, u, basis, data=None):
@@ -127,9 +60,12 @@ class _SVDBase:
 
         u = asarray(u, dtype=float)
         if u.ndim != 2:
-            raise ValueError("u must be a matrix.")
+            raise ValueError("u must have two dimensions.")
         if s.size != u.shape[1]:
-            raise ValueError("the number of columns of u must be same as that of singular values")
+            raise ValueError(
+                "the number of columns of u must be same as that of singular values.\n"
+                + f"({u.shape[1]=} != {s.size=})"
+            )
 
         # set SVD components
         self._s = s
@@ -170,31 +106,28 @@ class _SVDBase:
 
     @property
     def s(self) -> ndarray:
-        """Singular values of :math:`A`
+        """Singular values :math:`\\mathbf{s}`.
 
         Singular values form a vector array like
-        :math:`\\sigma = (\\sigma_1, \\sigma_2,...)\\in\\mathbb{R}^r`
+        :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2,...)\\in\\mathbb{R}^r`
         """
         return self._s
 
     @property
     def u(self) -> ndarray:
-        """Left singular vectors of :math:`A`.
+        """Left singular vectors :math:`\\mathbf{U}`.
 
         Left singular vactors form a matrix containing column vectors like
-        :math:`U = (u_1, u_2,...)\\in\\mathbb{R}^{m\\times r}`
+        :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
         """
         return self._u
 
     @property
     def basis(self) -> ndarray:
-        """The inverted solution basis :math:`\\tilde{V} \\in \\mathbb{R}^{n\\times r}`.
+        """Inverted solution basis :math:`\\tilde{\\mathbf{V}}`.
 
-        If the regularization term is described as :math:`||Lx||^2`, then
-        :math:`\\tilde{V} = L^{-1}V \\in \\mathbb{R}^{n\\times r}`,
-        where :math:`V\\in\\mathbb{R}^{n\\times r}` is the right singular vectors of :math:`A` and
-        :math:`L^{-1}` is the inverse of regularization operator
-        :math:`L \\in \\mathbb{R}^{n\\times n}`.
+        The inverted solution basis is a matrix containing column vectors like
+        :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{n\\times r}`.
         """
         return self._basis
 
@@ -204,13 +137,17 @@ class _SVDBase:
             raise TypeError("basis must be a numpy.ndarray")
         if mat.shape[1] != self._s.size:
             raise ValueError(
-                "the number of columns of inverted solution basis must be same as that of singular values"
+                "the number of columns of inverted solution basis must be same as that of singular values.\n"
+                + f"({mat.shape[1]=} != {self._s.size=})"
             )
         self._basis = mat
 
     @property
     def data(self) -> ndarray:
-        """Given data for inversion calculation."""
+        """Given data for inversion calculation :math:`\\mathbf{b}`.
+
+        The given data is a vector array like :math:`\\mathbf{b} \\in \\mathbb{R}^M`.
+        """
         return self._data
 
     @data.setter
@@ -219,25 +156,39 @@ class _SVDBase:
         if data.ndim != 1:
             raise ValueError("data must be a vector.")
         if data.size != self._u.shape[0]:
-            raise ValueError("data size must be the same as the number of rows of U matrix")
+            raise ValueError(
+                "data size must be the same as the number of rows of U matrix.\n"
+                + f"({data.size=} != {self._u.shape[0]=})"
+            )
         self._data = data
-        self._ub = self._u.T @ data  # U^T b
+        self._ub = self._u.T @ data
+
+    @property
+    def bounds(self) -> tuple[float, float]:
+        """Bounds of log10 of regularization parameter :math:`\\lambda`.
+
+        :math:`\\lambda` is defined in the range of this bounds like
+        :math:`\\log_{10}\\lambda \\in (\\log_{10}\\sigma_r^2, \\log_{10}\\sigma_1^2)`,
+        where :math:`\\sigma_i` is the :math:`i`-th singular value.
+
+        If users do not specify the bounds for the optimization, this bounds are used by default.
+        """
+        return (2.0 * log10(self._s[-1]), 2.0 * log10(self._s[0]))
 
     # -------------------------------------------------------------------------
-    # Define methods calculating some norms, window function, etc...
+    # Define methods calculating the residual norm, regularization norm, etc.
     # -------------------------------------------------------------------------
 
-    def w(self, beta: float) -> ndarray:
-        """Calculate window function using regularization parameter :math:`\\lambda`.
+    def filter(self, beta: float) -> ndarray:
+        """Calculate the filter factors :math:`f_{\\lambda, i}`.
 
-        The window function is defined as follows:
+        The filter factors are diagonal elements of the filter matrix :math:`\\mathbf{F}_\\lambda`,
+        and can be expressed with SVD components as follows:
 
         .. math::
 
-            w(\\lambda) \\equiv \\frac{1}{1 + \\lambda / \\sigma^2},
+            f_{\\lambda, i} = \\left( 1 + \\frac{\\lambda}{\\sigma_i^2} \\right)^{-1}.
 
-        where :math:`\\sigma` is the singular value of :math:`A`.
-        Because :math:`\\sigma` is a vector, the window function is also a vector.
 
         Parameters
         ----------
@@ -247,34 +198,20 @@ class _SVDBase:
         Returns
         -------
         numpy.ndarray (N, )
-            vector of window function
+            1-D array containing filter factors, the length of which is the same as the number of
+            singular values.
         """
         return 1.0 / (1.0 + beta / self._s**2.0)
 
-    def rho(self, beta: float) -> floating:
-        """Calculate squared residual norm: :math:`\\rho = ||Ax_\\lambda - b||^2`.
+    def rho(self, beta: float) -> float:
+        """Calculate squared residual norm :math:`\\rho`.
 
-        :math:`\\rho` can be calculated with SVD components as follows:
+        :math:`\\rho` can be expressed with SVD components as follows:
 
         .. math::
 
-            \\rho &= \\left\\|
-                        U (I_r - W) U^\\mathsf{T} b
-                    \\right\\|^2\\\\
-                  &= \\left\\|
-                        \\begin{pmatrix} u_1 & \\cdots & u_r \\end{pmatrix}
-                        (I_r - W) U^\\mathsf{T} b
-                     \\right\\|^2\\\\
-                  &= \\left\\|
-                        (I_r - W) U^\\mathsf{T} b
-                     \\right\\|^2
-                     \\quad(
-                        \\because U^\\mathsf{T}U = I_r,
-                        \\quad\\text{i.e.}\\quad u_i\\cdot u_j = \\delta_{ij}
-                      ),
-
-        where :math:`W = \\text{diag}(w_1(\\lambda), ..., w_r(\\lambda))`
-        and :math:`w_i(\\lambda)` is the window function.
+            \\rho &= \\| \\mathbf{T}\\mathbf{x}_\\lambda - \\mathbf{b} \\|_2^2\\\\
+                  &= \\| (\\mathbf{F}_\\lambda - \\mathbf{I}_r)\\mathbf{U}^\\mathsf{T}\\mathbf{b} \\|_2^2.
 
         Parameters
         ----------
@@ -283,98 +220,67 @@ class _SVDBase:
 
         Returns
         -------
-        numpy.floating
-            squared residual norm
+        float
+            squared residual norm :math:`\\rho`
         """
-        return norm((1.0 - self.w(beta)) * self._ub) ** 2.0
+        factor = (self.filter(beta) - 1.0) ** 2.0
+        return self._ub.dot(factor * self._ub)
 
-    def eta(self, beta: float) -> floating:
-        """Calculate squared regularization norm: :math:`\\eta = ||Lx_\\lambda||^2`
+    def eta(self, beta: float) -> float:
+        """Calculate squared regularization norm :math:`\\eta`.
+
+        :math:`\\eta` can be expressed with SVD components as follows:
+
+        .. math::
+
+            \\eta &= \\mathbf{x}_\\lambda^\\mathsf{T}\\mathbf{H}\\mathbf{x}_\\lambda\\\\
+                  &= \\|\\mathbf{F}_\\lambda\\mathbf{S}^{-1}\\mathbf{U}^\\mathsf{T}\\mathbf{b}\\|_2^2
+
+        Parameters
+        ----------
+        beta
+            regularization parameter
+
+        Returns
+        -------
+        float
+            squared regularization norm :math:`\\eta`
+        """
+        factor = (self.filter(beta) / self._s) ** 2.0
+        return self._ub.dot(factor * self._ub)
+
+    def eta_diff(self, beta: float) -> float:
+        """Calculate differential of :math:`\\eta` with respect to regularization parameter
+        :math:`\\lambda`.
 
         :math:`\\eta` can be calculated with SVD components as follows:
 
         .. math::
 
-            \\eta &= \\left\\|
-                        V W \\Sigma^{-1} U^\\mathsf{T} b
-                    \\right\\|^2\\\\
-                  &= \\left\\|
-                        \\begin{pmatrix} v_1 & \\cdots & v_r \\end{pmatrix}
-                        W \\Sigma^{-1} U^\\mathsf{T} b
-                     \\right\\|^2\\\\
-                  &= \\left\\|
-                        W \\Sigma^{-1} U^\\mathsf{T} b
-                     \\right\\|^2
-                     \\quad(
-                        \\because V^\\mathsf{T}V = I_r,
-                        \\quad\\text{i.e.}\\quad v_i\\cdot v_j = \\delta_{ij}
-                      ),
-
-        where :math:`W = \\text{diag}(w_1(\\lambda), ..., w_r(\\lambda))`
-        and :math:`w_i(\\lambda)` is the window function.
+            \\eta' =
+                \\frac{2}{\\lambda}
+                (\\mathbf{U}^\\mathsf{T}\\mathbf{b})^\\mathsf{T}
+                (\\mathbf{F}_\\lambda - \\mathbf{I}_r)
+                \\mathbf{F}_\\lambda^2\\mathbf{S}^{-2}\\
+                \\mathbf{U}^\\mathsf{T}\\mathbf{b}.
 
         Parameters
         ----------
         beta
-            regularization parameter
+            regularization parameter :math:`\\lambda`
 
         Returns
         -------
-        numpy.floating
-            squared regularization norm
+        float
+            differential of :math:`\\eta` with respect to :math:`\\lambda`
         """
-        return norm((self.w(beta) / self._s) * self._ub) ** 2.0
+        filters = self.filter(beta)
+        factor = (filters - 1.0) * (filters / self._s) ** 2.0
+        return 2.0 * self._ub.dot(factor * self._ub) / beta
 
-    def eta_diff(self, beta: float) -> floating:
-        """Calculate differential of `eta`: :math:`\\eta' = \\frac{d\\eta}{d\\lambda}`
-
-        Before calculating :math:`\\eta'`, let us calculate the differential of window function
-        matrix :math:`W = \\text{diag}(w_1(\\lambda), ..., w_r(\\lambda))` using SVD components:
-
-        .. math::
-
-            \\frac{dW}{d\\lambda}
-                &= \\frac{d}{d\\lambda}
-                    \\text{diag}\\left(..., \\frac{1}{1 + \\lambda/\\sigma_i^2}, ...\\right)
-                    \\quad \\left(\\because w_i(\\lambda) = \\frac{1}{1 + \\lambda/\\sigma_i^2} \\right)\\\\
-                &= \\text{diag}\\left(
-                    ..., -\\frac{\\sigma_i^{-2}}{(1 + \\lambda/\\sigma_i^2)^2}, ...
-                    \\right)\\\\
-                &= - W^2 \\Sigma^{-2}\\\\
-                &= - \\frac{1}{\\lambda} W (I_r - W). \\quad(\\because I_r - W = \\lambda W \\Sigma^{-2})
-
-        Therefore :math:`\\eta'` can be calculated as follows:
-
-        .. math::
-
-            \\eta' &= \\frac{d}{d\\lambda} \\left\\|W\\Sigma^{^-1}U^\\mathsf{T}b\\right\\|\\\\
-                   &= a^\\mathsf{T}\\left(\\frac{d}{d\\lambda} W^2 \\right) a
-                        \\quad(\\because a\\equiv\\Sigma^{-1}U^\\mathsf{T}b, \\ W^2 = W^\\mathsf{T}W)\\\\
-                   &= 2a^\\mathsf{T}W\\frac{dW}{d\\lambda}a\\\\
-                   &= -\\frac{2}{\\lambda} a^\\mathsf{T} W^2 (I_r - W) a\\\\
-                   &= -\\frac{2}{\\lambda} a^\\mathsf{T} W^\\mathsf{T} (I_r - W)^{\\mathsf{T}/2}
-                        (I_r - W)^{1/2} W a\\\\
-                   &= -\\frac{2}{\\lambda}
-                        \\left\\|
-                            \\sqrt{I_r - W}\\ W \\Sigma^{-1} U^\\mathsf{T} b
-                        \\right\\|^2.
-
-
-        Parameters
-        ----------
-        beta
-            regularization parameter
-
-        Returns
-        -------
-        numpy.floating
-            differential of squared regularization norm
-        """
-        w = self.w(beta)
-        return (-2.0 / beta) * norm(sqrt(1.0 - w) * (w / self._s) * self._ub) ** 2.0
-
-    def residual_norm(self, beta: float) -> ndarray:
-        """Return the residual norm: :math:`\\sqrt{\\rho} = ||Ax_\\lambda - b||`
+    def residual_norm(self, beta: float) -> float:
+        """Return the residual norm:
+        :math:`\\sqrt{\\rho} = \\|\\mathbf{T}\\mathbf{x}_\\lambda - \\mathbf{b}\\|_2`
 
         Parameters
         ----------
@@ -384,12 +290,13 @@ class _SVDBase:
         Returns
         -------
         float
-            residual norm
+            residual norm :math:`\\sqrt{\\rho}`
         """
         return sqrt(self.rho(beta))
 
     def regularization_norm(self, beta: float) -> float:
-        """Return the residual norm: :math:`\\sqrt{\\eta} = ||L x_\\lambda||`
+        """Return the regularization norm:
+        :math:`\\sqrt{\\eta} = \\sqrt{\\mathbf{x}_\\lambda^\\mathsf{T}\\mathbf{H}\\mathbf{x}_\\lambda}`
 
         Parameters
         ----------
@@ -399,7 +306,7 @@ class _SVDBase:
         Returns
         -------
         float
-            regularization norm
+            regularization norm :math:`\\sqrt{\\eta}`
         """
         return sqrt(self.eta(beta))
 
@@ -407,27 +314,19 @@ class _SVDBase:
     # calculating the inverted solution using SVD components
     # ------------------------------------------------------
 
-    def inverted_solution(self, beta: float) -> ndarray:
-        """Calculate the inverted solution using SVD components at given regularization parameter.
+    def solution(self, beta: float) -> ndarray:
+        """Calculate the solution vector :math:`\\mathbf{x}_\\lambda`.
 
-        The solution is calculated as follows:
+        The solution vector :math:`\\mathbf{x}_\\lambda` can be expressed with SVD components as
 
         .. math::
 
-            x_\\lambda
+            \\mathbf{x}_\\lambda
             =
-            \\tilde{V}W\\Sigma^{-1}U^\\mathsf{T}b
-            =
-            \\tilde{V}
-            \\begin{pmatrix}
-                w_1(\\lambda)\\frac{1}{\\sigma_1} & & \\\\
-                & \\ddots & \\\\
-                & & w_r(\\lambda)\\frac{1}{\\sigma_r}
-            \\end{pmatrix}
-            U^\\mathsf{T} b,
-
-        where :math:`\\tilde{V} \\in \\mathbb{R}^{n\\times r}` is the inverted solution basis,
-        which is defined by :obj:`.basis` as a property.
+            \\tilde{\\mathbf{V}}
+            \\mathbf{F}_\\lambda
+            \\mathbf{S}^{-1}
+            \\mathbf{U}^\\mathsf{T}\\mathbf{b}.
 
         Parameters
         ----------
@@ -436,10 +335,10 @@ class _SVDBase:
 
         Returns
         -------
-        vector_like (N, )
-            solution vector
+        numpy.ndarray (N, )
+            solution vector :math:`\\mathbf{x}_\\lambda`
         """
-        return self._basis.dot((self.w(beta) / self._s) * self._ub)
+        return self._basis @ ((self.filter(beta) / self._s) * self._ub)
 
     # ------------------------------------------------------
     # Optimization for the regularization parameter
@@ -451,7 +350,7 @@ class _SVDBase:
 
     def solve(
         self,
-        bounds: tuple[float, float] = (-20.0, 2.0),
+        bounds: tuple[float, float] | None = None,  # TODO: implement only one bound
         stepsize: float = 10,
         **kwargs,
     ) -> tuple[ndarray, dict]:
@@ -465,7 +364,7 @@ class _SVDBase:
         Parameters
         ----------
         bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
+            bounds of log10 of regularization parameter, by default :obj:`.bounds`.
         stepsize
             stepsize of optimization, by default 10.
         **kwargs
@@ -474,9 +373,13 @@ class _SVDBase:
         Returns
         -------
         tuple of :obj:`~numpy.ndarray` and :obj:`~scipy.optimize.OptimizeResult`
-            (solution, res), where solution is the inverted solution vector
-            and res is the result of optimization generated by :obj:`~scipy.optimize.basinhopping`.
+            (`sol`, `res`), where `sol` is the 1-D array of the solution vector
+            and `res` is the :obj:`~scipy.optimize.OptimizeResult` object returned by
+            :obj:`~scipy.optimize.basinhopping` function.
         """
+        # generate bounds
+        bounds = self._generate_bounds(bounds)
+
         # initial guess of log10 of regularization parameter
         init_logbeta = 0.5 * (bounds[0] + bounds[1])
 
@@ -493,34 +396,69 @@ class _SVDBase:
         self._lambda_opt = 10 ** res.x[0]
 
         # optmized solution
-        sol = self.inverted_solution(beta=self._lambda_opt)
+        sol = self.solution(beta=self._lambda_opt)
 
         return sol, res
 
-    def _objective_function(self, logbeta: float) -> floating | float:
+    def _objective_function(self, logbeta: float) -> float:
         raise NotImplementedError("To be defined in subclass.")
+
+    def _generate_bounds(
+        self, bounds: tuple[float | None, float | None] | None
+    ) -> tuple[float, float]:
+        default_lower = self.bounds[0]
+        default_upper = self.bounds[1]
+
+        if bounds is None:
+            bounds = (default_lower, default_upper)
+
+        if not isinstance(bounds, tuple):
+            raise TypeError("bounds must be a tuple.")
+
+        if len(bounds) != 2:
+            raise ValueError("bounds must contain two elements.")
+
+        lower, upper = bounds
+
+        if lower is None:
+            lower = default_lower
+        if upper is None:
+            upper = default_upper
+
+        if lower >= upper:
+            raise ValueError("the first element of bounds must be smaller than the second one.")
+
+        return (lower, upper)
 
 
 def compute_svd(
     gmat,
-    hmat: sp_csc_matrix,
+    hmat,
     use_gpu=False,
     sp: Spinner | DummySpinner | None = None,
 ) -> tuple[ndarray, ndarray, ndarray]:
-    """Computes singular value decomposition (SVD) components of the geometry matrix :math:`T` and
-    regularization matrix :math:`H`.
+    """Computes singular value decomposition (SVD) components of the geometry matrix
+    :math:`\\mathbf{T}` and regularization matrix :math:`\\mathbf{H}`.
+
+    .. note::
+
+        The calculation procedure is based on the `inversion theory`_.
+
+        .. _inversion theory: ../user/theory/inversion.ipynb
 
     Parameters
     ----------
     gmat : numpy.ndarray | scipy.sparse.spmatrix
         matrix for a linear equation which is called geometry matrix in tomography field
-        spesifically, :math:`T\\in\\mathbb{R}^{m\\times n}`
-    hmat : scipy.sparse.csc_matrix
-        regularization matrix :math:`H \\in \\mathbb{R}^{n\\times n}`
+        spesifically, :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}`
+    hmat : scipy.sparse.spmatrix
+        regularization matrix :math:`\\mathbf{H} \\in \\mathbb{R}^{N\\times N}`.
+        :math:`\\mathbf{H}` must be a positive definite matrix.
     use_gpu : bool, optional
         whether to use GPU or not, by default False.
         If True, the :obj:`cupy` functionalities is used instead of numpy and scipy ones when
-        calculating the inverse of :math:`L`, svd, inverted solution basis :math:`\\tilde{V}`, etc.
+        calculating the inverse of a sparse matrix, singular value decomposition,
+        inverted solution basis :math:`\\tilde{\\mathbf{V}}`, etc.
         Please ensure :obj:`cupy` is installed before using this option,
         otherwise an ModuleNotFoundError will be raised.
     sp : Spinner or DummySpinner, optional
@@ -529,105 +467,9 @@ def compute_svd(
     Returns
     -------
     tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-        singular values :math:`\\Sigma`, left singular vectors :math:`U` and inverted solution basis
-        :math:`\\tilde{V}`
-
-    Notes
-    -----
-    The ill-posed inversion equation can be solved by minimizing the following functional:
-
-    .. math::
-
-        \\Lambda(x) \\equiv \\|Tx - b\\|_2^2 + \\lambda O(x),\\label{eq:ill-posed}\\tag{1}
-
-    where :math:`A` is a matrix in :math:`\\mathbb{R}^{m\\times n}`, :math:`x` is a solution vector
-    in :math:`\\mathbb{R}^n` and :math:`b` is a given data vector in :math:`\\mathbb{R}^m`.
-    :math:`O(x)` denotes the regularization functional, and :math:`\\lambda` is the regularization
-    parameter balancing the data misfit and the regularization term.
-
-    The regularization functional is typically a quadratic form :math:`O(x) = x^\\mathsf{T} H x`,
-    with a symetric positive semi-definite matrix :math:`H \\in \\mathbb{R}^{n\\times n}`.
-
-    Hence, the  minimum of :math:`\\Lambda(x)` is given by the solution of the following equation:
-
-    .. math::
-
-        x = (T^\\mathsf{T} T + \\lambda H)^{-1}T^\\mathsf{T} b.\\label{eq:ill-posed-solution}\\tag{2}
-
-    A direct inversion of this equation is possible, however, it often needs a lot of computational
-    resources. Additionaly, to comprehend the solution, the cholesky decomposition and the singular
-    value decomposition (SVD) are often used [1]_.
-
-    1. Cholesky decomposition of :math:`H`
-
-        .. math::
-
-            PHP^\\mathsf{T} = LL^\\mathsf{T},
-
-        where :math:`L` is a lower triangular matrix and :math:`P` is a fill-reducing permutation.
-
-    2. SVD of :math:`A\\equiv TP^\\mathsf{T}L^{-\\mathsf{T}}`
-
-        Let us substitute the result of cholesky decomposition into :math:`\\ref{eq:ill-posed-solution}`:
-
-        .. math::
-
-            x &= \\left(T^\\mathsf{T} T + \\lambda H\\right)^{-1}T^\\mathsf{T} b \\\\
-              &= \\left(
-                    T^\\mathsf{T} T + \\lambda P^\\mathsf{T} L L^\\mathsf{T} P
-                 \\right)^{-1} T^\\mathsf{T} b \\\\
-              &= \\left[
-                    P^\\mathsf{T} L
-                        \\left(
-                            L^{-1}P T^\\mathsf{T}\\ TP^\\mathsf{T} L^{-\\mathsf{T}} + \\lambda I_n
-                        \\right)
-                    L^\\mathsf{T} P
-                  \\right]^{-1} T^\\mathsf{T} b \\\\
-              &= P^\\mathsf{T} L^{-\\mathsf{T}}\\left(A^\\mathsf{T}A + \\lambda I_n\\right)^{-1}
-                    A^\\mathsf{T} b \\quad(\\because A\\equiv TP^\\mathsf{T}L^{-\\mathsf{T}})\\\\
-              &= P^\\mathsf{T} L^{-\\mathsf{T}}
-                    \\left(
-                        V\\Sigma U^\\mathsf{T} U\\Sigma V^\\mathsf{T} + \\lambda I_n
-                    \\right)^{-1}
-                    V\\Sigma^\\mathsf{T} U^\\mathsf{T} b
-                    \\quad(\\because A = U\\Sigma V^\\mathsf{T}: \\text{SVD})\\\\
-              &= P^\\mathsf{T} L^{-\\mathsf{T}} V^{-\\mathsf{T}}
-                 \\left(\\Sigma^2 + \\lambda I_r\\right)^{-1}
-                 V^{-1}V \\Sigma U^\\mathsf{T} b \\\\
-              &= \\tilde{V}
-                 \\left(I_r + \\lambda \\Sigma^{-2}\\right)^{-1}
-                 \\Sigma^{-1} U^\\mathsf{T} b \\\\
-              &= \\tilde{V}W\\Sigma^{-1}U^\\mathsf{T} b,
-
-        where :math:`U \\in \\mathbb{R}^{m\\times r}` and :math:`V \\in \\mathbb{R}^{n\\times r}`
-        are the left and right singular vectors of :math:`A`, respectively,
-        :math:`\\Sigma \\in \\mathbb{R}^{r\\times r}` is the diagonal matrix of singular values,
-        :math:`r` is the rank of :math:`A` (:math:`r \\leq \\min(m, n)`),
-        :math:`\\tilde{V} \\equiv P^\\mathsf{T}L^{-\\mathsf{T}}V \\in \\mathbb{R}^{n\\times r}` is
-        the inverted solution basis,
-        :math:`W \\equiv \\text{diag}(w_1, w_2, ..., w_r) \\in \\mathbb{R}^{r\\times r}`
-        is the window function matrix and :math:`w_i` is the window function defined as follows:
-
-        .. math::
-
-            w_i \\equiv \\frac{1}{1 + \\lambda / \\sigma_i^2},
-
-        where :math:`\\sigma_i` is the :math:`i`-th singular value of :math:`A`.
-
-    As described above, the inverted solution :math:`x` can be finally calculated as follows:
-
-    .. math::
-
-        x = \\tilde{V}W\\Sigma^{-1}U^\\mathsf{T} b. \\label{eq:inverted-solution}\\tag{3}
-
-    This function computes and returns :math:`\\Sigma`, :math:`U` and :math:`\\tilde{V}`
-    using the above procedure if :math:`T` and :math:`H` are given.
-
-    References
-    ----------
-    .. [1] Odstrčil T, Pütterich T, Odstrčil M, Gude A, Igochine V, Stroth U; ASDEX Upgrade Team,
-        *Optimized tomography methods for plasma emissivity reconstruction at the ASDEX Upgrade
-        tokamak*, Rev. Sci. Instrum. **87**, 123505 (2016), :doi:`10.1063/1.4971367`
+        singular value vector :math:`\\mathbf{s}\\in\\mathbb{R}^r`, left singular vectors
+        :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}` and inverted solution basis
+        :math:`\\tilde{\\mathbf{V}}`
 
     Examples
     --------
@@ -656,8 +498,10 @@ def compute_svd(
         _cupy_available = False
 
     # check if hmat is a sparse matrix
-    if not isinstance(hmat, sp_csc_matrix):
-        raise TypeError("hmat must be a scipy.sparse.csc_matrix.")
+    if not issparse(hmat):
+        raise TypeError("hmat must be a scipy.sparse.spmatrix.")
+    else:
+        hmat = sp_csc_matrix(hmat)
 
     # check matrix dimension
     if hasattr(gmat, "ndim"):
@@ -747,7 +591,7 @@ def compute_svd(
         A_mat: ndarray = gmat @ Pt_Lt_inv.A
 
         # compute SVD components
-        sp.text = _base_text + f"(computing SVD components directory{_use_gpu_text})"
+        sp.text = _base_text + f"(computing singular value decomposition{_use_gpu_text})"
         kwargs = dict(overwrite_a=True) if not _cupy_available else {}
         u_vecs, singular, vh = svd(asarray(A_mat), full_matrices=False, **kwargs)
 

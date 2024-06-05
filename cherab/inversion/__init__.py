@@ -1,4 +1,5 @@
 """Subpackage for Inversion Problem."""
+
 # If a version with git hash was stored, use that instead
 from . import version  # noqa: F401
 

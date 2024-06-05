@@ -2,7 +2,7 @@
 requires = [
     "wheel",
     "numpy",
-    "meson-python >= 0.15",
+    "meson-python < 0.16",  # v0.16 has a error in install
     "cython >= 3.0",
     "tomli; python_version < '3.11'",
 ]
@@ -29,13 +29,15 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Cython",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Physics",
 ]
-requires-python = ">= 3.9, < 3.12"
+requires-python = ">= 3.9, < 3.13"
 dependencies = [
     "numpy",
     "scipy",
@@ -49,7 +51,7 @@ docs = [
     "docutils",
     "ipykernel",
     "ipywidgets",
-    "jinja2 < 3.1",
+    "jinja2 < 3.2",
     "nbconvert >= 7.3",
     "nbsphinx",
     "pillow",
@@ -62,6 +64,7 @@ docs = [
     "pandoc",
     "sphinx-codeautolink",
     "sphinx-github-style",
+    "sphinxcontrib-bibtex",
 ]
 dev = [
     "tomli; python_version < '3.11'",
@@ -73,7 +76,7 @@ dev = [
     "cython-lint",
     "pre-commit",
     "cython >= 3.0",
-    "meson-python >= 0.15",
+    "meson-python < 0.16",
     "pytest",
 ]
 

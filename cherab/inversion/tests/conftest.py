@@ -25,18 +25,18 @@ class TestData:
 
     Attributes
     ----------
-        matrix : numpy.ndarray(M, N)
-            Operator matrix.
-            M and N is the number of data and model, respectively.
-        x_true : numpy.ndarray(N, )
-            True model.
-        b : numpy.ndarray(M, )
-            Measured data with white noise.
+    matrix : numpy.ndarray(M, N)
+        Operator matrix.
+        M and N is the number of data and model, respectively.
+    x_true : numpy.ndarray(N, )
+        True model.
+    b : numpy.ndarray(M, )
+        Measured data with white noise.
     """
 
     def __init__(self):
-        _t = np.linspace(-np.pi * 0.5, np.pi * 0.5, num=100)
-        _s = np.linspace(-np.pi * 0.5, np.pi * 0.5, num=100)
+        _t = np.linspace(-np.pi * 0.5, np.pi * 0.5, num=64, endpoint=True)
+        _s = np.linspace(-np.pi * 0.5, np.pi * 0.5, num=64, endpoint=True)
 
         # construct operator matrix
         matrix = np.array([[kernel(i, j) for j in _t] for i in _s])
@@ -60,23 +60,23 @@ class TestTomographyData:
 
     Attributes
     ----------
-        matrix : numpy.ndarray(M, N)
-            Ray transfer matrix (geometry matrix).
-            M and N is the number of detectors and voxels, respectively.
-        phantom : numpy.ndarray(N, )
-            Tomographic phantom data.
-        phantom2d : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
-            Tomographic phantom data as a 2D array.
-            :math:`n_R` and :math:`n_Z` is the number of :math:`R` and :math:`Z` grid points.
-        b : numpy.ndarray(M, )
-            Measured data with white noise.
-        mask : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
-            Mask of the voxels.
-        voxel_map : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
-            Voxel map indicating which voxel each grid point belongs to.
-        grid_centres : numpy.ndarray(:math:`n_R`, :math:`n_Z`, 2)
-            Coordinates of the grid points. Each grid point is represented by a 2D vectorin the
-            :math:`R-Z` plane.
+    matrix : numpy.ndarray(M, N)
+        Ray transfer matrix (geometry matrix).
+        M and N is the number of detectors and voxels, respectively.
+    phantom : numpy.ndarray(N, )
+        Tomographic phantom data.
+    phantom2d : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
+        Tomographic phantom data as a 2D array.
+        :math:`n_R` and :math:`n_Z` is the number of :math:`R` and :math:`Z` grid points.
+    b : numpy.ndarray(M, )
+        Measured data with white noise.
+    mask : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
+        Mask of the voxels.
+    voxel_map : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
+        Voxel map indicating which voxel each grid point belongs to.
+    grid_centres : numpy.ndarray(:math:`n_R`, :math:`n_Z`, 2)
+        Coordinates of the grid points. Each grid point is represented by a 2D vectorin the
+        :math:`R-Z` plane.
     """
 
     def __init__(self):
@@ -110,13 +110,13 @@ class TestTomographyData:
 
         Parameters
         ----------
-            rz_point : numpy.ndarray(2, )
-                Coordinates of the point in the :math:`R-Z` plane.
+        rz_point : numpy.ndarray(2, )
+            Coordinates of the point in the :math:`R-Z` plane.
 
         Returns
         -------
-            float
-                Emission value at the given point.
+        float
+            Emission value at the given point.
         """
         PLASMA_AXIS = np.array([1.5, 1.5])
         LCFS_RADIUS = 1.0
@@ -134,9 +134,7 @@ class TestTomographyData:
 
         # evaluate pedestal -> core function
         if radius_from_axis <= LCFS_RADIUS:
-            central_radiatior = RADIATION_PEAK * np.exp(
-                -(radius_from_axis**2) / CENTRE_PEAK_WIDTH
-            )
+            central_radiatior = RADIATION_PEAK * np.exp(-(radius_from_axis**2) / CENTRE_PEAK_WIDTH)
 
             ring_radiator = (
                 RADIATION_PEAK * np.cos(bearing) * np.exp(-(radius_from_ring**2) / RING_WIDTH)

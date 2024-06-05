@@ -1,4 +1,4 @@
-{{ fullname | escape | underline}}
+{{ objname | escape | underline}}
 
 .. currentmodule:: {{ module }}
 
@@ -11,7 +11,8 @@
    .. rubric:: Methods
 
    .. autosummary::
-      :toctree: {{ objname }}
+      :toctree: {{ name }}
+      :template: method.rst
 
    {% for item in all_methods %}
    {%- if not item.startswith('_') or item in ['__call__', '__getitem__'] %}
@@ -26,7 +27,8 @@
    .. rubric:: Attributes
 
    .. autosummary::
-      :toctree: {{ objname }}
+      :toctree: {{ name }}
+      :template: attribute.rst
 
    {% for item in attributes %}
       ~{{ name }}.{{ item }}

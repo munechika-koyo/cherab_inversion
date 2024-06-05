@@ -43,7 +43,7 @@ def svdbase(test_data, computed_svd):
 
 @pytest.fixture
 def lambdas():
-    return np.logspace(-20, 2, num=500)
+    return np.logspace(-40, 2, num=500)
 
 
 class TestSVDBase:
@@ -51,30 +51,49 @@ class TestSVDBase:
         u, s, vh = computed_svd
         _SVDBase(s, u, vh.T, data=test_data.b)
 
-    def test_w(self, svdbase, lambdas):
+    def test__ub(self, svdbase):
+        assert isinstance(svdbase._ub, np.ndarray)
+        assert svdbase._ub.ndim == 1
+        assert svdbase._ub.size == svdbase._s.size
+
+    def test_filter(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.w(beta)
+            filters = svdbase.filter(beta)
+            assert isinstance(filters, np.ndarray)
+            assert filters.shape == svdbase._s.shape
 
     def test_rho(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.rho(beta)
+            rho = svdbase.rho(beta)
+            assert isinstance(rho, float)
 
     def test_eta(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.eta(beta)
+            eta = svdbase.eta(beta)
+            assert isinstance(eta, float)
 
     def test_eta_diff(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.eta_diff(beta)
+            eta_diff = svdbase.eta_diff(beta)
+            assert isinstance(eta_diff, float)
 
     def test_residual_norm(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.residual_norm(beta)
+            res_norm = svdbase.residual_norm(beta)
+            assert isinstance(res_norm, float)
 
     def test_regularization_norm(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.regularization_norm(beta)
+            reg_norm = svdbase.regularization_norm(beta)
+            assert isinstance(reg_norm, float)
 
-    def test_inverted_solution(self, svdbase, lambdas):
+    def test_solution(self, svdbase, lambdas):
         for beta in lambdas:
-            svdbase.inverted_solution(beta)
+            sol = svdbase.solution(beta)
+            assert isinstance(sol, np.ndarray)
+            assert sol.ndim == 1
+            assert sol.size == svdbase._basis.shape[0]
+
+    def test__objective_function(self, svdbase):
+        with pytest.raises(NotImplementedError):
+            svdbase._objective_function(1.0)

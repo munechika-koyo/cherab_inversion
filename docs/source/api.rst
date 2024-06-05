@@ -2,7 +2,7 @@
 API Reference
 =============
 
-Here we show the list of functionality available in the `cherab.inversion` package.
+Here we show the list of functionalities available in the `cherab.inversion` package.
 
 .. currentmodule:: cherab.inversion
 

@@ -44,6 +44,7 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_codeautolink",
     "sphinx_github_style",
+    "sphinxcontrib.bibtex",
     "doi_role",
 ]
 
@@ -130,8 +131,8 @@ html_theme_options = {
             "icon": "fa-solid fa-box",
         },
     ],
-    "pygment_light_style": "default",
-    "pygment_dark_style": "native",
+    "pygments_light_style": "default",
+    "pygments_dark_style": "native",
     "switcher": {
         "json_url": json_url,
         "version_match": version_match,
@@ -152,7 +153,7 @@ html_css_files = [
     "custom.css",
 ]
 
-# === Intersphinx configuration ===============================================
+# === Intersphinx configuration ==============================================
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
@@ -161,14 +162,16 @@ intersphinx_mapping = {
     "raysect": ("http://www.raysect.org", None),
     "cherab": ("https://www.cherab.info", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
+    "cupy": ("https://docs.cupy.dev/en/stable/", None),
 }
 
 intersphinx_timeout = 10
 
-# === NB Sphinx configuration ============================================
+# === NB Sphinx configuration ================================================
 nbsphinx_allow_errors = True
 nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None) %}
+{% if "notebooks" in docname %}
 .. only:: html
 
     .. role:: raw-html(raw)
@@ -176,11 +179,15 @@ nbsphinx_prolog = """
 
     .. note::
         This page was generated from `{{ docname }}`__.
-    __ https://github.com/munechika-koyo/cherab_inversion/blob/main/docs/notebooks/{{ docname }}
+    __ https://github.com/munechika-koyo/cherab_inversion/blob/main/docs/{{ docname }}
+{% endif %}
 """
 nbsphinx_thumbnails = {}
+mathjax3_config = {
+    "tex": {"tags": "ams", "useLabelIds": True},
+}
 
-# === sphinx_github_style configuration ============================================
+# === sphinx_github_style configuration ======================================
 # get tag name which exists in GitHub
 tag = "main" if version_obj.is_devrelease else f"v{version_obj.public}"
 
@@ -189,3 +196,7 @@ top_level = "cherab"
 linkcode_blob = tag
 linkcode_url = "https://github.com/munechika-koyo/cherab_inversion"
 linkcode_link_text = "Source"
+
+
+# === sphinxcontrib-bibtex configuration ==================================
+bibtex_bibfiles = ["references.bib"]

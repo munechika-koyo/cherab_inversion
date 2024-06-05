@@ -1,162 +1,63 @@
 """Module for L-curve crietrion."""
+
 from __future__ import annotations
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from numpy.typing import NDArray
 
 from .core import _SVDBase
+from .tools.scientific_format import parse_scientific_notation
 
 __all__ = ["Lcurve"]
 
 
 class Lcurve(_SVDBase):
-    """L-curve criterion optimization for regularization parameter.
+    """L-curve criterion for regularization parameter optimization.
 
-    L curve is the trajectory of the point :math:`(\\log||Ax_\\lambda-b||, \\log||L(x_\\lambda-x_0)||)`,
-    those of which mean the residual and the regularization norm, respectively.
-    The "corner" of this curve is assosiated with optimized point of regularization parameter, where
-    the curvature of the L curve is maximized.
-    This theory is mentioned by P.C.Hansen [1]_.
+    The L-curve is a log-log plot of the residual norm versus the regularization norm.
+    The L-curve criterion for tikhnov regularization gives the optimal regularization
+    parameter :math:`\\lambda` as the corner point of the L-curve by maximizing the
+    curvature of the L-curve.
+
+    .. note::
+        The theory and implementation of the L-curve criterion are described here_.
+
+    .. _here: ../user/theory/lcurve.ipynb
 
     Parameters
     ----------
     s : vector_like
-        singular values of :math:`A`
-        like :math:`\\sigma = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
+        singular values like :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
     u : array_like
-        left singular vectors of :math:`A`
-        like :math:`U = (u_1, u_2, ...) \\in \\mathbb{R}^{m\\times r}`
+        left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
     basis : array_like
-        inverted solution basis :math:`\\tilde{V} \\in \\mathbb{R}^{n\\times r}`.
-        Here, :math:`\\tilde{V} = L^{-1}V`, where :math:`V\\in\\mathbb{R}^{n\\times r}` is
-        the right singular vectors of :math:`A` and :math:`L^{-1}` is the inverse of
-        regularization operator :math:`L \\in \\mathbb{R}^{n\\times n}`.
+        inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
     **kwargs : :py:class:`._SVDBase` properties, optional
         *kwargs* are used to specify properties like a `data`
 
-    References
-    ----------
-    .. [1] P.C.Hansen, "The L-curve and its use in the numerical treatment of inverse problems",
-           January 2001 In book: Computational Inverse Problems in Electrocardiology,
-           Publisher: WIT Press
+    Examples
+    --------
+    >>> lcurve = Lcurve(s, u, basis, data=data)
     """
 
     def __init__(self, *args, **kwargs):
-        # initialize originaly valuables
-        self._lambdas = None
-
-        # inheritation
         super().__init__(*args, **kwargs)
-
-    def optimize(
-        self, itemax: int = 5, bounds: tuple[float, float] = (-20.0, 2.0)
-    ) -> NDArray[np.float64]:
-        """Excute the optimization of L-curve regularization.
-
-        Warnings
-        --------
-        This method will be deprecated in the future. Please use :py:meth:`.solve` instead.
-
-        This method is used to seek the optimal regularization parameter computing curvature.
-        The optimal regularization parameter corresponds to the index of maximum curvature.
-        This procedure is iterated by up to the `itemax` times. Every time iterately calculating,
-        the range of regularization parameters is narrowed to FWHM around the maximum curvature
-        point. The optimal regularization parameter is cached to ``self._lambda_opt``
-        which can be seen :py:attr:`.lambda_opt` property.
-        And, :py:attr:`.lambdas` is updated and stored to the property.
-
-        Parameters
-        ----------
-        itemax
-            iteration times, by default 5
-        bounds
-            initial bounds of log10 of regularization parameter, by default (-20.0, 2.0).
-
-        Returns
-        -------
-        :obj:`numpy.ndarray`
-            optimized solution vector
-        """
-
-        # define regularization parameters from log10 of bounds
-        lambdas_temp = np.logspace(*bounds, 100)
-
-        # cache lambdas as list
-        lambdas = lambdas_temp.tolist()
-
-        # calculate one time
-        curvs_temp = np.array([self.curvature(beta) for beta in lambdas_temp])
-
-        # cache index of maximum curvature
-        index_max = np.argmax(curvs_temp)
-
-        # set property of optimal lambda
-        self._lambda_opt = lambdas_temp[index_max]
-
-        # continue to seek the optimal lambda more than 1 time up to itemax
-        if isinstance(itemax, int) and itemax > 1:
-            for _ in range(itemax - 1):
-                # check if curvature has positive values
-                if curvs_temp.max() > 0:
-                    # the range of lambdas is narrowd within FWHM
-                    half = curvs_temp.max() * 0.5
-                    if half < curvs_temp.min():
-                        half = (curvs_temp.max() + curvs_temp.min()) * 0.5
-                    signs = np.sign(curvs_temp - half)
-                    zero_crossings = signs[0:-2] != signs[1:-1]
-                    # search nearest neighbor point of peak point
-                    zero_crossings_i = np.where(zero_crossings)[0]
-                    zero_crossings_near = np.abs(zero_crossings_i - index_max).argmin()
-                    zero_crossings_i = zero_crossings_i[zero_crossings_near]
-
-                    # calculate FWHM in logscale
-                    fwhm_log = np.abs(
-                        np.log10(lambdas_temp[zero_crossings_i]) - np.log10(self._lambda_opt)
-                    )
-                    # if zero_crossings_i is leftside of peak
-                    if zero_crossings_i < index_max:
-                        lambda_left_log = np.log10(lambdas_temp[zero_crossings_i])
-                        lambda_right_log = np.log10(self._lambda_opt) + fwhm_log
-                    else:
-                        lambda_left_log = np.log10(self._lambda_opt) - fwhm_log
-                        lambda_right_log = np.log10(lambdas_temp[zero_crossings_i])
-
-                else:
-                    # if curvature does not have any positive values, the range of lambdas is expanded to both sides.
-                    dlambda_log = np.log10(lambdas_temp[1]) - np.log10(lambdas_temp[0])
-                    lambda_left_log = np.log10(lambdas_temp[0]) - 100 * dlambda_log
-                    lambda_right_log = np.log10(lambdas_temp[-1]) + 100 * dlambda_log
-
-                # update the range of lambdas
-                lambdas_temp = 10 ** np.linspace(lambda_left_log, lambda_right_log, 100)
-                # compute curvature
-                curvs_temp = np.array([self.curvature(beta) for beta in lambdas_temp])
-                # cache index of maximum curvature
-                index_max = np.argmax(curvs_temp)
-                # set property of optimal lambda
-                self._lambda_opt = lambdas_temp[index_max]
-                # cache temporary lambdas and cavature values
-                lambdas.extend(lambdas_temp.tolist())
-
-        # cache lambdas as property
-        lambdas = np.array(lambdas)
-        self._lambdas = lambdas.sort()
-
-        return self.inverted_solution(self._lambda_opt)
 
     def plot_L_curve(
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float, float] = (-20.0, 2.0),
-        n_beta: int = 100,
+        bounds: tuple[float | None, float | None] | None = None,
+        n_beta: int = 500,
         scatter_plot: int | None = None,
         scatter_annotate: bool = True,
+        plot_lambda_opt: bool = True,
     ) -> tuple[Figure, Axes]:
-        """Plotting the L curve in log-log scale.
+        """Plotting the L-curve in log-log scale.
+
+        The points :math:`(\\sqrt{\\rho}, \\sqrt{\\eta})` are plotted in log-log scale.
 
         Parameters
         ----------
@@ -165,29 +66,33 @@ class Lcurve(_SVDBase):
         axes
             matplotlib Axes object, by default None.
         bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
-            This is not used if :obj:`.lambda` is not None.
+            bounds of log10 of regularization parameter, by default
+            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+            If you set the bounds like ``(-10, None)``, the higher bound is set to
+            :math:`\\log_{10}\\sigma_1^2`.
+            Raise an error if a >= b in (a, b).
         n_beta
-            number of regularization parameters, by default 100.
-            This is not used if :obj:`.lambda` is not None.
+            number of regularization parameters, by default 500.
         scatter_plot
-            whether or not to plot some L curve points, by default None.
+            whether or not to plot some L-curve points, by default None.
             If you want to manually define the number of points,
-            put in the numbers. e.g.) ``scatter_plot=10``.
+            enter the numbers like ``scatter_plot=10``.
         scatter_annotate
             whether or not to annotate the scatter_points, by default True.
             This key argument is valid if only ``scatter_plot`` is not None.
+        plot_lambda_opt
+            whether or not to plot the L-curve corner point, by default True.
 
         Returns
         -------
         tuple of :obj:`~matplotlib.figure.Figure` and :obj:`~matplotlib.axes.Axes`
             (fig, axes), each of which is matplotlib objects applied some properties.
         """
+        # get bounds of log10 of regularization parameter
+        bounds = self._generate_bounds(bounds)
+
         # define regularization parameters
-        if self._lambdas is None:
-            lambdas = np.logspace(*bounds, n_beta)
-        else:
-            lambdas = self._lambdas
+        lambdas = np.logspace(*bounds, n_beta)
 
         # compute norms
         residual_norms = np.array([self.residual_norm(i) for i in lambdas])
@@ -202,38 +107,42 @@ class Lcurve(_SVDBase):
         # plotting
         axes.loglog(residual_norms, regularization_norms, color="C0", zorder=0)
 
-        # plot some points of L curve and annotate with regularization parameters label
+        # plot some points of L-curve and annotate with regularization parameters label
         if isinstance(scatter_plot, int) and scatter_plot > 0:
-            lambdas = 10 ** np.linspace(
-                np.log10(lambdas.min()), np.log10(lambdas.max()), scatter_plot
-            )
-            for beta in lambdas:
-                point = (self.residual_norm(beta), self.regularization_norm(beta))
+            betas = np.logspace(np.ceil(bounds[0]), np.floor(bounds[1]), scatter_plot)
+            for beta in betas:
+                x, y = self.residual_norm(beta), self.regularization_norm(beta)
                 axes.scatter(
-                    point[0],
-                    point[1],
+                    x,
+                    y,
                     edgecolors="C0",
                     marker="o",
                     facecolor="none",
                     zorder=1,
                 )
                 if scatter_annotate is True:
+                    _lambda_sci = parse_scientific_notation(
+                        f"{beta:.2e}", scilimits=(-1, -1)
+                    ).split("\\times ")[1]
                     axes.annotate(
-                        "$\\lambda$ = {:.2e}".format(beta),
-                        xy=point,
+                        f"$\\lambda = {_lambda_sci}$",
+                        xy=(x, y),
+                        xytext=(0.25, 0.25),
+                        textcoords="offset fontsize",
                         color="k",
                         zorder=2,
                     )
 
-        # plot L curve corner if already optimize method excuted
-        if self.lambda_opt is not None:
+        # plot L-curve corner if already optimize method excuted
+        if self.lambda_opt is not None and plot_lambda_opt is True:
+            _lambda_opt_sci = parse_scientific_notation(f"{self.lambda_opt:.2e}")
             axes.scatter(
                 self.residual_norm(self.lambda_opt),
                 self.regularization_norm(self.lambda_opt),
                 c="r",
                 marker="x",
                 zorder=2,
-                label=f"$\\lambda = {self.lambda_opt:.2e}$",
+                label=f"$\\lambda = {_lambda_opt_sci}$",
             )
             axes.legend()
 
@@ -241,16 +150,22 @@ class Lcurve(_SVDBase):
         axes.set_xlabel("Residual norm")
         axes.set_ylabel("Regularization norm")
 
+        # set axis properties
+        axes.tick_params(axis="both", which="both", direction="in", top=True, right=True)
+
         return (fig, axes)
 
     def plot_curvature(
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float, float] = (-20.0, 2.0),
-        n_beta: int = 100,
+        bounds: tuple[float | None, float | None] | None = None,
+        n_beta: int = 500,
+        show_max_curvature_line: bool = True,
     ) -> tuple[Figure, Axes]:
-        """Plotting L-curve curvature vs regularization parameters.
+        """Plotting the curvature of L-curve as function of regularization parameter.
+
+        The curvature of L-curve is calculated by :meth:`.curvature` method.
 
         Parameters
         ----------
@@ -259,22 +174,27 @@ class Lcurve(_SVDBase):
         axes
             matplotlib Axes object, by default None.
         bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
-            This is not used if :obj:`.lambda` is not None.
+            bounds of log10 of regularization parameter, by default
+            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+            If you set the bounds like ``(-10, None)``, the higher bound is set to
+            :math:`\\log_{10}\\sigma_1^2`.
+            Raise an error if a >= b in (a, b).
         n_beta
-            number of regularization parameters, by default 100.
-            This is not used if :obj:`.lambda` is not None.
+            number of regularization parameters, by default 500.
+        show_max_curvature_line
+            whether or not to plot the vertical red dashed line at the maximum curvature point,
+            by default True.
 
         Returns
         -------
         tuple[:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`]
             (fig, axes), each of which is matplotlib objects applied some properties.
         """
+        # get bounds of log10 of regularization parameter
+        bounds = self._generate_bounds(bounds)
+
         # define regularization parameters
-        if self._lambdas is None:
-            lambdas = np.logspace(*bounds, n_beta)
-        else:
-            lambdas = self._lambdas
+        lambdas = np.logspace(*bounds, n_beta)
 
         # compute the curvature
         curvatures = np.array([self.curvature(beta) for beta in lambdas])
@@ -285,79 +205,67 @@ class Lcurve(_SVDBase):
         if not isinstance(axes, Axes):
             axes = fig.add_subplot()
 
-        # plotting
+        # plot the curvature
         axes.semilogx(lambdas, curvatures, color="C0", zorder=0)
 
-        # indicate the maximum point as the optimal point
-        if self.lambda_opt is not None:
-            axes.scatter(
-                self.lambda_opt,
-                self.curvature(self.lambda_opt),
-                c="r",
-                marker="x",
-                zorder=1,
-                label=f"$\\lambda = {self.lambda_opt:.2e}$",
-            )
+        # indicate the maximum curvature point as a vertical red dashed line
+        if self.lambda_opt is not None and show_max_curvature_line is True:
+            axes.axvline(self.lambda_opt, color="r", linestyle="dashed", linewidth=1, zorder=1)
 
-        lambda_range = (lambdas.min(), lambdas.max())
-
-        # Draw a y=0 dashed line
-        axes.plot(lambda_range, [0, 0], color="k", linestyle="dashed", linewidth=1, zorder=-1)
+        # draw a y=0 dashed line
+        axes.axhline(0, color="k", linestyle="dashed", linewidth=1, zorder=-1)
 
         # x range limitation
-        axes.set_xlim(*lambda_range)
+        axes.set_xlim(lambdas.min(), lambdas.max())
 
         # labels
         axes.set_xlabel("Regularization parameter $\\lambda$")
-        axes.set_ylabel("Curvature of L curve")
+        axes.set_ylabel("Curvature of L-curve")
+
+        # set axis properties
+        axes.tick_params(axis="both", which="both", direction="in", top=True, right=True)
 
         return (fig, axes)
 
     def curvature(self, beta: float) -> float:
         """Calculate L-curve curvature.
 
-        This method calculates the L-curve curvature :math:`\\kappa` specified by a regularization
-        parameter :math:`\\beta` as follows:
+        This method calculates the curvature of L-curve at the point
+        :math:`(\\sqrt{\\rho}, \\sqrt{\\eta})` as function of regularization parameter
+        :math:`\\lambda`.
 
-        .. math::
-
-            \\begin{align}
-                \\kappa(\\beta) &= \\frac{f^{\\prime\\prime}(x)}{\\left[1 + f^{\\prime}(x)^2\\right]^{3/2}}
-                                 = -2 \\eta\\rho
-                                    \\frac{\\beta^2 \\eta + \\beta \\rho + \\rho\\eta/\\eta^\\prime}
-                                          {(\\beta^2 \\eta^2 + \\rho^2)^{3/2}},\\\\
-                \\rho &\\equiv ||Ax_\\beta - b||_2^2,\\\\
-                \\eta &\\equiv ||L(x_\\beta - x_0)||_2^2,\\\\
-                \\eta^\\prime &\\equiv \\frac{d\\eta}{d\\beta}.
-            \\end{align}
+        If the curvature is positive, the L-curve is concave at the point.
+        If the curvature is negative, the L-curve is convex at the point.
 
         Parameters
         ----------
         beta
-            regularization parameter
+            regularization parameter :math:`\\lambda`
 
         Returns
         -------
         float
             the value of calculated curvature
+
+        Examples
+        --------
+        >>> lcurve = Lcurve(s, u, basis, data=data)
+        >>> curvature = lcurve.curvature(1.0e-5)
         """
         rho = self.rho(beta)
         eta = self.eta(beta)
         eta_dif = self.eta_diff(beta)
 
-        return (
-            -2.0
-            * rho
-            * eta
-            * (eta * beta**2.0 + beta * rho + rho * eta / eta_dif)
-            / ((beta * eta) ** 2.0 + rho**2.0) ** 1.5
-        )
+        numerator = -2.0 * rho * eta * (eta * beta**2.0 + beta * rho + rho * eta / eta_dif)
+        denominator = ((beta * eta) ** 2.0 + rho**2.0) ** 1.5
+
+        return numerator / denominator
 
     def _objective_function(self, logbeta: float) -> float:
         """Objective function for optimization.
 
-        The optimal regularization parameter corresponds to the index of maximum curvature.
-        So, this function is defined as the negative value of curvature.
+        The optimal regularization parameter corresponds to the maximum curvature of L-curve.
+        To apply the minimization solver, this method returns the negative value of curvature.
 
         Parameters
         ----------

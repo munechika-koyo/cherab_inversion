@@ -1,4 +1,5 @@
 """Inverses provided data using Minimum Fisher Regularization (MFR) scheme."""
+
 from __future__ import annotations
 
 import pickle
@@ -21,77 +22,25 @@ __all__ = ["Mfr"]
 class Mfr:
     """Inverses provided data using Minimum Fisher Regularization (MFR) scheme.
 
+    .. note::
+        The theory and implementation of the MFR are described here_.
+
+    .. _here: ../user/theory/mfr.ipynb
+
     Parameters
     ----------
     gmat : numpy.ndarray (M, N) | scipy.sparse.spmatrix (M, N)
-        matrix :math:`T` of the forward problem (geometry matrix, ray transfer matrix, etc.)
+        matrix :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}` of the forward problem
+        (geometry matrix, ray transfer matrix, etc.)
     dmats : list[tuple[scipy.sparse.spmatrix, scipy.sparse.spmatrix]]
-        list of pairs of derivative matrices :math:`D_i` and :math:`D_j` along to :math:`i` and
-        :math:`j` coordinate directions, respectively
+        list of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j` along
+        to :math:`i` and :math:`j` coordinate directions, respectively
     data : numpy.ndarray (M, ), optional
         given data for inversion calculation, by default None
 
-    Notes
-    -----
-    Minimum Fisher Regularization (MFR) was firstly introduced by [1]_ for the tomographic
-    reconstruction of the emissivity in the TCV tokamaks and later applied to the ASDEX Upgrade
-    tokamak [2]_.
-    The considered inverse problem is the tomographic reconstruction of the emissivity:
-
-    .. math::
-
-        T\\varepsilon = s,
-
-    where :math:`T\\in\\mathbb{R}^{m\\times n}` is the geometry matrix describing the spatial
-    distribution of detectors, :math:`\\varepsilon\\in\\mathbb{R}^n` is the solution emissivity
-    vector, and :math:`s\\in\\mathbb{R}^m` is the signal given data vector.
-
-    Since this problem is often ill-posed, one requires a regularization to be solved by adding
-    an objective functional
-    :math:`O(\\varepsilon) \\equiv \\varepsilon^\\mathsf{T} H(\\varepsilon) \\varepsilon`
-    to the least square problem:
-
-    .. math::
-
-        \\varepsilon_\\lambda
-            := \\text{argmin}
-                \\left\\{ ||T\\varepsilon - s||^2
-                    + \\lambda\\cdot \\varepsilon^\\mathsf{T} H(\\varepsilon) \\varepsilon
-                \\right\\}
-
-    where :math:`\\lambda` is a regularization parameter and :math:`H(\\varepsilon)` is the
-    regularization matrix.
-
-    In the MFR scheme, the regularization matrix is defined as:
-
-    .. math::
-
-        H(\\varepsilon) &:= \\sum_{i,j} \\alpha_{ij} D_i^\\mathsf{T} W(\\varepsilon) G^{ij} D_j
-
-        W(\\varepsilon) &:= \\text{diag}
-            \\left(
-                \\frac{1}{\\max\\left\\{\\varepsilon_i, \\epsilon_0\\right\\}}
-            \\right),
-
-    where  :math:`\\alpha_{ij}` is the anisotropic coefficient, :math:`D_i` and :math:`D_j` are
-    derivative matrices along to :math:`i` and :math:`j` coordinate directions, respectively,
-    :math:`W` is the diagonal weight matrix defined as the inverse of :math:`\\varepsilon_i`,
-    :math:`\\epsilon_0` is a small number to avoid division by zero and to push the solution to
-    be positive, and :math:`G^{i, j}` is the metric tensor matrix between :math:`i` and :math:`j`
-    coordinate directions which is the identity matrix in the orthogonal coordinate system.
-
-    The MFR scheme is a non-linear equation, so it is solved by the iterative method optimizing
-    the regularization parameter :math:`\\lambda` at each iteration.
-
-    References
-    ----------
-    .. [1] M Anton, H Weisen, M J Dutch, W von der Linden, F Buhlmann, R Chavan, B Marletaz,
-        P Marmillod and P Paris, *X-ray tomography on the TCV tokamak*, Plasma Phys. Control.
-        Fusion **38** 1849 (1996), :doi:`10.1088/0741-3335/38/11/001`
-
-    .. [2] Odstrčil T, Pütterich T, Odstrčil M, Gude A, Igochine V, Stroth U; ASDEX Upgrade Team,
-        *Optimized tomography methods for plasma emissivity reconstruction at the ASDEX Upgrade
-        tokamak*, Rev. Sci. Instrum. **87**, 123505 (2016), :doi:`10.1063/1.4971367`
+    Examples
+    --------
+    >>> mfr = Mfr(gmat, dmats, data)
     """
 
     def __init__(
@@ -116,22 +65,23 @@ class Mfr:
         self._dmats = dmats
 
         # set data attribute
-        self.data = data
+        if data is not None:
+            self.data = data
 
     @property
     def gmat(self) -> np.ndarray | spmatrix:
-        """Geometry matrix :math:`T` of the forward problem."""
+        """Geometry matrix :math:`\\mathbf{T}` of the forward problem."""
         return self._gmat
 
     @property
     def dmats(self) -> list[tuple[spmatrix, spmatrix]]:
-        """List of pairs of derivative matrices :math:`D_i` and :math:`D_j` along to :math:`i` and
-        :math:`j` coordinate directions, respectively."""
+        """List of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`
+        along to :math:`i` and :math:`j` coordinate directions, respectively."""
         return self._dmats
 
     @property
     def data(self) -> np.ndarray:
-        """Given data for inversion calculation."""
+        """Given data vector :math:`\\mathbf{b}` for inversion calculation."""
         return self._data
 
     @data.setter
@@ -140,17 +90,16 @@ class Mfr:
         if data.ndim != 1:
             raise ValueError("data must be a vector.")
         if data.size != self._gmat.shape[0]:
-            raise ValueError("data size must be the same as the number of rows of U matrix")
+            raise ValueError("data size must be the same as the number of rows of geometry matrix")
         self._data = data
 
     def solve(
         self,
         x0: np.ndarray | None = None,
-        derivative_weights: list[float] | None = None,
+        derivative_weights: list[float] | tuple[float, ...] | None = None,
         eps: float = 1.0e-6,
-        bounds: tuple[float, float] = (-20.0, 2.0),
         tol: float = 1e-3,
-        miter: int = 20,
+        miter: int = 4,
         regularizer: Type["_SVDBase"] = Lcurve,
         store_regularizers: bool = False,
         path: str | Path | None = None,
@@ -160,20 +109,25 @@ class Mfr:
     ) -> tuple[np.ndarray, dict]:
         """Solves the inverse problem using MFR scheme.
 
+        MFR is an iterative scheme that combines Singular Value Decomposition (SVD) and a
+        optimizer to find the optimal regularization parameter.
+
+        The detailed workflow of the MFR scheme is described in `MFR theory`_.
+
+        .. _MFR theory: ../../user/theory/mfr.ipynb
+
         Parameters
         ----------
         x0 : numpy.ndarray
             initial solution vector, by default ones vector
         derivative_weights
-            allows to specify anisotropy by assign weights for each matrix, by default ones vector
+            allows to specify anisotropy by assigning weights for each matrix, by default ones vector
         eps
             small number to avoid division by zero, by default 1e-6
-        bounds
-            bounds of log10 of regularization parameter, by default (-20.0, 2.0).
         tol
             tolerance for solution convergence, by default 1e-3
         miter
-            maximum number of MFR iterations, by default 20
+            maximum number of MFR iterations, by default 4
         regularizer
             regularizer class to use, by default :obj:`~.Lcurve`
         store_regularizers
@@ -190,6 +144,22 @@ class Mfr:
         **kwargs
             additional keyword arguments passed to the regularizer class's :obj:`~._SVDBase.solve`
             method
+
+        Returns
+        -------
+        tuple[numpy.ndarray, dict]
+            optimal solution vector :math:`\\mathbf{x}` and status dictionary which includes
+            the following keys:
+
+            - `elapsed_time`: elapsed time for the inversion calculation
+            - `niter`: number of iterations
+            - `diffs`: list of differences between the current and previous solutions
+            - `converged`: boolean value indicating the convergence
+            - `regularizer`: regularizer object
+
+        Examples
+        --------
+        >>> x, status = mfr.solve()
         """
         # validate regularizer
         if not issubclass(regularizer, _SVDBase):
@@ -221,7 +191,7 @@ class Mfr:
         niter = 0
         status = {}
         self._converged = False
-        errors = []
+        diffs = []
         reg = None
         x = None
 
@@ -248,11 +218,11 @@ class Mfr:
                     # find optimal solution using regularizer class
                     sp.text = sp_base_text + " (Solving regularizer)"
                     reg = regularizer(singular, u_vecs, basis, data=self._data)
-                    x, _ = reg.solve(bounds=bounds, **kwargs)
+                    x, _ = reg.solve(**kwargs)
 
                     # check convergence
-                    diff = np.linalg.norm(x - x0)
-                    errors.append(diff)
+                    diff = np.linalg.norm(x - x0, axis=0)
+                    diffs.append(diff)
                     self._converged = bool(diff < tol)
 
                     # update solution
@@ -283,7 +253,7 @@ class Mfr:
         # set status
         status["elapsed_time"] = elapsed_time
         status["niter"] = niter
-        status["errors"] = errors
+        status["diffs"] = diffs
         status["converged"] = self._converged
         status["regularizer"] = reg
 
@@ -295,7 +265,7 @@ class Mfr:
         self,
         x: np.ndarray,
         eps: float = 1.0e-6,
-        derivative_weights: list[float] | None = None,
+        derivative_weights: list[float] | tuple[float, ...] | None = None,
     ) -> csc_matrix:
         """Computes nonlinear regularization matrix from provided derivative matrices and a solution
         vector.
@@ -305,39 +275,42 @@ class Mfr:
 
         Each matrix can have different weight coefficients assigned to introduce anisotropy.
 
-        The expression of the regularization matrix :math:`H(\\varepsilon)` is:
+        The expression of the regularization matrix :math:`\\mathbf{H}(\\mathbf{x})` with a solution
+        vector :math:`\\mathbf{x}` is:
 
         .. math::
 
-            H(\\varepsilon)
-                = \\sum_{i,j} \\alpha_{ij} D_i^\\mathsf{T} W D_j
+            \\mathbf{H}(\\mathbf{x})
+                = \\sum_{\\mu,\\nu} \\alpha_{\\mu\\nu} \\mathbf{D}_\\mu^\\mathsf{T} \\mathbf{W}(\\mathbf{x}) \\mathbf{D}_\\nu
 
-        where :math:`D_i` and :math:`D_j` are derivative matrices along to
-        :math:`i` and :math:`j` coordinate directions, respectively, :math:`\\alpha_{ij}` is the
-        anisotropic coefficient, and :math:`W` is the diagonal weight matrix defined as
-        the inverse of :math:`\\varepsilon_i`:
+        where :math:`\\mathbf{D}_\\mu` and :math:`\\mathbf{D}_\\nu` are derivative matrices along to
+        :math:`\\mu` and :math:`\\nu` directions, respectively, :math:`\\alpha_{\\mu\\nu}` is the
+        anisotropic coefficient, and :math:`\\mathbf{W}` is the diagonal weight matrix defined as
+        the inverse of :math:`\\mathbf{x}_i`:
 
         .. math::
 
-            W_{ij} = \\frac{\\delta_{ij}}{ \\max\\left\\{\\varepsilon_i, \\epsilon_0\\right\\} },
+            \\left[\\mathbf{W}\\right]_{ij}
+                = \\frac{\\delta_{ij}}{ \\max\\left(\\mathbf{x}_i, \\epsilon_0\\right) },
 
-        where :math:`\\varepsilon_i` is the i-th element of the solution vector
-        :math:`\\varepsilon`, and :math:`\\epsilon_0` is a small number to avoid division by zero
-        and to push the solution to be positive.
+        where :math:`\\delta_{ij}` is the Kronecker delta, :math:`\\mathbf{x}_i` is the :math:`i`-th
+        element of the solution vector :math:`\\mathbf{x}`, and :math:`\\epsilon_0` is a small
+        umber to avoid division by zero and to push the solution to be positive.
 
         Parameters
         ----------
         x : numpy.ndarray
-            solution vector :math:`\\varepsilon`
+            solution vector :math:`\\mathbf{x}`
         eps
-            small number to avoid division by zero, by default 1.0e-6
+            small number :math:`\\epsilon_0` to avoid division by zero, by default 1.0e-6
         derivative_weights
-            allows to specify anisotropy by assign weights for each matrix, by default ones vector
+            allows to specify anisotropy by assigning weights :math:`\\alpha_{ij}` for each matrix,
+            by default ones vector (:math:`\\alpha_{ij}=1` for all matrices)
 
         Returns
         -------
         :obj:`scipy.sparse.csc_matrix`
-            regularization matrix :math:`H(\\varepsilon)`
+            regularization matrix :math:`\\mathbf{H}(\\mathbf{x})`
         """
         # validate eps
         if eps <= 0:
