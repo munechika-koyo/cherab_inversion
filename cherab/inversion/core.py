@@ -11,13 +11,14 @@ The implementation is based on the `inversion theory`_.
 from __future__ import annotations
 
 from collections.abc import Callable, Collection
+from typing import Any
 
 from numpy import arange, asarray, float64, log10, ndarray, ones_like, sqrt
 from numpy import dtype as np_dtype
 from scipy.optimize import basinhopping
 from scipy.sparse import csc_matrix as sp_csc_matrix
 from scipy.sparse import csr_matrix as sp_csr_matrix
-from scipy.sparse import issparse
+from scipy.sparse import issparse, spmatrix
 from sksparse.cholmod import cholesky
 
 from .tools.spinner import DummySpinner, Spinner
@@ -77,17 +78,18 @@ class _SVDBase:
         # set inverted solution basis
         self.basis = basis
 
+        # define _B, _data, _ub
+        self._B = None
+        self._data = None
+        self._ub = None
+
         # set B matrix
         if B is not None:
             self.B = B
-        else:
-            self._B = None
 
         # set data values
         if data is not None:
             self.data = data
-        else:
-            self._data = None
 
         # set initial regularization parameter
         self._beta = 0.0
@@ -152,7 +154,7 @@ class _SVDBase:
         self._basis = mat
 
     @property
-    def B(self) -> ndarray | None:
+    def B(self) -> ndarray | spmatrix | None:
         """Matrix :math:`\\mathbf{B}` from :math:`\\mathbf{Q} = \\mathbf{B}^\\mathsf{T}\\mathbf{B}`.
 
         If users do not specify the matrix :math:`\\mathbf{B}`, this property is None.
@@ -161,8 +163,8 @@ class _SVDBase:
 
     @B.setter
     def B(self, mat):
-        if not isinstance(mat, ndarray):
-            raise TypeError("B must be a numpy.ndarray")
+        if not hasattr(mat, "shape"):
+            raise AttributeError("B must have the attribute 'shape'.")
         if mat.shape[0] != mat.shape[1]:
             raise ValueError("B must be a square matrix.")
         if mat.shape[0] != self._U.shape[0]:
@@ -476,7 +478,7 @@ def compute_svd(
     use_gpu=False,
     dtype=None,
     sp: Spinner | DummySpinner | None = None,
-):
+) -> tuple[Any, Any, Any] | tuple[Any, Any, Any, Any]:
     """Compute singular value decomposition (SVD) components of the generalized Tikhonov
     regularization problem.
 
@@ -494,7 +496,7 @@ def compute_svd(
     ----------
     T : (M, N) array_like
         Matrix for a linear equation :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}`.
-    H : (N, N) scipy.sparse.spmatrix
+    H : (N, N) array_like
         Regularization matrix :math:`\\mathbf{H} \\in \\mathbb{R}^{N\\times N}` which must be a
         symmetric positive semi-definite matrix.
     Q : (M, M) array_like, optional
@@ -558,12 +560,6 @@ def compute_svd(
 
         _cupy_available = False
 
-    # check if H is a sparse matrix
-    if not issparse(H):
-        raise TypeError("H must be a scipy.sparse.spmatrix.")
-    else:
-        H = sp_csc_matrix(H)
-
     # check T, H matrix dimension
     if hasattr(T, "ndim"):
         if T.ndim != 2 or H.ndim != 2:
@@ -580,6 +576,8 @@ def compute_svd(
             )
         if H.shape[0] != H.shape[1]:
             raise ValueError(f"H must be a square matrix. ({H.shape=})")
+        else:
+            H = sp_csc_matrix(H)
     else:
         raise AttributeError("T and H must have the attribute 'shape'.")
 
@@ -700,7 +698,7 @@ def compute_svd(
         # compute A = B @ T @ C^-1
         if B is not None:
             sp.text = _base_text + "(computing A = B @ T @ C^-1)"
-            A = asarray(B, dtype=dtype) @ asarray(T, dtype=dtype) @ asarray(C_inv, dtype=dtype)
+            A = asarray(B.A, dtype=dtype) @ asarray(T, dtype=dtype) @ asarray(C_inv, dtype=dtype)
         else:
             sp.text = _base_text + "(computing A = T @ C^-1)"
             A = asarray(T, dtype=dtype) @ asarray(C_inv, dtype=dtype)
