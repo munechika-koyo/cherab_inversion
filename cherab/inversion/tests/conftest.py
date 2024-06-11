@@ -50,9 +50,9 @@ class TestData:
 
         # mesured exact unperturbed data and added white noise
         b_0 = matrix.dot(self.x_true)
-        rng = np.random.default_rng()
-        b_noise = rng.normal(0, 1.0e-4, b_0.size)
-        self.b = b_0 + b_noise
+        # rng = np.random.default_rng()
+        # b_noise = rng.normal(0, 1.0e-4, b_0.size)
+        self.b = b_0  # + b_noise
 
 
 class TestTomographyData:
@@ -154,9 +154,3 @@ def test_data():
 @pytest.fixture
 def test_tomography_data():
     return TestTomographyData()
-
-
-@pytest.fixture
-def computed_svd(test_data):
-    u, sigma, vh = np.linalg.svd(test_data.matrix, full_matrices=False)
-    return u, sigma, vh
