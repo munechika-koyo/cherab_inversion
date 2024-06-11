@@ -159,7 +159,8 @@ def install_deps():
     help="Number of parallel jobs for building.",
 )
 def doc(parallel: int, targets: str):
-    """:wrench: Build documentation
+    """:wrench: Build documentation.
+
     TARGETS: Sphinx build targets [default: 'html']
     """
     # move to docs/ and run command

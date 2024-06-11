@@ -31,6 +31,7 @@ dependencies:
 - ipywidgets
 - nbconvert > 7.3
 - nbsphinx
+- numpydoc
 - pillow
 - pygments >= 2.11.0
 - sphinx >= 7.0, < 8.0

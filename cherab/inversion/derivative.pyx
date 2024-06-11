@@ -338,8 +338,8 @@ cpdef object derivative_matrix(
                [ 0.,  0.,  0.,  0.,  0.,  0.,  0., -1.,  0.],
                [ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., -1.]])
 
-    Note
-    ----
+    Notes
+    -----
     The detailed explanation of the derivative matrix can be found in the
     `theory of the derivative matrix`_.
 
@@ -473,8 +473,8 @@ cpdef object laplacian_matrix(
                [ 0. ,  0. ,  0. ,  0.5,  1. ,  0.5,  1. , -6. ,  1. ],
                [ 0. ,  0. ,  0. ,  0. ,  0.5,  1. ,  0. ,  1. , -6. ]])
 
-    Note
-    ----
+    Notes
+    -----
     The detailed explanation of the laplacian matrix can be found in the
     `theory of the laplacian matrix`_.
 

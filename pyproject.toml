@@ -2,7 +2,7 @@
 requires = [
     "wheel",
     "numpy",
-    "meson-python < 0.16",  # v0.16 has a error in install
+    "meson-python < 0.16",            # v0.16 has a error in install
     "cython >= 3.0",
     "tomli; python_version < '3.11'",
 ]
@@ -11,7 +11,7 @@ build-backend = "mesonpy"
 [project]
 name = "cherab-inversion"
 description = "Cherab inversion framework"
-version = "0.2.0"
+version = "0.3.0.dev"
 readme = "README.md"
 authors = [
     { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
@@ -38,12 +38,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 requires-python = ">= 3.9, < 3.13"
-dependencies = [
-    "numpy",
-    "scipy",
-    "matplotlib",
-    "scikit-sparse",
-]
+dependencies = ["numpy", "scipy", "matplotlib", "scikit-sparse"]
 license = { file = "LICENSE.md" }
 
 [project.optional-dependencies]
@@ -54,6 +49,7 @@ docs = [
     "jinja2 < 3.2",
     "nbconvert >= 7.3",
     "nbsphinx",
+    "numpydoc",
     "pillow",
     "pygments >= 2.11.0",
     "sphinx < 8.0",
@@ -79,6 +75,7 @@ dev = [
     "meson-python < 0.16",
     "pytest",
 ]
+all = ["cherab-inversion[docs]", "cherab-inversion[dev]"]
 
 [project.urls]
 Homepage = "https://cherab-inversion.readthedocs.io/"
@@ -105,8 +102,8 @@ unfixable = ["E501"]
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-# Assume Python 3.10
-target-version = "py310"
+# Assume Python 3.11
+target-version = "py311"
 
 # namespace package setting
 namespace-packages = ["cherab/inversion"]
@@ -129,6 +126,23 @@ wrap-summaries = 100
 wrap-descriptions = 100
 blank = false
 
+[tool.numpydoc_validation]
+checks = [
+    "all",  # report on all checks, except the below
+    "GL01", # Docstring text (summary) should start in the line immediately
+    "EX01", # No examples section foun
+    "SA01", # See Also section not found
+    "ES01", # No extended summary found
+    "GL08", # The object does not have a docstring
+    "RT01", # No Returns section found
+    "PR01", # Parameters {missing_params} not documented
+    "SS06", # Summary should fit in a single line
+]
+# remember to use single quotes for regex in TOML
+exclude = [ # don't report on objects that match any of these regex
+    '\.__repr__$',
+]
+override_SS05 = ['^Process ', '^Assess ', '^Access ']
 
 [tool.cibuildwheel]
 skip = "pp* *_ppc64le *_i686 *_s390x"
@@ -144,11 +158,9 @@ select = "*-musllinux*"
 before-all = "apk add suitesparse-dev"
 
 [tool.cibuildwheel.macos]
-before-all = [
-    "brew install suite-sparse",
-]
+before-all = ["brew install suite-sparse"]
 [tool.cibuildwheel.macos.environment]
 CC = "gcc-12"
 CXX = "gcc-12"
-SUITESPARSE_INCLUDE_DIR="$(brew --prefix suite-sparse)/include"
-SUITESPARSE_LIBRARY_DIR="$(brew --prefix suite-sparse)/lib"
+SUITESPARSE_INCLUDE_DIR = "$(brew --prefix suite-sparse)/include"
+SUITESPARSE_LIBRARY_DIR = "$(brew --prefix suite-sparse)/lib"

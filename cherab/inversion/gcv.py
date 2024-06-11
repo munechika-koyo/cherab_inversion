@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -22,18 +24,12 @@ class GCV(_SVDBase):
 
     Parameters
     ----------
-    s : vector_like
-        singular values like :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
-    u : array_like
-        left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
-    basis : array_like
-        inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
-    **kwargs : :py:class:`._SVDBase` properties, optional
-        *kwargs* are used to specify properties like a `data`
+    *args, **kwargs
+        Parameters are the same as :obj:`~cherab.inversion.core._SVDBase`.
 
     Examples
     --------
-    >>> gcv = GCV(s, u, basis, data=data)
+    >>> gcv = GCV(s, U, basis, data=data)
     """
 
     def __init__(self, *args, **kwargs):
@@ -46,17 +42,17 @@ class GCV(_SVDBase):
 
         .. math::
 
-            \\mathcal{G}(\\lambda) = \\frac{\\rho}{\\left[1 - \\sum_{i=1}^r f_{\\lambda, i}\\right]^2}.
+            \\mathcal{G}(\\lambda) = \\frac{\\rho}{\\left[r - \\sum_{i=1}^r f_{\\lambda, i}\\right]^2}.
 
         Parameters
         ----------
-        beta
-            regularization parameter
+        beta : float
+            Regularization parameter.
 
         Returns
         -------
         float
-            the value of GCV function at a given regularization parameter
+            Value of GCV function at a given regularization parameter.
         """
         return self.rho(beta) / (self.s.size - np.sum(self.filter(beta))) ** 2.0
 
@@ -67,13 +63,13 @@ class GCV(_SVDBase):
 
         Parameters
         ----------
-        logbeta
-            log10 of regularization parameter
+        logbeta : float
+            A log10 of regularization parameter.
 
         Returns
         -------
         float
-            the value of GCV function at a given regularization parameter
+            Value of GCV function at a given regularization parameter.
         """
         return self.gcv(10**logbeta)
 
@@ -81,7 +77,7 @@ class GCV(_SVDBase):
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float | None, float | None] | None = None,
+        bounds: Collection[float | None] | None = None,
         n_beta: int = 500,
         show_min_line: bool = True,
     ) -> tuple[Figure, Axes]:
@@ -89,26 +85,27 @@ class GCV(_SVDBase):
 
         Parameters
         ----------
-        fig
-            matplotlib figure object, by default None.
-        axes
-            matplotlib Axes object, by default None.
-        bounds
-            bounds of log10 of regularization parameter, by default
-            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+        fig : :obj:`~matplotlib.figure.Figure`, optional
+            A matplotlib figure object, by default None.
+        axes : :obj:`~matplotlib.axes.Axes`, optional
+            A matplotlib Axes object, by default None.
+        bounds : Collection[float | None], optional
+            Boundary pair of log10 of regularization parameters, by default :obj:`.bounds`.
             If you set the bounds like ``(-10, None)``, the higher bound is set to
             :math:`\\log_{10}\\sigma_1^2`.
             Raise an error if a >= b in (a, b).
-        n_beta
-            number of regularization parameters, by default 500.
-        show_min_line
-            whether or not to plot the vertical red dashed line at the minimum GCV point,
+        n_beta : int, optional
+            Number of regularization parameters, by default 500.
+        show_min_line : bool, optional
+            Whether or not to plot the vertical red dashed line at the minimum GCV point,
             by default True.
 
         Returns
         -------
-        tuple[:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`]
-            (fig, axes), each of which is matplotlib objects applied some properties.
+        fig : :obj:`~matplotlib.figure.Figure`
+            A matplotlib figure object.
+        axes : :obj:`~matplotlib.axes.Axes`
+            A matplotlib Axes object.
         """
         # get bounds of log10 of regularization parameter
         bounds = self._generate_bounds(bounds)

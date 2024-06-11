@@ -34,7 +34,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
-    "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx-prompt",
@@ -46,13 +45,12 @@ extensions = [
     "sphinx_github_style",
     "sphinxcontrib.bibtex",
     "doi_role",
+    "numpydoc",
 ]
 
 default_role = "obj"
 
 # autodoc config
-autodoc_typehints = "description"
-autodoc_typehints_format = "short"
 autodoc_member_order = "bysource"
 
 # autosummary config
@@ -61,12 +59,9 @@ autosummary_generate_overwrite = True
 autosummary_imported_members = True
 autosummary_ignore_module_all = False
 
-# napoleon config
-napoleon_google_docstring = False
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_use_param = True
-napoleon_use_ivar = False
+# numpydoc config
+numpydoc_show_class_members = False
+numpydoc_xref_param_type = True
 
 # todo config
 todo_include_todos = True
@@ -159,7 +154,6 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
-    "raysect": ("http://www.raysect.org", None),
     "cherab": ("https://www.cherab.info", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
     "cupy": ("https://docs.cupy.dev/en/stable/", None),
