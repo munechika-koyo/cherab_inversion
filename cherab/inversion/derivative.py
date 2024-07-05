@@ -4,12 +4,12 @@ from typing import Literal
 
 import numpy as np
 from numpy import ndarray
-from scipy.sparse import dia_matrix, diags
+from scipy.sparse import csc_array, dia_array, diags_array
 
 __all__ = ["diag_dict", "derivative_matrix", "laplacian_matrix"]
 
 
-def diag_dict(grid_shape: tuple[int, int]) -> dict[str, dia_matrix]:
+def diag_dict(grid_shape: tuple[int, int]) -> dict[str, dia_array]:
     """Return a dictionary of diagonal matrices.
 
     The key of the dictionary corresponds to the position of grid points.
@@ -46,7 +46,7 @@ def diag_dict(grid_shape: tuple[int, int]) -> dict[str, dia_matrix]:
 
     Returns
     -------
-    dict[str, `scipy.sparse.dia_matrix`]
+    dict[str, `scipy.sparse.dia_array`]
         Dictionary of diagonal matrices, the keys of which are ``"bb"``, ``"bc"``, ``"bf"``,
         ``"cb"``, ``"cc"``, ``"cf"``, ``"fb"``, ``"fc"``, and ``"ff"``.
 
@@ -86,15 +86,15 @@ def diag_dict(grid_shape: tuple[int, int]) -> dict[str, dia_matrix]:
     ff = bb = np.tile([1] * (n1 - 1) + [0], n0)[: bins - n1 - 1]
 
     return {
-        "bb": diags(bb, -n1 - 1, shape=(bins, bins)),
-        "bc": diags([1], -n1, shape=(bins, bins)),
-        "bf": diags(bf, -n1 + 1, shape=(bins, bins)),
-        "cb": diags(cb, -1, shape=(bins, bins)),
-        "cc": diags([1], 0, shape=(bins, bins)),
-        "cf": diags(cf, 1, shape=(bins, bins)),
-        "fb": diags(fb, n1 - 1, shape=(bins, bins)),
-        "fc": diags([1], n1, shape=(bins, bins)),
-        "ff": diags(ff, n1 + 1, shape=(bins, bins)),
+        "bb": diags_array(bb, offsets=-n1 - 1, shape=(bins, bins)),
+        "bc": diags_array([1], offsets=-n1, shape=(bins, bins)),
+        "bf": diags_array(bf, offsets=-n1 + 1, shape=(bins, bins)),
+        "cb": diags_array(cb, offsets=-1, shape=(bins, bins)),
+        "cc": diags_array([1], offsets=0, shape=(bins, bins)),
+        "cf": diags_array(cf, offsets=1, shape=(bins, bins)),
+        "fb": diags_array(fb, offsets=n1 - 1, shape=(bins, bins)),
+        "fc": diags_array([1], offsets=n1, shape=(bins, bins)),
+        "ff": diags_array(ff, offsets=n1 + 1, shape=(bins, bins)),
     }
 
 
@@ -102,9 +102,9 @@ def derivative_matrix(
     grid_shape: tuple[int, int],
     grid_step: float = 1.0,
     axis: int = 0,
-    scheme: Literal["forward", "backward"] = "forward",
+    scheme: Literal["forward", "backward", "central"] = "forward",
     mask: ndarray | None = None,
-):
+) -> csc_array:
     """Generate derivative matrix.
 
     This function computes the derivative matrix for a regular orthogonal coordinate grid.
@@ -133,7 +133,7 @@ def derivative_matrix(
 
     Returns
     -------
-    (N, N) :obj:`scipy.sparse.csc_matrix`
+    (N, N) :obj:`scipy.sparse.csc_array`
         Derivative Compressed Sparse Column matrix, where N is the number of grid points
         same as ``grid_shape[0] * grid_shape[1]``.
 
@@ -221,7 +221,7 @@ def laplacian_matrix(
     grid_steps: tuple[float, float] = (1.0, 1.0),
     diagonal: bool = True,
     mask: ndarray | None = None,
-):
+) -> csc_array:
     """Generate laplacian matrix.
 
     This function computes the laplacian matrix for a regular orthogonal coordinate grid.
@@ -246,7 +246,7 @@ def laplacian_matrix(
 
     Returns
     -------
-    (N, N) :obj:`scipy.sparse.csc_matrix`
+    (N, N) :obj:`scipy.sparse.csc_array`
         Laplacian Compressed Sparse Column matrix, where N is the number of grid points
         same as ``grid_shape[0] * grid_shape[1]``.
 
