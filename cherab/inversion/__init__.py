@@ -5,9 +5,10 @@ from . import version  # noqa: F401
 
 # Import some features from the subpackages
 from .core import _SVDBase, compute_svd
+from .derivative import Derivative
 from .gcv import GCV
 from .lcurve import Lcurve
 from .mfr import Mfr
 from .version import __version__  # noqa: F401
 
-__all__ = ["compute_svd", "_SVDBase", "Lcurve", "GCV", "Mfr"]
+__all__ = ["compute_svd", "_SVDBase", "Lcurve", "GCV", "Mfr", "Derivative"]

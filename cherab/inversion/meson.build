@@ -1,23 +1,7 @@
-cython_sources = [
-  ['derivative', 'derivative.pyx'],
-]
-
-# compile cython sources to .so modules
-foreach file : cython_sources
-  py.extension_module(
-    file[0],
-    file[1],
-    # c_args: [numpy_nodepr_api],
-    dependencies: [py_dep, np_dep],
-    install: true,
-    install_dir: py.get_install_dir() / 'cherab/inversion',
-  )
-endforeach
-
-
 py.install_sources(
   [
     '__init__.py',
+    'derivative.py',
     'core.py',
     'gcv.py',
     'lcurve.py',
@@ -50,5 +34,6 @@ else
   )
 endif
 
+subdir('bayesian')
 subdir('tools')
 subdir('tests')
