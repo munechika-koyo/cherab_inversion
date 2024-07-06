@@ -560,6 +560,18 @@ def compute_svd(
 
         _cupy_available = False
 
+    # Set data type
+    if dtype is None:
+        dtype = float64
+    else:
+        dtype = np_dtype(dtype)
+
+    # check spinner instance
+    if sp is None:
+        sp = DummySpinner()
+    elif not isinstance(sp, (Spinner, DummySpinner)):
+        raise TypeError("sp must be a Spinner or DummySpinner instance.")
+
     # check T, H matrix dimension
     if hasattr(T, "ndim"):
         if T.ndim != 2 or H.ndim != 2:
@@ -577,7 +589,7 @@ def compute_svd(
         if H.shape[0] != H.shape[1]:
             raise ValueError(f"H must be a square matrix. ({H.shape=})")
         else:
-            H = sp_csc_matrix(H)
+            H = sp_csc_matrix(H, dtype=dtype)
     else:
         raise AttributeError("T and H must have the attribute 'shape'.")
 
@@ -596,20 +608,9 @@ def compute_svd(
                 f"({Q.shape[0]=} != {T.shape[0]=}) or ({Q.shape[1]=} != {T.shape[0]=})"
             )
         else:
-            Q = sp_csc_matrix(Q)
+            Q = sp_csc_matrix(Q, dtype=dtype)
 
-    # Set data type
-    if dtype is None:
-        dtype = float64
-    else:
-        dtype = np_dtype(dtype)
-
-    # check spinner instance
-    if sp is None:
-        sp = DummySpinner()
-    elif not isinstance(sp, (Spinner, DummySpinner)):
-        raise TypeError("sp must be a Spinner or DummySpinner instance.")
-
+    # Define the base text for the spinner
     _base_text = sp.text + " "
     _use_gpu_text = " by GPU" if _cupy_available else ""
 
