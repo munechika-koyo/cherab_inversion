@@ -118,9 +118,9 @@ class Lcurve(_SVDBase):
                     zorder=1,
                 )
                 if scatter_annotate is True:
-                    _lambda_sci = parse_scientific_notation(
-                        f"{beta:.2e}", scilimits=(-1, -1)
-                    ).split("\\times ")[1]
+                    _lambda_sci = parse_scientific_notation(f"{beta:.2e}", scilimits=(0, 0)).split(
+                        "\\times "
+                    )[1]
                     axes.annotate(
                         f"$\\lambda = {_lambda_sci}$",
                         xy=(x, y),
