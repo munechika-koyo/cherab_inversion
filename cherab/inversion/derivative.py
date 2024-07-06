@@ -4,9 +4,9 @@ from typing import Literal
 
 import numpy as np
 from numpy import ndarray
-from scipy.sparse import csc_array, dia_array, diags_array
+from scipy.sparse import csc_array, csr_array, dia_array, diags_array, lil_array
 
-__all__ = ["diag_dict", "derivative_matrix", "laplacian_matrix"]
+__all__ = ["diag_dict", "derivative_matrix", "laplacian_matrix", "Derivative"]
 
 
 def diag_dict(grid_shape: tuple[int, int]) -> dict[str, dia_array]:
@@ -321,3 +321,221 @@ def laplacian_matrix(
         lmat = lmat[mask, :][:, mask]
 
     return lmat.tocsc()
+
+
+class Derivative:
+    """Class for derivative matrices.
+
+    This class is used to generate various derivative matrices using grid coordinates information.
+
+    Derivative matrices are applied to spatial profiles defined on the grid coordinates (cartesian,
+    cylindrical, etc.) and are created with their grid coordinates.
+
+    Parameters
+    ----------
+    grid : (..., L, M, ndim) or (N, ), array_like
+        The grid coordinates.
+        The shape of the array means the resolution of the grid. For example, in 3-D spatial grid,
+        the shape is (L, M, N, 3), where 3 is the dimension of the grid.
+        If the grid is 1-D like (N,), it is automatically reshaped to (N, 1).
+    grid_map : (..., L, M) array_like, optional
+        The map of the grid index with `int` type.
+        The shape of the array must be the same as the grid shape except for the last dimension.
+        The masked area is represented by negative values.
+        If None, the grid_map is automatically created by the order of the grid array.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from cherab.inversion import Derivative
+    >>> x = np.linspace(-10, 10, 21)
+    >>> derivative = Derivative(x)
+    >>> derivative
+    Derivative(grid=array(21, 1), grid_map=array(21,))
+    """
+
+    def __init__(
+        self,
+        grid,
+        grid_map=None,
+    ) -> None:
+        # set properties
+        self._grid_setter(grid)
+        self._grid_map_setter(grid_map)
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}"
+            f"(grid=array{self.grid.shape}, grid_map=array{self.grid_map.shape})"
+        )
+
+    @property
+    def grid(self) -> ndarray:
+        """The grid coordinates."""
+        return self._grid
+
+    def _grid_setter(self, array) -> None:
+        array = np.asarray_chkfinite(array)
+        if array.ndim < 1:
+            raise ValueError("grid must be at least 1-D.")
+        if array.ndim < 2:
+            array = array[:, None]  # add the last dimension
+        self._grid = array
+
+    @property
+    def grid_map(self) -> ndarray:
+        """The map of the grid index."""
+        return self._grid_map
+
+    def _grid_map_setter(self, array) -> None:
+        if array is None:
+            array = np.arange(np.prod(self._grid.shape[:-1]), dtype=np.int32).reshape(
+                self._grid.shape[:-1]
+            )
+
+        array = np.asarray_chkfinite(array)
+
+        if not np.issubdtype(array.dtype, np.integer):
+            raise TypeError(f"grid_map must be integer type, not {array.dtype}.")
+        if array.ndim != self._grid.ndim - 1:
+            raise ValueError(f"grid_map must be {self._grid.ndim - 1}D, not {array.ndim}.")
+        if array.shape != self._grid.shape[:-1]:
+            raise ValueError(f"grid_map shape must be {self._grid.shape[:-1]}, not {array.shape}.")
+        self._grid_map = array
+
+    def matrix_along_axis(
+        self,
+        axis: int,
+        diff_type: Literal["forward", "backward"] = "forward",
+        boundary: Literal["dirichlet", "neumann", "periodic"] = "dirichlet",
+    ) -> csr_array:
+        """Derivative matrix along the specified axis.
+
+        .. note::
+
+            If the grid has masked area, edges before the masked area take either the dirichlet
+            (forward) or neumann (backward) condition.
+            The periodic boundary condition is only available for the last and first points
+            along the axis.
+
+        Parameters
+        ----------
+        axis : int
+            The axis to calculate the derivative matrix.
+            The axis must be in the grid dimensions.
+        diff_type : {"forward", "backward"}, optional
+            The type of the difference method, by default "forward".
+        boundary : {"dirichlet", "neumann", "periodic"}, optional
+            The boundary condition of the derivative matrix, by default "dirichlet".
+            If the boundary condition is "dirichlet", the outer boundary is set to zero.
+            If the boundary condition is "neumann", the difference type is set to the opposite
+            direction at the edge of the grid.
+            If the boundary condition is "periodic", the first and last points are connected.
+
+        Returns
+        -------
+        csr_array
+            The derivative matrix along the specified axis.
+
+        Examples
+        --------
+        Firstly, let us operate the derivative matrix to a simple 1-D profile and compare it with
+        gradient values calculated by the `numpy.gradient` function.
+
+        .. plot::
+
+            import numpy as np
+            import matplotlib.pyplot as plt
+            from cherab.inversion import Derivative
+
+            # Create a sample 1-D sine profile
+            x = np.linspace(0, 2 * np.pi, 100, endpoint=False)
+            y = np.sin(x)
+
+            # Calculate the derivative matrix
+            derivative = Derivative(x)
+            dmat = derivative.matrix_along_axis(0, boundary="dirichlet")
+
+            # Compare gradient values
+            plt.plot(x, y, label="y = sin(x)")
+            plt.plot(x, dmat @ y, label="y' = D @ y")
+            plt.plot(x, np.gradient(y, x), label="y' = np.gradient(y, x)", linestyle="--")
+            plt.legend()
+            plt.show()
+
+        Next, we create a sample 2-D profile in cylindrical coordinates and apply the derivative
+        along the R and Phi axis to the profile.
+
+        .. plot:: ../scripts/derivative_test.py
+            :include-source:
+        """
+        if axis < 0 or axis >= self._grid_map.ndim:
+            raise ValueError(f"Invalid axis: {axis}.")
+
+        if diff_type == "forward":
+            sign = 1.0
+            pair = (0, 1)
+            edge = -1
+        elif diff_type == "backward":
+            sign = -1.0
+            pair = (1, 0)
+            edge = 0
+        else:
+            raise ValueError(f"Invalid diff_type: {diff_type}.")
+
+        if boundary not in {"dirichlet", "neumann", "periodic"}:
+            raise ValueError(f"Invalid boundary: {boundary}.")
+
+        bins = self._grid_map.max() + 1
+        mat = lil_array((bins, bins), dtype=np.float64)
+
+        for fixed_indices in np.ndindex(
+            *[dim for i, dim in enumerate(self._grid_map.shape) if i != axis]
+        ):
+            # slices for the fixed indices
+            slc1: list[int | slice] = list(fixed_indices)
+            slc2: list[int | slice] = list(fixed_indices)
+
+            slc1.insert(axis, slice(1, None))
+            slc2.insert(axis, slice(None, -1))
+
+            # calculate each segment length along the axis
+            lengths = np.linalg.norm(self._grid[tuple(slc1)] - self._grid[tuple(slc2)], axis=-1)
+
+            # extract the indices of the fixed axis
+            slc: list[int | slice] = list(fixed_indices)
+            slc.insert(axis, slice(0, None))
+            indices = self._grid_map[tuple(slc)]
+
+            for k, (i, j) in enumerate(zip(indices[pair[0] :], indices[pair[1] :], strict=False)):
+                # skip the masked area
+                if i < 0:
+                    continue
+
+                mat[i, i] = -sign / lengths[k]
+                mat[i, j] = sign / lengths[k]
+
+            # Boundary condition
+            i = indices[edge]
+
+            # skip the masked area
+            if i < 0:
+                continue
+
+            elif boundary == "dirichlet":
+                mat[i, i] = -sign / lengths[edge]
+
+            elif boundary == "neumann":
+                j = indices[edge - int(sign)]
+                mat[i, i] = sign / lengths[edge]
+                mat[i, j] = -sign / lengths[edge]
+
+            elif boundary == "periodic":
+                j = indices[edge + int(sign)]
+                length = np.linalg.norm(
+                    self._grid[tuple(slc)][0, :] - self._grid[tuple(slc)][-1, :]
+                )
+                mat[i, i] = -sign / length
+                mat[i, j] = sign / length
+
+        return mat.tocsr()
