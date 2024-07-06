@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pickle
 from collections.abc import Collection
-from datetime import timedelta
 from pathlib import Path
 from time import time
 from typing import Type
@@ -15,7 +14,7 @@ from scipy.sparse import diags as spdiags
 
 from .core import _SVDBase, compute_svd
 from .lcurve import Lcurve
-from .tools import Spinner
+from .tools.spinner import DummySpinner, Spinner
 
 __all__ = ["Mfr"]
 
@@ -33,9 +32,9 @@ class Mfr:
     T : (M, N) array_like
         Matrix :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}` of the forward problem
         (geometry matrix, ray transfer matrix, etc.).
-    dmats : list[tuple[scipy.sparse.spmatrix, scipy.sparse.spmatrix]]
-        List of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j` along
-        to :math:`i` and :math:`j` coordinate directions, respectively.
+    dmats : Collection[Collection[scipy.sparse.spmatrix, scipy.sparse.spmatrix]]
+        Iterable of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`
+        along to :math:`i` and :math:`j` coordinate directions, respectively.
     Q : (M, M) array_like, optional
         Weighted matrix for the residual norm :math:`\\mathbf{Q}\\in\\mathbb{R}^{M\\times M}`,
         by default None (meaning :math:`\\mathbf{Q} = \\mathbf{I}`).
@@ -45,13 +44,14 @@ class Mfr:
 
     Examples
     --------
-    >>> mfr = Mfr(T, dmats, data)
+    >>> mfr = Mfr(T, dmats, data=data)
     """
 
     def __init__(
         self,
         T,
-        dmats: list[tuple[spmatrix, spmatrix]],
+        dmats: Collection[Collection[spmatrix]],
+        *,
         Q=None,
         data=None,
     ):
@@ -61,8 +61,8 @@ class Mfr:
         if T.ndim != 2:
             raise ValueError("T must be a 2D array")
 
-        if not isinstance(dmats, list):
-            raise TypeError("dmats must be a list of tuples")
+        if not isinstance(dmats, Collection):
+            raise TypeError("dmats must be a collection of derivative matrices pair.")
         for dmat1, dmat2 in dmats:
             if not issparse(dmat1):
                 raise TypeError("one of the matrices in dmats is not a scipy sparse matrix")
@@ -88,7 +88,7 @@ class Mfr:
         return self._T
 
     @property
-    def dmats(self) -> list[tuple[spmatrix, spmatrix]]:
+    def dmats(self) -> Collection[Collection[spmatrix]]:
         """List of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`.
 
         Each derivative matrix's subscript represents the coordinate direction.
@@ -127,8 +127,9 @@ class Mfr:
         use_gpu: bool = False,
         dtype=None,
         verbose: bool = False,
+        spinner: bool = True,
         **kwargs,
-    ) -> tuple[np.ndarray, dict]:
+    ) -> tuple[np.ndarray | None, dict]:
         """Solve the inverse problem using MFR scheme.
 
         MFR is an iterative scheme that combines Singular Value Decomposition (SVD) and a
@@ -166,14 +167,17 @@ class Mfr:
             Same as :obj:`~.compute_svd`'s `dtype` argument, by default numpy.float64.
         verbose : bool, optional
             If True, print iteration information regarding SVD computation, by default False.
+        spinner : bool, optional
+            If True, show spinner during the computation, by default True.
         **kwargs : dict, optional
             Additional keyword arguments passed to the regularizer class's :obj:`~._SVDBase.solve`
             method.
 
         Returns
         -------
-        x : (N, ) array
+        x : (N, ) array or None
             Optimal solution vector :math:`\\mathbf{x}` found by the MFR scheme.
+            If the unintended error occurs during the first MFR iteration, the solution will be None.
         status : dict[str, Any]
             Dictionary containing the following keys:
             - `elapsed_time`: elapsed time for the inversion calculation.
@@ -212,6 +216,12 @@ class Mfr:
             else:
                 path: Path = Path(path)
 
+        # set spinner
+        if spinner:
+            _spinner = Spinner
+        else:
+            _spinner = DummySpinner
+
         # set iteration counter and status
         niter = 0
         status = {}
@@ -225,7 +235,7 @@ class Mfr:
 
         # start MFR iteration
         while niter < miter and not self._converged:
-            with Spinner(f"{niter:02}-th MFR iteration", timer=True) as sp:
+            with _spinner(f"{niter:02}-th MFR iteration", timer=True) as sp:
                 try:
                     sp_base_text = sp.text + " "
 
@@ -235,14 +245,13 @@ class Mfr:
                     )
 
                     # compute SVD components
-                    spinner = sp if verbose else None
                     svds = compute_svd(
                         self._T,
                         H,
                         Q=self._Q,
                         dtype=dtype,
                         use_gpu=use_gpu,
-                        sp=spinner,
+                        sp=sp if verbose else None,
                     )
 
                     # find optimal solution using regularizer class
@@ -260,7 +269,7 @@ class Mfr:
 
                     # store regularizer object at each iteration
                     if store_regularizers:
-                        with (path / f"regularizer_{niter}.pickle").open("wb") as f:
+                        with (path / f"regularizer_{niter}.pickle").open("wb") as f:  # type: ignore
                             pickle.dump(reg, f)
 
                     # print iteration information
@@ -284,8 +293,6 @@ class Mfr:
         status["diffs"] = diffs
         status["converged"] = self._converged
         status["regularizer"] = reg
-
-        print(f"Total elapsed time: {timedelta(seconds=elapsed_time)}")
 
         return x, status
 
@@ -361,7 +368,7 @@ class Mfr:
                 "Number of derivative weight coefficients must be equal to number of derivative matrices"
             )
 
-        regularization = csc_matrix(self._dmats[0][0].shape, dtype=float)
+        regularization = csc_matrix(w.shape, dtype=float)
 
         for (dmat1, dmat2), aniso in zip(self._dmats, derivative_weights):  # noqa: B905  for py39
             regularization += aniso * dmat1.T @ w @ dmat2
