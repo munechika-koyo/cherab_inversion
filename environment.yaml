@@ -8,7 +8,7 @@ channels:
 dependencies:
 - python >= 3.9, < 3.13
 - meson-python < 0.16  # v0.16 has a error in install
-- cython >= 3.0
+# - cython >= 3.0
 - numpy
 - scipy
 # - cupy  # manually install for GPU acceleration of SVD
@@ -21,7 +21,7 @@ dependencies:
 - mypy
 - rich-click
 - pre-commit
-- cython-lint
+# - cython-lint
 - pytest
 - setuptools
   # for documentation

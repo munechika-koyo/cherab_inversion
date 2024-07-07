@@ -1,7 +1,7 @@
 project(
   'cherab-inversion',
-  'c',
-  'cython',
+  # 'c',
+  # 'cython',
   version: run_command(
     ['cherab/inversion/_build_utils/gitversion.py'],
     check: true
@@ -15,7 +15,7 @@ project(
 )
 
 fs = import('fs')
-py = import('python').find_installation(pure: false)
+py = import('python').find_installation(pure: true)
 
 # Python dependency
 py_dep = py.dependency()

@@ -3,7 +3,7 @@ requires = [
     "wheel",
     "numpy",
     "meson-python < 0.16",            # v0.16 has a error in install
-    "cython >= 3.0",
+    # "cython >= 3.0",
     "tomli; python_version < '3.11'",
 ]
 build-backend = "mesonpy"
@@ -30,7 +30,6 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Cython",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -69,9 +68,9 @@ dev = [
     "ruff",
     "mypy",
     "rich-click",
-    "cython-lint",
+    # "cython-lint",
     "pre-commit",
-    "cython >= 3.0",
+    # "cython >= 3.0",
     "meson-python < 0.16",
     "pytest",
 ]
@@ -82,8 +81,8 @@ Homepage = "https://cherab-inversion.readthedocs.io/"
 documentation = "https://cherab-inversion.readthedocs.io/"
 repository = "https://github.com/munechika-koyo/cherab_inversion"
 
-[tool.cython-lint]
-max-line-length = 140
+# [tool.cython-lint]
+# max-line-length = 140
 
 [tool.black]
 line-length = 100
