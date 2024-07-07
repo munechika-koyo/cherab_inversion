@@ -443,6 +443,7 @@ class Derivative:
         gradient values calculated by the `numpy.gradient` function.
 
         .. plot::
+            :include-source:
 
             import numpy as np
             import matplotlib.pyplot as plt
