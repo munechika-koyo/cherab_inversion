@@ -467,7 +467,7 @@ class Derivative:
         Next, we create a sample 2-D profile in cylindrical coordinates and apply the derivative
         along the R and Phi axis to the profile.
 
-        .. plot:: ../scripts/derivative_test.py
+        .. plot:: ../scripts/derivative_cylindrical.py
             :include-source:
         """
         if axis < 0 or axis >= self._grid_map.ndim:
