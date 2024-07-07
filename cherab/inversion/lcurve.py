@@ -69,9 +69,10 @@ class Lcurve(_SVDBase):
         n_beta : int, optional
             Nnumber of regularization parameters, by default 500.
         scatter_plot : int, optional
-            Whether or not to plot some L-curve points, by default None.
+            Whether or not to plot some L-curve points as a 10 :sup:`x` format, by default None.
             If you want to manually define the number of points,
-            enter the numbers like ``scatter_plot=10``.
+            enter the numbers like ``scatter_plot=10`` then around 10 points corresponding to
+            10 :sup:`x` format are plotted.
         scatter_annotate : bool, optional
             Whether or not to annotate the scatter_points, by default True.
             This key argument is valid if only ``scatter_plot`` is not None.
@@ -106,7 +107,9 @@ class Lcurve(_SVDBase):
 
         # plot some points of L-curve and annotate with regularization parameters label
         if isinstance(scatter_plot, int) and scatter_plot > 0:
-            betas = np.logspace(np.ceil(bounds[0]), np.floor(bounds[1]), scatter_plot)
+            a, b = np.ceil(bounds[0]), np.floor(bounds[1])
+            interval = round((b - a) / scatter_plot)
+            betas = 10 ** np.arange(a, b, interval)
             for beta in betas:
                 x, y = self.residual_norm(beta), self.regularization_norm(beta)
                 axes.scatter(
@@ -118,9 +121,9 @@ class Lcurve(_SVDBase):
                     zorder=1,
                 )
                 if scatter_annotate is True:
-                    _lambda_sci = parse_scientific_notation(f"{beta:.2e}", scilimits=(0, 0)).split(
-                        "\\times "
-                    )[1]
+                    _lambda_sci = parse_scientific_notation(f"{beta:.2e}", scilimits=(0, 0))
+                    _lambda_sci = _lambda_sci.split("\\times ")
+                    _lambda_sci = _lambda_sci[0] if len(_lambda_sci) == 1 else _lambda_sci[1]
                     axes.annotate(
                         f"$\\lambda = {_lambda_sci}$",
                         xy=(x, y),
