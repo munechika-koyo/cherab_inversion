@@ -685,7 +685,7 @@ def compute_svd(
         # compute right singular vectors
         sp.text = _base_text + f"(computing right singular vectors{_use_gpu_text})"
         v_mat = (
-            asarray(At.A, dtype=dtype)  # type: ignore
+            asarray(At.toarray(), dtype=dtype)  # type: ignore
             @ asarray(u_vecs, dtype=dtype)
             @ diags(1 / singular, dtype=dtype)
         )
@@ -699,7 +699,11 @@ def compute_svd(
         # compute A = B @ T @ C^-1
         if B is not None:
             sp.text = _base_text + "(computing A = B @ T @ C^-1)"
-            A = asarray(B.A, dtype=dtype) @ asarray(T, dtype=dtype) @ asarray(C_inv, dtype=dtype)
+            A = (
+                asarray(B.toarray(), dtype=dtype)  # type: ignore
+                @ asarray(T, dtype=dtype)
+                @ asarray(C_inv, dtype=dtype)
+            )
         else:
             sp.text = _base_text + "(computing A = T @ C^-1)"
             A = asarray(T, dtype=dtype) @ asarray(C_inv, dtype=dtype)
