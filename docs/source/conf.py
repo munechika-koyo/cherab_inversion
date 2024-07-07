@@ -46,6 +46,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "doi_role",
     "numpydoc",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 default_role = "obj"
