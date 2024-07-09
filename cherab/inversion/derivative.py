@@ -1,5 +1,6 @@
 """Module to offer the function to generate a derivative matrix."""
 
+from collections.abc import Callable
 from typing import Literal
 
 import numpy as np
@@ -540,3 +541,143 @@ class Derivative:
                 mat[i, j] = sign / length
 
         return mat.tocsr()
+
+    def matrix_gradient(
+        self, func: Callable[[float, float], float], diagonal: bool = False
+    ) -> tuple[csr_array, csr_array]:
+        """Derivative matrices based on the gradient of the given function.
+
+        This function returns derivative matrices along the parallel and perpendicular directions
+        to the gradient of the given function.
+        The gradient is calculated by the finite central difference using `numpy.gradient` at
+        each grid point.
+
+        .. warning::
+            Currently, this method can only be used for a 2-D function, which uses the first and
+            second axis of the grid coordinates, i.e. the grid shape is only allowed to be
+            `(L, M, ndim)` or `(L, M, N, ndim)`. and the function use the `L` and `M` as the
+            first and second axis respectively.
+
+        Parameters
+        ----------
+        func : Callable[[float, float], float]
+            The scalar function to calculate the gradient.
+            The function uses the first and second coordinates of the grid as the input.
+        diagonal : bool, optional
+            Whether to include the diagonal difference along to the gradient, by default False.
+
+        Returns
+        -------
+        dmat_parallel : csr_array
+            The derivative matrix along the parallel direction to the gradient.
+        dmat_perpendicular : csr_array
+            The derivative matrix along the perpendicular direction to the gradient.
+
+        Examples
+        --------
+        Let us create a sample 2-D profile and apply the derivative matrices along the parallel
+        and perpendicular directions to the gradient of the concentrically monotonically increasing
+        function.
+
+        .. plot:: ../scripts/derivative_gradient.py
+            :include-source:
+        """
+        # Check the grid shape and convert to (L, M, N) array
+        num_axis = self._grid_map.ndim
+        if num_axis < 2:
+            raise ValueError(f"The grid must be at least 2-D ({num_axis - 1}-D).")
+        elif num_axis == 2:
+            grid_map = self._grid_map[:, :, np.newaxis]
+        elif num_axis == 3:
+            grid_map = self._grid_map
+        else:
+            raise NotImplementedError("The grid over 4-D is not supported yet.")
+
+        # Check the grid coordinate dimension and convert to (L, M, N, 2) array
+        grid_dim = self._grid.shape[-1]
+        if grid_dim < 2:
+            raise ValueError(f"The grid coordinate must be at least 2-D ({grid_dim}-D).")
+        if num_axis == 2:
+            grid = self._grid[..., np.newaxis, :2]
+        elif num_axis == 3:
+            grid = self._grid[..., :2]
+        else:
+            raise NotImplementedError("The grid coordinate over 4-D is not supported yet.")
+
+        # Calculate the gradient of the function along axis 0 and 1
+        func_values = np.zeros((grid.shape[0], grid.shape[1]))
+        for i, j in np.ndindex(*grid.shape[:2]):
+            func_values[i, j] = func(grid[i, j, 0, 0], grid[i, j, 0, 1])
+
+        # Calculate the gradient
+        grads_0, grads_1 = np.gradient(func_values, grid[:, 0, 0, 0], grid[0, :, 0, 1])
+
+        # Prepare the derivative matrices
+        bins = grid_map.max() + 1
+        dmat_para = lil_array((bins, bins), dtype=np.float64)
+        dmat_perp = lil_array((bins, bins), dtype=np.float64)
+
+        L = grid_map.shape[0]
+        M = grid_map.shape[1]
+
+        for indices in np.ndindex(grid_map.shape):
+            index = grid_map[indices]
+
+            # skip the masked area
+            if index < 0:
+                continue
+
+            # Extract axes indices
+            i, j, k = indices
+
+            # Calculate the gradient values
+            g0, g1 = grads_0[i, j], grads_1[i, j]
+            g0_abs, g1_abs = np.abs(g0), np.abs(g1)
+            g0_sign, g1_sign = int(np.sign(g0)), int(np.sign(g1))
+
+            # Parallel direction
+            forward_para_index0 = i + g0_sign
+            forward_para_index1 = j + g1_sign
+
+            dmat_para[index, index] = -g0_abs - g1_abs
+            if forward_para_index0 > -1 and forward_para_index0 < L:
+                dmat_para[index, grid_map[forward_para_index0, j, k]] = g0_abs
+
+            if forward_para_index1 > -1 and forward_para_index1 < M:
+                dmat_para[index, grid_map[i, forward_para_index1, k]] = g1_abs
+
+            # Perpendicular direction
+            forward_perp_index0 = i - g1_sign
+            forward_perp_index1 = j + g0_sign
+
+            dmat_perp[index, index] = -g1_abs - g0_abs
+            if forward_perp_index0 > -1 and forward_perp_index0 < L:
+                dmat_perp[index, grid_map[forward_perp_index0, j, k]] = g1_abs
+
+            if forward_perp_index1 > -1 and forward_perp_index1 < M:
+                dmat_perp[index, grid_map[i, forward_perp_index1, k]] = g0_abs
+
+            # Add the diagonal term
+            if diagonal:
+                value = g0_abs * g1_abs / np.hypot(g0, g1)
+
+                dmat_para[index, index] += -value
+                dmat_perp[index, index] += -value
+                if (
+                    forward_para_index0 > -1
+                    and forward_para_index0 < L
+                    and forward_para_index1 > -1
+                    and forward_para_index1 < M
+                ):
+                    diag_para_index = grid_map[forward_para_index0, forward_para_index1, k]
+                    dmat_para[index, diag_para_index] += value
+                if (
+                    forward_perp_index0 > -1
+                    and forward_perp_index0 < L
+                    and forward_perp_index1 > -1
+                    and forward_perp_index1 < M
+                ):
+                    diag_perp_index = grid_map[forward_perp_index0, forward_perp_index1, k]
+                    dmat_perp[index, diag_perp_index] += value
+
+        return dmat_para.tocsr(), dmat_perp.tocsr()
