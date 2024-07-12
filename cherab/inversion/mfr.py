@@ -9,7 +9,7 @@ from time import time
 from typing import Type
 
 import numpy as np
-from scipy.sparse import csc_matrix, issparse, spmatrix
+from scipy.sparse import csc_matrix, issparse, sparray, spmatrix
 from scipy.sparse import diags as spdiags
 
 from .core import _SVDBase, compute_svd
@@ -50,7 +50,7 @@ class Mfr:
     def __init__(
         self,
         T,
-        dmats: Collection[Collection[spmatrix]],
+        dmats: Collection[Collection[spmatrix | sparray]],
         *,
         Q=None,
         data=None,
@@ -88,7 +88,7 @@ class Mfr:
         return self._T
 
     @property
-    def dmats(self) -> Collection[Collection[spmatrix]]:
+    def dmats(self) -> Collection[Collection[spmatrix | sparray]]:
         """List of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`.
 
         Each derivative matrix's subscript represents the coordinate direction.
@@ -101,7 +101,7 @@ class Mfr:
         return self._data
 
     @property
-    def Q(self) -> np.ndarray | spmatrix | None:
+    def Q(self) -> np.ndarray | spmatrix | sparray | None:
         """Weighted matrix :math:`\\mathbf{Q}` for the residual norm."""
         return self._Q
 
