@@ -513,11 +513,10 @@ def test_derivative_set_grid_map(grid, setting_grid_map, expected_grid_map, expe
 # Create a fixture for Derivative class
 @pytest.fixture
 def derivative_instance():
-    grid = [[[0, 0], [0, 1]], [[1, 0], [1, 1]]]
-    return Derivative(grid, [[0, 2], [1, 3]])
+    return Derivative([[[0, 0], [0, 1]], [[1, 0], [1, 1]]], [[0, 2], [1, 3]])
 
 
-# Test for creating matrix methods
+# Test for matrix_along_axis method
 MATRIX_ALONG_AXIS_CASES = {
     "axis: 0, default params": (
         0,
@@ -605,3 +604,71 @@ def test_derivative_matrix_along_axis(
     with expectation:
         matrix = derivative_instance.matrix_along_axis(axis, boundary=boundary, diff_type=diff_type)
         np.testing.assert_array_equal(matrix.toarray(), expected_matrix)
+
+
+# Test for matrix_gradient method
+DIAG_VALUE = 0.7071067811865475
+MATRIX_GRADIENT = {
+    "f(x, y) = x": (
+        lambda x, y: x,
+        np.array([[-1, 1, 0, 0], [0, -1, 0, 0], [0, 0, -1, 1], [0, 0, 0, -1]]),
+        np.array([[-1, 0, 1, 0], [0, -1, 0, 1], [0, 0, -1, 0], [0, 0, 0, -1]]),
+        False,
+        does_not_raise(),
+    ),
+    "f(x, y) = y": (
+        lambda x, y: y,
+        np.array([[-1, 0, 1, 0], [0, -1, 0, 1], [0, 0, -1, 0], [0, 0, 0, -1]]),
+        np.array([[-1, 0, 0, 0], [1, -1, 0, 0], [0, 0, -1, 0], [0, 0, 1, -1]]),
+        False,
+        does_not_raise(),
+    ),
+    "f(x, y) = x + y": (
+        lambda x, y: x + y,
+        np.array([[-2, 1, 1, 0], [0, -2, 0, 1], [0, 0, -2, 1], [0, 0, 0, -2]]),
+        np.array([[-2, 0, 1, 0], [1, -2, 0, 1], [0, 0, -2, 0], [0, 0, 1, -2]]),
+        False,
+        does_not_raise(),
+    ),
+    "f(x, y) = x + y (w/ diagonal)": (
+        lambda x, y: x + y,
+        np.array(
+            [
+                [-2.0 - DIAG_VALUE, 1, 1, DIAG_VALUE],
+                [0, -2.0 - DIAG_VALUE, 0, 1],
+                [0, 0, -2.0 - DIAG_VALUE, 1],
+                [0, 0, 0, -2.0 - DIAG_VALUE],
+            ]
+        ),
+        np.array(
+            [
+                [-2.0 - DIAG_VALUE, 0, 1, 0],
+                [1, -2.0 - DIAG_VALUE, DIAG_VALUE, 1],
+                [0, 0, -2.0 - DIAG_VALUE, 0],
+                [0, 0, 1, -2.0 - DIAG_VALUE],
+            ]
+        ),
+        True,
+        does_not_raise(),
+    ),
+    "invalid scalar function": (
+        lambda x: x,
+        None,
+        None,
+        None,
+        pytest.raises(TypeError),
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ["function", "expected_matrix_para", "expected_matrix_perp", "diagonal", "expectation"],
+    [pytest.param(*case, id=key) for key, case in MATRIX_GRADIENT.items()],
+)
+def test_derivative_matrix_gradient(
+    derivative_instance, function, expected_matrix_para, expected_matrix_perp, diagonal, expectation
+):
+    with expectation:
+        mat_para, mat_perp = derivative_instance.matrix_gradient(function, diagonal=diagonal)
+        np.testing.assert_array_equal(mat_para.toarray(), expected_matrix_para)
+        np.testing.assert_array_equal(mat_perp.toarray(), expected_matrix_perp)
