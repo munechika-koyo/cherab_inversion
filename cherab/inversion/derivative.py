@@ -639,23 +639,23 @@ class Derivative:
             forward_para_index0 = i + g0_sign
             forward_para_index1 = j + g1_sign
 
-            dmat_para[index, index] = -g0_abs - g1_abs
+            dmat_para[index, index] += -g0_abs - g1_abs
             if forward_para_index0 > -1 and forward_para_index0 < L:
-                dmat_para[index, grid_map[forward_para_index0, j, k]] = g0_abs
+                dmat_para[index, grid_map[forward_para_index0, j, k]] += g0_abs
 
             if forward_para_index1 > -1 and forward_para_index1 < M:
-                dmat_para[index, grid_map[i, forward_para_index1, k]] = g1_abs
+                dmat_para[index, grid_map[i, forward_para_index1, k]] += g1_abs
 
             # Perpendicular direction
             forward_perp_index0 = i - g1_sign
             forward_perp_index1 = j + g0_sign
 
-            dmat_perp[index, index] = -g1_abs - g0_abs
+            dmat_perp[index, index] += -g1_abs - g0_abs
             if forward_perp_index0 > -1 and forward_perp_index0 < L:
-                dmat_perp[index, grid_map[forward_perp_index0, j, k]] = g1_abs
+                dmat_perp[index, grid_map[forward_perp_index0, j, k]] += g1_abs
 
             if forward_perp_index1 > -1 and forward_perp_index1 < M:
-                dmat_perp[index, grid_map[i, forward_perp_index1, k]] = g0_abs
+                dmat_perp[index, grid_map[i, forward_perp_index1, k]] += g0_abs
 
             # Add the diagonal term
             if diagonal:
