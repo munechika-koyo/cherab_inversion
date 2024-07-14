@@ -1,5 +1,7 @@
 """Module to offer the function to generate a derivative matrix."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import Literal
 
@@ -509,7 +511,7 @@ class Derivative:
             slc.insert(axis, slice(0, None))
             indices = self._grid_map[tuple(slc)]
 
-            for k, (i, j) in enumerate(zip(indices[pair[0] :], indices[pair[1] :], strict=False)):
+            for k, (i, j) in enumerate(zip(indices[pair[0] :], indices[pair[1] :])):  # noqa: B905
                 # skip the masked area
                 if i < 0:
                     continue
