@@ -49,7 +49,7 @@ def test_compute_svd(test_data, Q, use_gpu, dtype):
 
     # check Q = B.T @ B
     if Q is not None:
-        np.testing.assert_allclose(Q, (B.T @ B).A, rtol=0, atol=1.0e-10)
+        np.testing.assert_allclose(Q, (B.T @ B).toarray(), rtol=0, atol=1.0e-10)
 
 
 @pytest.mark.parametrize(

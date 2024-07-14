@@ -44,6 +44,8 @@ class TestData:
         matrix[:, -1] *= 0.5
         matrix *= np.abs(_t[1] - _t[0])
 
+        # compute svd
+
         # set attributes
         self.matrix: np.ndarray = matrix
         self.x_true: np.ndarray = true_func(_t)
@@ -100,7 +102,7 @@ class TestTomographyData:
 
         # Create a 2D phantom
         phantom_2d = np.full(self.voxel_map.shape, np.nan)
-        phantom_2d[self.mask[:, :]] = phantom
+        phantom_2d[self.mask] = phantom
 
         self.phantom = phantom
         self.phantom2d = phantom_2d
@@ -154,3 +156,9 @@ def test_data():
 @pytest.fixture
 def test_tomography_data():
     return TestTomographyData()
+
+
+@pytest.fixture
+def computed_svd(test_data):
+    u, sigma, vh = np.linalg.svd(test_data.matrix, full_matrices=False)
+    return u, sigma, vh
