@@ -36,4 +36,4 @@ endif
 
 subdir('bayesian')
 subdir('tools')
-subdir('tests')
+subdir('data')
