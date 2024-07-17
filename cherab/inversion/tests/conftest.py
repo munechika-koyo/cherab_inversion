@@ -1,9 +1,7 @@
-from pathlib import Path
-
 import numpy as np
 import pytest
 
-SCRIPT_DIR = Path(__file__).parent
+from ..data import get_sample_data
 
 
 def true_func(x):
@@ -82,7 +80,7 @@ class TestTomographyData:
     """
 
     def __init__(self):
-        grid_data = np.load(SCRIPT_DIR / "data" / "raytransfer_grid_data.npz")
+        grid_data = get_sample_data("bolo")
         self.matrix = grid_data["sensitivity_matrix"]
         self.mask = grid_data["mask"].squeeze()
         self.grid_centres = grid_data["grid_centres"]

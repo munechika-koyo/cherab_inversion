@@ -10,6 +10,9 @@ py.install_sources(
   subdir: 'cherab/inversion',
 )
 
+# Copy the main __init__.py files to the build dir
+__init__py = fs.copyfile('__init__.py')
+
 # Generate version.py for sdist
 meson.add_dist_script(
   ['_build_utils/gitversion.py', '--meson-dist', '--write', 'cherab/inversion/version.py']
@@ -24,7 +27,6 @@ if not fs.exists('cherab/inversion/version.py')
     build_by_default: true,
     install: true,
     install_dir: py.get_install_dir() / 'cherab/inversion',
-    install_tag: 'python-runtime',
   )
 else
   # When building from sdist, version.py exists and should be included
@@ -34,6 +36,6 @@ else
   )
 endif
 
-subdir('bayesian')
+# subdir('bayesian')
 subdir('tools')
 subdir('data')
