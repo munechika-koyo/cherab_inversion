@@ -132,7 +132,7 @@ tasks = { test = "pytest --pyargs cherab.inversion" }
 # === Documentation Features ===
 [tool.pixi.feature.docs.tasks]
 docs = "sphinx-build -b html docs/source/ docs/build/html"
-clean = "rm -rf docs/build && rm -rf docs/source/_api"
+clean-docs = "rm -rf docs/build && rm -rf docs/source/_api"
 
 [tool.pixi.feature.docs.dependencies]
 docutils = "*"
