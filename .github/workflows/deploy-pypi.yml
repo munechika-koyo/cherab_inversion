@@ -28,7 +28,7 @@ jobs:
         environments: build
 
     - name: Build 🐍 wheels
-      run: pixi run build-wheel
+      run: pixi run -e build build-wheel
 
     - name: Upload distribution 📦 as artifact
       uses: actions/upload-artifact@v3
@@ -48,7 +48,7 @@ jobs:
         environments: build
 
     - name: Build 🐍 sdist
-      run: pixi run build-sdist
+      run: pixi run -e build build-sdist
 
     - name: Upload distribution 📦 as artifact
       uses: actions/upload-artifact@v3
