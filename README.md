@@ -11,43 +11,27 @@
 [![Documentation Status](https://readthedocs.org/projects/cherab-inversion/badge/?version=latest)](https://cherab-inversion.readthedocs.io/en/latest/?badge=latest)
 [![PyPI Publish](https://github.com/munechika-koyo/cherab_inversion/actions/workflows/deploy-pypi.yml/badge.svg)](https://github.com/munechika-koyo/cherab_inversion/actions/workflows/deploy-pypi.yml)
 
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Docstring formatter: docformatter](https://img.shields.io/badge/%20formatter-docformatter-fedcba.svg)](https://github.com/PyCQA/docformatter)
-[![Docstring style: numpy](https://img.shields.io/badge/%20style-numpy-459db9.svg)](https://numpydoc.readthedocs.io/en/latest/format.html)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-
 
 CHERAB for Inversion, which is a package for the inversion technique of SVD, MFR, etc.
 For more information, see the [documentation pages](https://cherab-inversion.readthedocs.io/).
 
-Quick installation
--------------------
-`mamba`/`conda` is recommended to install `cherab-inversion`.
-```Shell
+Quick Start
+-----------
+You can quickly try the inversion technique with `Pixi` tool:
+```bash
+git clone https://github.com/munechika-koyo/cherab_inversion
+cd cherab_inversion
+pixi run lab
+```
+Then, JupyterLab will be launched and you can try the inversion technique with the example notebook.
+
+![JupyterLab window](/docs/source/_static/images/quickstart_jupyterlab.webp)
+
+Installation
+------------
+You can install the package from conda-forge:
+```bash
 mamba install -c conda-forge cherab-inversion
 ```
 
-If you want to use `pip`, please install `suitesparse` at first, then install `cherab-inversion`.
-```Shell
-# Linux (Debian/Ubuntu)
-sudo apt install libsuitesparse-dev
-```
-```Shell
-# macOS
-brew install suite-sparse
-```
-```Shell
-pip install cherab-inversion
-```
-
-For Developpers
----
-If you would like to develop `cherab-inversion`, it is much easier to create a conda environment after cloning repository.
-```Shell
-mamba env create -f environment.yaml
-mamba activate cherab-inv-dev
-python dev.py build
-python dev.py install
-```
-Please follow the [development procedure](https://cherab-inversion.readthedocs.io/en/development/user/contribution.html).
+The rest of the installation methods are described in the [documentation](https://cherab-inversion.readthedocs.io/en/latest/installation.html).
