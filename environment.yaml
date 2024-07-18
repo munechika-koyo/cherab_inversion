@@ -6,27 +6,18 @@ name: cherab-inv-dev
 channels:
 - conda-forge
 dependencies:
-- python >= 3.9, < 3.13
-- meson-python < 0.16  # v0.16 has a error in install
-# - cython >= 3.0
+# For Runtime
+- python >= 3.9
 - numpy
 - scipy
-# - cupy  # manually install for GPU acceleration of SVD
-- matplotlib-base
+- matplotlib
 - scikit-sparse
-  # for developper tools
+# - cupy  # manually install for GPU acceleration of SVD
+# For Buildtime
+- meson-python < 0.16
 - tomli  # for python < 3.11
-- black
-- ruff
-- mypy
-- rich-click
-- pre-commit
-# - cython-lint
-- pytest
-- setuptools
-  # for documentation
+# For Documentation
 - docutils
-- ipython
 - ipykernel
 - ipywidgets
 - nbconvert > 7.3
@@ -43,7 +34,7 @@ dependencies:
 - sphinxcontrib-bibtex
 - pandoc
 - jinja2
-# pip-install dependencies
+# pypi-dependencies
 - pip
 - pip:
   - sphinx-github-style

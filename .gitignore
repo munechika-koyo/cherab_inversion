@@ -169,3 +169,7 @@ cython_debug/
 
 # version.py created at build time
 **/version.py
+
+# Pixi package management
+.pixi/
+pixi.lock
