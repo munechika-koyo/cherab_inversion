@@ -1,5 +1,4 @@
-# This workflow will build sdist & bdist of Python Package using cibuildwheel and
-# upload them to PyPI using Twine when a release is created
+# This workflow will build sdist & wheel of Python Package and upload them to PyPI
 
 name: PyPI Publish
 
@@ -13,26 +12,28 @@ permissions:
 
 jobs:
   build_wheels:
-    name: Build wheels 📦 on ${{ matrix.os }}
+    name: Build wheel distribution 📦 on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
+
+    - name: Set up Pixi 🟨
+      uses: prefix-dev/setup-pixi@v0.8.0
       with:
-        fetch-depth: 0
-        lfs: true
+        environments: build
 
     - name: Build 🐍 wheels
-      uses: pypa/cibuildwheel@v2.16.2
+      run: pixi run build-wheel
 
     - name: Upload distribution 📦 as artifact
       uses: actions/upload-artifact@v3
       with:
-        path: ./wheelhouse/*.whl
+        path: dist/*.whl
 
   build_sdist:
     name: Build source distribution 📦
@@ -40,12 +41,14 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        lfs: true
 
-    - name: Build sdist 📦
-      run: pipx run build --sdist
+    - name: Set up Pixi 🟨
+      uses: prefix-dev/setup-pixi@v0.8.0
+      with:
+        environments: build
+
+    - name: Build 🐍 sdist
+      run: pixi run build-sdist
 
     - name: Upload distribution 📦 as artifact
       uses: actions/upload-artifact@v3
