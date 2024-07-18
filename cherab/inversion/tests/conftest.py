@@ -80,7 +80,7 @@ class TestTomographyData:
     """
 
     def __init__(self):
-        grid_data = get_sample_data("bolo")
+        grid_data = get_sample_data("bolo.npz")
         self.matrix = grid_data["sensitivity_matrix"]
         self.mask = grid_data["mask"].squeeze()
         self.grid_centres = grid_data["grid_centres"]
