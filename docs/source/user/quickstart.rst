@@ -6,8 +6,8 @@
 Quick Start
 ===========
 
-Only 3 steps to get started with `cherab-inversion` with `Pixi <https://pixi.sh/latest/>`__.
-Please make sure you have `Pixi<https://pixi.sh/latest/>` installed on your system.
+Only 3 steps to get started with `cherab-inversion` with `Pixi`_.
+Please make sure you have `Pixi`_ installed on your system.
 If not, please follow the `Pixi installation guide <https://pixi.sh/latest#installation>`__.
 
 1. Download the repository::
