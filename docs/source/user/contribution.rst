@@ -6,45 +6,72 @@
 Contribution
 ============
 
-Contributions from the fusion community are welcome. Further details will be
-posted soon on our recommended way of contributing. In the mean time,
-interested collaborators should make contact with Koyo Munechika (Core Developer) at Tokyo Tech.
+Contributions from the community are welcome.
+Interested collaborators can make contact with Koyo Munechika (Core Developer) from the
+`Source Repository`_.
 
 .. include:: ../../../AUTHORS.md
 
 
-For Developper
+For Developers
 --------------
-If you would like to develop this package, please fork the GitHub repository at first, and follow
-the installation procedure :ref:`here<installation>`.
-Additionally, we recommand you should set up the ``pre-commit`` which is the framework to run the
-simple code review automatically before a git commit.
-After installing development dependencies, ``pre-commit`` is already installed, so simply excute
-the following command to complete the configuration:
+If you would like to develop this package, please fork the `GitHub Repository`_ at first, and follow
+the :ref:`installation procedure<installation>`.
 
-.. prompt:: bash
+`Pixi`_ is required for several development tasks, such as building the documentation and running
+the tests.
+Please install it by following the `Pixi Installation Guide<https://pixi.sh/latest#installation>`
+in advance.
 
-    pre-commit install
+.. tab-set::
 
-``pre-commit`` hook is automatically excuted when doing git commits.
-If you are curiouse about it more, please see the `pre-commit HP <https://pre-commit.com>`_.
+    .. tab-item:: test
+
+        To run the tests, you can do so with::
+
+            pixi run -e dev test
+
+    .. tab-item:: docs
+
+        To build the documentation, you can do so with::
+
+            pixi run -e doc docs
+
+        The documentation will be built in the ``docs/build/html`` directory.
+        You can use `dev` environment as well::
+
+            pixi run -e dev docs
+
+    .. tab-item:: format
+
+        The easiest way to lint/format the code is to use the `pre-commit<https://pre-commit.com>`
+        framework.
+        If you have never run the `pre-commit` before, you should install hooks by::
+
+            pixi run -e dev pre-commit install
+
+        Then, you can run the `pre-commit` by::
+
+            pixi run -e dev pre-commit run --all-files
+
+        After installing the `pre-commit`, it is automatically run before each commit.
+
+    .. tab-item:: ipython
+
+        To run the IPython shell, you can do so with::
+
+            pixi run -e dev ipython
+
+        The IPython shell will be started with the `cherab-inversion` package installed.
 
 
-The ``dev.py`` interface
-------------------------
-This interface has many options, allowing you to perform all regular development-related tasks
-(building docs, formatting codes, etc.).
-Here we document a few of the most commonly used options;
-run ``python dev.py --help`` or ``--help`` on each of the subcommands for more details.
+.. note::
 
-Use the following command to build the document:
+    All commands above are performed in the `dev` environment.
+    If you are annoyed by typing `pixi -e dev` every time, you can activate the `dev` environment
+    by::
 
-.. prompt:: bash
+        pixi shell -e dev
 
-    python dev.py doc
-
-To lint the cython source codes:
-
-.. prompt:: bash
-
-    python dev.py cython-lint
+    Then, you can execute the commands like `ipython`, `python`, etc. installed in the `dev`
+    environment.

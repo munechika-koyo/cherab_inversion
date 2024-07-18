@@ -46,7 +46,7 @@ If you want to install from source in order to work on `cherab-inversion` itself
     git clone https://github.com/munechika-koyo/cherab_inversion
     cd cherab_inversion
 
-Then run `postinstall-e` command in `dev` environment by `Pixi <https://pixi.sh/latest/>`__::
+Then run `postinstall-e` command in `dev` environment by `Pixi`_::
 
     pixi run -e dev postinstall-e
 

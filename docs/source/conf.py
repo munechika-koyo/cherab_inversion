@@ -98,7 +98,7 @@ master_doc = "index"
 
 html_theme = "pydata_sphinx_theme"
 
-# html_logo = "_static/images/cherab_lhd_logo.svg"
+# html_logo = "_static/images/cherab_inversion_logo.svg"
 
 # html_favicon = "_static/favicon/favicon.ico"
 

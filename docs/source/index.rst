@@ -34,16 +34,16 @@ so this documentation is gradually updated, and welcome your contribution.
         ^^^^^^^^^^^^^^^
 
         New to CHERAB-Inversion? Check out the getting started guide. It contains an
-        installation of CHERAB-Inversion and links to additional tutorials.
+        quickstart guide to get you up and running with CHERAB-Inversion.
 
         +++
 
-        .. button-ref:: user/installation
+        .. button-ref:: user/quickstart
             :expand:
             :color: secondary
             :click-parent:
 
-            To the installation
+            To the quickstart
 
     .. grid-item-card::
         :columns: 12 6 6 6
