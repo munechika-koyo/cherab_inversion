@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -28,18 +30,12 @@ class Lcurve(_SVDBase):
 
     Parameters
     ----------
-    s : vector_like
-        singular values like :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
-    u : array_like
-        left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
-    basis : array_like
-        inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
-    **kwargs : :py:class:`._SVDBase` properties, optional
-        *kwargs* are used to specify properties like a `data`
+    *args, **kwargs
+        Parameters are the same as :class:`~cherab.inversion.core._SVDBase`.
 
     Examples
     --------
-    >>> lcurve = Lcurve(s, u, basis, data=data)
+    >>> lcurve = Lcurve(s, U, basis, data=data)
     """
 
     def __init__(self, *args, **kwargs):
@@ -49,7 +45,7 @@ class Lcurve(_SVDBase):
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float | None, float | None] | None = None,
+        bounds: Collection[float | None] | None = None,
         n_beta: int = 500,
         scatter_plot: int | None = None,
         scatter_annotate: bool = True,
@@ -61,32 +57,34 @@ class Lcurve(_SVDBase):
 
         Parameters
         ----------
-        fig
-            matplotlib figure object, by default None.
-        axes
-            matplotlib Axes object, by default None.
-        bounds
-            bounds of log10 of regularization parameter, by default
-            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+        fig : :obj:`~matplotlib.figure.Figure`, optional
+            A matplotlib figure object, by default None.
+        axes : :obj:`~matplotlib.axes.Axes`, optional
+            A matplotlib Axes object, by default None.
+        bounds : Collection[float | None], optional
+            Boundary pair of log10 of regularization parameters, by default :obj:`.bounds`.
             If you set the bounds like ``(-10, None)``, the higher bound is set to
             :math:`\\log_{10}\\sigma_1^2`.
             Raise an error if a >= b in (a, b).
-        n_beta
-            number of regularization parameters, by default 500.
-        scatter_plot
-            whether or not to plot some L-curve points, by default None.
+        n_beta : int, optional
+            Nnumber of regularization parameters, by default 500.
+        scatter_plot : int, optional
+            Whether or not to plot some L-curve points as a 10 :sup:`x` format, by default None.
             If you want to manually define the number of points,
-            enter the numbers like ``scatter_plot=10``.
-        scatter_annotate
-            whether or not to annotate the scatter_points, by default True.
+            enter the numbers like ``scatter_plot=10`` then around 10 points corresponding to
+            10 :sup:`x` format are plotted.
+        scatter_annotate : bool, optional
+            Whether or not to annotate the scatter_points, by default True.
             This key argument is valid if only ``scatter_plot`` is not None.
-        plot_lambda_opt
-            whether or not to plot the L-curve corner point, by default True.
+        plot_lambda_opt : bool, optional
+            Whether or not to plot the L-curve corner point, by default True.
 
         Returns
         -------
-        tuple of :obj:`~matplotlib.figure.Figure` and :obj:`~matplotlib.axes.Axes`
-            (fig, axes), each of which is matplotlib objects applied some properties.
+        fig : :obj:`~matplotlib.figure.Figure`
+            A matplotlib figure object.
+        axes : :obj:`~matplotlib.axes.Axes`
+            A matplotlib Axes object.
         """
         # get bounds of log10 of regularization parameter
         bounds = self._generate_bounds(bounds)
@@ -109,7 +107,9 @@ class Lcurve(_SVDBase):
 
         # plot some points of L-curve and annotate with regularization parameters label
         if isinstance(scatter_plot, int) and scatter_plot > 0:
-            betas = np.logspace(np.ceil(bounds[0]), np.floor(bounds[1]), scatter_plot)
+            a, b = np.ceil(bounds[0]), np.floor(bounds[1])
+            interval = round((b - a) / scatter_plot)
+            betas = 10 ** np.arange(a, b, interval)
             for beta in betas:
                 x, y = self.residual_norm(beta), self.regularization_norm(beta)
                 axes.scatter(
@@ -121,9 +121,9 @@ class Lcurve(_SVDBase):
                     zorder=1,
                 )
                 if scatter_annotate is True:
-                    _lambda_sci = parse_scientific_notation(
-                        f"{beta:.2e}", scilimits=(-1, -1)
-                    ).split("\\times ")[1]
+                    _lambda_sci = parse_scientific_notation(f"{beta:.2e}", scilimits=(0, 0))
+                    _lambda_sci = _lambda_sci.split("\\times ")
+                    _lambda_sci = _lambda_sci[0] if len(_lambda_sci) == 1 else _lambda_sci[1]
                     axes.annotate(
                         f"$\\lambda = {_lambda_sci}$",
                         xy=(x, y),
@@ -159,7 +159,7 @@ class Lcurve(_SVDBase):
         self,
         fig: Figure | None = None,
         axes: Axes | None = None,
-        bounds: tuple[float | None, float | None] | None = None,
+        bounds: Collection[float | None] | None = None,
         n_beta: int = 500,
         show_max_curvature_line: bool = True,
     ) -> tuple[Figure, Axes]:
@@ -169,26 +169,27 @@ class Lcurve(_SVDBase):
 
         Parameters
         ----------
-        fig
-            matplotlib figure object, by default None.
-        axes
-            matplotlib Axes object, by default None.
-        bounds
-            bounds of log10 of regularization parameter, by default
-            :obj:`~cherab.inversion.core._SVDBase.bounds`.
+        fig : :obj:`~matplotlib.figure.Figure`, optional
+            A matplotlib figure object, by default None.
+        axes : :obj:`~matplotlib.axes.Axes`, optional
+            A matplotlib Axes object, by default None.
+        bounds : Collection[float | None], optional
+            Boundary pair of log10 of regularization parameters, by default :obj:`.bounds`.
             If you set the bounds like ``(-10, None)``, the higher bound is set to
             :math:`\\log_{10}\\sigma_1^2`.
             Raise an error if a >= b in (a, b).
-        n_beta
-            number of regularization parameters, by default 500.
-        show_max_curvature_line
-            whether or not to plot the vertical red dashed line at the maximum curvature point,
+        n_beta : int, optional
+            Number of regularization parameters, by default 500.
+        show_max_curvature_line : bool, optional
+            Whether or not to plot the vertical red dashed line at the maximum curvature point,
             by default True.
 
         Returns
         -------
-        tuple[:obj:`~matplotlib.figure.Figure`, :obj:`~matplotlib.axes.Axes`]
-            (fig, axes), each of which is matplotlib objects applied some properties.
+        fig : :obj:`~matplotlib.figure.Figure`
+            A matplotlib figure object.
+        axes : :obj:`~matplotlib.axes.Axes`
+            A matplotlib Axes object.
         """
         # get bounds of log10 of regularization parameter
         bounds = self._generate_bounds(bounds)
@@ -239,17 +240,17 @@ class Lcurve(_SVDBase):
 
         Parameters
         ----------
-        beta
-            regularization parameter :math:`\\lambda`
+        beta : float
+            Regularization parameter :math:`\\lambda`.
 
         Returns
         -------
         float
-            the value of calculated curvature
+            Value of calculated curvature.
 
         Examples
         --------
-        >>> lcurve = Lcurve(s, u, basis, data=data)
+        >>> lcurve = Lcurve(s, U, basis, data=data)
         >>> curvature = lcurve.curvature(1.0e-5)
         """
         rho = self.rho(beta)
@@ -269,12 +270,12 @@ class Lcurve(_SVDBase):
 
         Parameters
         ----------
-        logbeta
-            log10 of regularization parameter
+        logbeta : float
+            A log10 of regularization parameter.
 
         Returns
         -------
         float
-            negative value of curvature
+            Negative value of curvature.
         """
         return -self.curvature(10**logbeta)

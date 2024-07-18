@@ -1,5 +1,4 @@
-"""This module provides a function for parsing a string in scientific notation and returning a
-formatted string."""
+"""This module provides a function for parsing a string in scientific notation."""
 
 from decimal import Decimal
 
@@ -14,13 +13,13 @@ def parse_scientific_notation(sci_str: str, scilimits: tuple = (-1, 1), useLatex
 
     Parameters
     ----------
-    sci_str
+    sci_str : str
         A string in scientific notation.
         Must be in the form of 'mantissa' + 'e' + 'exponent'.
     scilimits : tuple, (m, n), optional
         Scientific notation parsing is conducted only for numbers outside the range 10 :sup:`m` to
         10 :sup:`n`, by default (-1, 1).
-    useLatex
+    useLatex : bool, optional
         If True, the output string will be formatted using LaTeX.
 
     Returns

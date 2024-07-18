@@ -13,6 +13,7 @@ This guide is an overview and explains the important features.
    :maxdepth: 1
    :caption: Getting Started
 
+   quickstart
    installation
 
 

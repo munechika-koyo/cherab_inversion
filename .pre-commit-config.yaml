@@ -51,10 +51,10 @@ repos:
     args: [--fix, --ignore=E402]
 
 # lint cython codes
-- repo: https://github.com/MarcoGorelli/cython-lint
-  rev: v0.16.2
-  hooks:
-  - id: cython-lint
+# - repo: https://github.com/MarcoGorelli/cython-lint
+#   rev: v0.16.2
+#   hooks:
+#   - id: cython-lint
 
 # format yaml files
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
@@ -70,3 +70,9 @@ repos:
   - id: docformatter
     additional_dependencies: [tomli]
     args: [--in-place]
+
+# lint docstrings by numpydoc
+- repo: https://github.com/numpy/numpydoc
+  rev: v1.7.0
+  hooks:
+  - id: numpydoc-validation

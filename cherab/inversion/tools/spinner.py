@@ -27,17 +27,16 @@ class Spinner:
 
     Parameters
     ----------
-    text
-        Text to show along with spinner, by default "Loading..."
-    interval
-        spinners wait time, by default 0.1 sec
-    frames
-        spinner animated frames, by default ``["⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣟", "⡿"]``
-    timer
-        Prints a timer showing the elapsed time, by default False
-    side
-        Place spinner to the right or left end of the text string, by default "left"
-
+    text : str, optional
+        Text to show along with spinner, by default "Loading...".
+    interval : float, optional
+        Spinners wait time, by default 0.1 sec.
+    frames : Iterable[str], optional
+        Spinner animated frames, by default ``["⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣟", "⡿"]``.
+    timer : bool, optional
+        Print a timer showing the elapsed time, by default False.
+    side : str, optional
+        Place spinner to the right or left end of the text string, by default "left".
 
     Examples
     --------
@@ -47,7 +46,6 @@ class Spinner:
 
         import time
         from cherab.inversion.tools import Spinner
-
 
         # Use as a context manager
         with Spinner():
@@ -149,7 +147,7 @@ class Spinner:
 
     @property
     def interval(self) -> float:
-        """Spinners wait time."""
+        """Wait time between spinner frames."""
         return self._interval
 
     @interval.setter
@@ -173,7 +171,7 @@ class Spinner:
 
     @property
     def timer(self) -> bool:
-        """Prints a timer showing the elapsed time."""
+        """Print a timer showing the elapsed time."""
         return self._timer
 
     @timer.setter
@@ -274,8 +272,8 @@ class Spinner:
 
         Parameters
         ----------
-        text
-            text to show in the terminal permanently.
+        text : str
+            Text to show in the terminal permanently.
         """
         with self._stdout_lock:
             self._clear_line()
@@ -291,8 +289,8 @@ class Spinner:
 
         Parameters
         ----------
-        text
-            Ok success text, by default "✅"
+        text : str, optional
+            Ok success text, by default "✅".
         """
         _text = text if text else "✅"
         self._freeze(_text)
@@ -302,8 +300,8 @@ class Spinner:
 
         Parameters
         ----------
-        text
-            fail text, by default "💥"
+        text : str, optional
+            Fail text, by default "💥".
         """
         _text = text if text else "💥"
         self._freeze(_text)

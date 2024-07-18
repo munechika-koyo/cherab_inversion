@@ -10,13 +10,15 @@ The implementation is based on the `inversion theory`_.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Collection
+from typing import Any
 
-from numpy import arange, asarray, log10, ndarray, ones_like, sqrt
+from numpy import arange, asarray, float64, log10, ndarray, ones_like, sqrt
+from numpy import dtype as np_dtype
 from scipy.optimize import basinhopping
 from scipy.sparse import csc_matrix as sp_csc_matrix
 from scipy.sparse import csr_matrix as sp_csr_matrix
-from scipy.sparse import issparse
+from scipy.sparse import issparse, spmatrix
 from sksparse.cholmod import cholesky
 
 from .tools.spinner import DummySpinner, Spinner
@@ -39,46 +41,55 @@ class _SVDBase:
         to optimize the regularization parameter :math:`\\lambda` using the
         :obj:`~scipy.optimize.basinhopping` function.
 
-
     Parameters
     ----------
-    s : vector_like
-        singular values like :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`
-    u : array_like
-        left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
-    basis : array_like
-        inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
-    data : vector_like
-        given data as a vector in :math:`\\mathbb{R}^M`, by default None.
+    s : (r, ) array_like
+        Singular values like :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2, ...) \\in \\mathbb{R}^r`.
+    U : (M, r) array_like
+        Left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`.
+    basis : (N, r) array_like
+        Inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
+    B : (M, M) array_like
+        Matrix :math:`\\mathbf{B}` coming from :math:`\\mathbf{Q} = \\mathbf{B}^\\mathsf{T}\\mathbf{B}`,
+        by default None, i.e. :math:`\\mathbf{B} = \\mathbf{I}`.
+    data : (M, ) array_like
+        Given data as a vector :math:`\\mathbf{b}\\in\\mathbb{R}^M`, by default None.
     """
 
-    def __init__(self, s, u, basis, data=None):
+    def __init__(self, s, U, basis, B=None, *, data=None):
         # validate SVD components
         s = asarray(s, dtype=float)
         if s.ndim != 1:
             raise ValueError("s must be a vector.")
 
-        u = asarray(u, dtype=float)
-        if u.ndim != 2:
-            raise ValueError("u must have two dimensions.")
-        if s.size != u.shape[1]:
+        U = asarray(U, dtype=float)
+        if U.ndim != 2:
+            raise ValueError("U must have two dimensions.")
+        if s.size != U.shape[1]:
             raise ValueError(
-                "the number of columns of u must be same as that of singular values.\n"
-                + f"({u.shape[1]=} != {s.size=})"
+                "the number of columns of U must be same as that of singular values.\n"
+                + f"({U.shape[1]=} != {s.size=})"
             )
 
         # set SVD components
         self._s = s
-        self._u = u
+        self._U = U
 
         # set inverted solution basis
         self.basis = basis
 
+        # define _B, _data, _ub
+        self._B = None
+        self._data = None
+        self._ub = None
+
+        # set B matrix
+        if B is not None:
+            self.B = B
+
         # set data values
         if data is not None:
             self.data = data
-        else:
-            self._data = None
 
         # set initial regularization parameter
         self._beta = 0.0
@@ -89,7 +100,7 @@ class _SVDBase:
     def __repr__(self):
         return (
             f"{self.__class__.__name__}"
-            f"(s:{self._s.shape}, u:{self._u.shape}, basis:{self._basis.shape})"
+            f"(s:{self._s.shape}, U:{self._U.shape}, basis:{self._basis.shape})"
         )
 
     def __getstate__(self):
@@ -109,25 +120,25 @@ class _SVDBase:
         """Singular values :math:`\\mathbf{s}`.
 
         Singular values form a vector array like
-        :math:`\\mathbf{s} = (\\sigma_1, \\sigma_2,...)\\in\\mathbb{R}^r`
+        :math:`\\mathbf{s} = \\begin{bmatrix}\\sigma_1&\\cdots &\\sigma_r\\end{bmatrix}^\\mathsf{T}\\in\\mathbb{R}^r`.
         """
         return self._s
 
     @property
-    def u(self) -> ndarray:
+    def U(self) -> ndarray:
         """Left singular vectors :math:`\\mathbf{U}`.
 
         Left singular vactors form a matrix containing column vectors like
-        :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`
+        :math:`\\mathbf{U}=\\begin{bmatrix}\\mathbf{u}_1 & \\cdots &\\mathbf{u}_r\\end{bmatrix}\\in\\mathbb{R}^{M\\times r}`.
         """
-        return self._u
+        return self._U
 
     @property
     def basis(self) -> ndarray:
         """Inverted solution basis :math:`\\tilde{\\mathbf{V}}`.
 
         The inverted solution basis is a matrix containing column vectors like
-        :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{n\\times r}`.
+        :math:`\\tilde{\\mathbf{V}}=\\begin{bmatrix}\\tilde{\\mathbf{v}}_1&\\cdots\\tilde{\\mathbf{v}}_r\\end{bmatrix}\\in\\mathbb{R}^{N\\times r}`.
         """
         return self._basis
 
@@ -143,7 +154,30 @@ class _SVDBase:
         self._basis = mat
 
     @property
-    def data(self) -> ndarray:
+    def B(self) -> ndarray | spmatrix | None:
+        """Matrix :math:`\\mathbf{B}` from :math:`\\mathbf{Q} = \\mathbf{B}^\\mathsf{T}\\mathbf{B}`.
+
+        If users do not specify the matrix :math:`\\mathbf{B}`, this property is None.
+        """
+        return self._B
+
+    @B.setter
+    def B(self, mat):
+        if not hasattr(mat, "shape"):
+            raise AttributeError("B must have the attribute 'shape'.")
+        if mat.shape[0] != mat.shape[1]:
+            raise ValueError("B must be a square matrix.")
+        if mat.shape[0] != self._U.shape[0]:
+            raise ValueError(
+                "the number of rows of B must be same as that of U matrix.\n"
+                + f"({mat.shape[0]=} != {self._U.shape[0]=})"
+            )
+        self._B = mat
+        if self._data is not None:
+            self._ub = self._U.T @ self._B @ self._data
+
+    @property
+    def data(self) -> ndarray | None:
         """Given data for inversion calculation :math:`\\mathbf{b}`.
 
         The given data is a vector array like :math:`\\mathbf{b} \\in \\mathbb{R}^M`.
@@ -155,17 +189,20 @@ class _SVDBase:
         data = asarray(value, dtype=float)
         if data.ndim != 1:
             raise ValueError("data must be a vector.")
-        if data.size != self._u.shape[0]:
+        if data.size != self._U.shape[0]:
             raise ValueError(
                 "data size must be the same as the number of rows of U matrix.\n"
-                + f"({data.size=} != {self._u.shape[0]=})"
+                + f"({data.size=} != {self._U.shape[0]=})"
             )
         self._data = data
-        self._ub = self._u.T @ data
+        if self._B is not None:
+            self._ub = self._U.T @ self._B @ data
+        else:
+            self._ub = self._U.T @ data
 
     @property
     def bounds(self) -> tuple[float, float]:
-        """Bounds of log10 of regularization parameter :math:`\\lambda`.
+        """Bound of log10 of regularization parameter :math:`\\lambda`.
 
         :math:`\\lambda` is defined in the range of this bounds like
         :math:`\\log_{10}\\lambda \\in (\\log_{10}\\sigma_r^2, \\log_{10}\\sigma_1^2)`,
@@ -189,15 +226,14 @@ class _SVDBase:
 
             f_{\\lambda, i} = \\left( 1 + \\frac{\\lambda}{\\sigma_i^2} \\right)^{-1}.
 
-
         Parameters
         ----------
-        beta
-            regularization parameter
+        beta : float
+            Regularization parameter.
 
         Returns
         -------
-        numpy.ndarray (N, )
+        (r, ) array
             1-D array containing filter factors, the length of which is the same as the number of
             singular values.
         """
@@ -210,18 +246,21 @@ class _SVDBase:
 
         .. math::
 
-            \\rho &= \\| \\mathbf{T}\\mathbf{x}_\\lambda - \\mathbf{b} \\|_2^2\\\\
-                  &= \\| (\\mathbf{F}_\\lambda - \\mathbf{I}_r)\\mathbf{U}^\\mathsf{T}\\mathbf{b} \\|_2^2.
+            \\rho &= \\| \\mathbf{T}\\mathbf{x}_\\lambda - \\mathbf{b} \\|_\\mathbf{Q}^2\\\\
+                  &= \\|
+                        (\\mathbf{F}_\\lambda - \\mathbf{I}_r)
+                        \\mathbf{U}^\\mathsf{T}\\mathbf{B}\\mathbf{b}
+                     \\|^2.
 
         Parameters
         ----------
-        beta
-            regularization parameter
+        beta : float
+            Regularization parameter.
 
         Returns
         -------
         float
-            squared residual norm :math:`\\rho`
+            Squared residual norm :math:`\\rho`.
         """
         factor = (self.filter(beta) - 1.0) ** 2.0
         return self._ub.dot(factor * self._ub)
@@ -233,80 +272,81 @@ class _SVDBase:
 
         .. math::
 
-            \\eta &= \\mathbf{x}_\\lambda^\\mathsf{T}\\mathbf{H}\\mathbf{x}_\\lambda\\\\
-                  &= \\|\\mathbf{F}_\\lambda\\mathbf{S}^{-1}\\mathbf{U}^\\mathsf{T}\\mathbf{b}\\|_2^2
+            \\eta &= \\|\\mathbf{x}_\\lambda\\|_\\mathbf{H}^2\\\\
+                  &= \\|
+                        \\mathbf{F}_\\lambda\\mathbf{S}^{-1}
+                        \\mathbf{U}^\\mathsf{T}\\mathbf{B}\\mathbf{b}
+                     \\|^2
 
         Parameters
         ----------
-        beta
-            regularization parameter
+        beta : float
+            Regularization parameter.
 
         Returns
         -------
         float
-            squared regularization norm :math:`\\eta`
+            Squared regularization norm :math:`\\eta`.
         """
         factor = (self.filter(beta) / self._s) ** 2.0
         return self._ub.dot(factor * self._ub)
 
     def eta_diff(self, beta: float) -> float:
-        """Calculate differential of :math:`\\eta` with respect to regularization parameter
-        :math:`\\lambda`.
+        """Calculate differential of :math:`\\eta`.
 
-        :math:`\\eta` can be calculated with SVD components as follows:
+        :math:`\\eta'\\equiv\\frac{\\partial\\eta}{\\partial\\lambda}` can be calculated with SVD
+        components as follows:
 
         .. math::
 
             \\eta' =
                 \\frac{2}{\\lambda}
-                (\\mathbf{U}^\\mathsf{T}\\mathbf{b})^\\mathsf{T}
+                (\\mathbf{U}^\\mathsf{T}\\mathbf{B}\\mathbf{b})^\\mathsf{T}
                 (\\mathbf{F}_\\lambda - \\mathbf{I}_r)
                 \\mathbf{F}_\\lambda^2\\mathbf{S}^{-2}\\
-                \\mathbf{U}^\\mathsf{T}\\mathbf{b}.
+                \\mathbf{U}^\\mathsf{T}\\mathbf{B}\\mathbf{b}.
 
         Parameters
         ----------
-        beta
-            regularization parameter :math:`\\lambda`
+        beta : float
+            Regularization parameter :math:`\\lambda`.
 
         Returns
         -------
         float
-            differential of :math:`\\eta` with respect to :math:`\\lambda`
+            Differential of :math:`\\eta` with respect to :math:`\\lambda`.
         """
         filters = self.filter(beta)
         factor = (filters - 1.0) * (filters / self._s) ** 2.0
         return 2.0 * self._ub.dot(factor * self._ub) / beta
 
     def residual_norm(self, beta: float) -> float:
-        """Return the residual norm:
-        :math:`\\sqrt{\\rho} = \\|\\mathbf{T}\\mathbf{x}_\\lambda - \\mathbf{b}\\|_2`
+        """Return the residual norm: :math:`\\sqrt{\\rho} = \\|\\mathbf{T}\\mathbf{x}_\\lambda - \\mathbf{b}\\|_{\\mathbf{Q}}`.
 
         Parameters
         ----------
-        beta
-            reguralization parameter
+        beta : float
+            Reguralization parameter.
 
         Returns
         -------
         float
-            residual norm :math:`\\sqrt{\\rho}`
+            Residual norm :math:`\\sqrt{\\rho}`.
         """
         return sqrt(self.rho(beta))
 
     def regularization_norm(self, beta: float) -> float:
-        """Return the regularization norm:
-        :math:`\\sqrt{\\eta} = \\sqrt{\\mathbf{x}_\\lambda^\\mathsf{T}\\mathbf{H}\\mathbf{x}_\\lambda}`
+        """Return the regularization norm: :math:`\\sqrt{\\eta} = \\|\\mathbf{x}_\\lambda\\|_\\mathbf{H}`.
 
         Parameters
         ----------
-        beta
-            reguralization parameter
+        beta : float
+            Reguralization parameter.
 
         Returns
         -------
         float
-            regularization norm :math:`\\sqrt{\\eta}`
+            Regularization norm :math:`\\sqrt{\\eta}`.
         """
         return sqrt(self.eta(beta))
 
@@ -326,17 +366,17 @@ class _SVDBase:
             \\tilde{\\mathbf{V}}
             \\mathbf{F}_\\lambda
             \\mathbf{S}^{-1}
-            \\mathbf{U}^\\mathsf{T}\\mathbf{b}.
+            \\mathbf{U}^\\mathsf{T}\\mathbf{B}\\mathbf{b}.
 
         Parameters
         ----------
-        beta
-            regularization parameter
+        beta : float
+            Regularization parameter.
 
         Returns
         -------
-        numpy.ndarray (N, )
-            solution vector :math:`\\mathbf{x}_\\lambda`
+        (N, ) array
+            Slution vector :math:`\\mathbf{x}_\\lambda`.
         """
         return self._basis @ ((self.filter(beta) / self._s) * self._ub)
 
@@ -350,7 +390,7 @@ class _SVDBase:
 
     def solve(
         self,
-        bounds: tuple[float, float] | None = None,  # TODO: implement only one bound
+        bounds: Collection[float | None] | None = None,
         stepsize: float = 10,
         **kwargs,
     ) -> tuple[ndarray, dict]:
@@ -363,19 +403,20 @@ class _SVDBase:
 
         Parameters
         ----------
-        bounds
-            bounds of log10 of regularization parameter, by default :obj:`.bounds`.
-        stepsize
-            stepsize of optimization, by default 10.
-        **kwargs
-            keyword arguments for :obj:`~scipy.optimize.basinhopping` function.
+        bounds : Collection[float | None], optional
+            Boundary pair of log10 of regularization parameters, by default :obj:`.bounds`.
+            Users can specify either lower or upper bound or both like `(1.0, None)`.
+        stepsize : float, optional
+            Stepsize of optimization, by default 10.
+        **kwargs : dict, optional
+            Keyword arguments for :obj:`~scipy.optimize.basinhopping` function.
 
         Returns
         -------
-        tuple of :obj:`~numpy.ndarray` and :obj:`~scipy.optimize.OptimizeResult`
-            (`sol`, `res`), where `sol` is the 1-D array of the solution vector
-            and `res` is the :obj:`~scipy.optimize.OptimizeResult` object returned by
-            :obj:`~scipy.optimize.basinhopping` function.
+        sol : (N, ) array
+            1-D array of the solution vector.
+        res : :obj:`~scipy.optimize.OptimizeResult`
+            Object returned by :obj:`~scipy.optimize.basinhopping` function.
         """
         # generate bounds
         bounds = self._generate_bounds(bounds)
@@ -393,27 +434,23 @@ class _SVDBase:
         )
 
         # set property of optimal lambda
-        self._lambda_opt = 10 ** res.x[0]
+        _lambda_opt: float = 10 ** res.x[0]
+        self._lambda_opt = _lambda_opt
 
         # optmized solution
-        sol = self.solution(beta=self._lambda_opt)
+        sol = self.solution(_lambda_opt)
 
         return sol, res
 
     def _objective_function(self, logbeta: float) -> float:
         raise NotImplementedError("To be defined in subclass.")
 
-    def _generate_bounds(
-        self, bounds: tuple[float | None, float | None] | None
-    ) -> tuple[float, float]:
+    def _generate_bounds(self, bounds: Collection[float | None] | None) -> tuple[float, float]:
         default_lower = self.bounds[0]
         default_upper = self.bounds[1]
 
         if bounds is None:
             bounds = (default_lower, default_upper)
-
-        if not isinstance(bounds, tuple):
-            raise TypeError("bounds must be a tuple.")
 
         if len(bounds) != 2:
             raise ValueError("bounds must contain two elements.")
@@ -426,63 +463,89 @@ class _SVDBase:
             upper = default_upper
 
         if lower >= upper:
-            raise ValueError("the first element of bounds must be smaller than the second one.")
+            raise ValueError(
+                "the first element of bounds must be smaller than the second one. "
+                f"({lower} >= {upper})"
+            )
 
         return (lower, upper)
 
 
 def compute_svd(
-    gmat,
-    hmat,
+    T,
+    H,
+    Q=None,
     use_gpu=False,
+    dtype=None,
     sp: Spinner | DummySpinner | None = None,
-) -> tuple[ndarray, ndarray, ndarray]:
-    """Computes singular value decomposition (SVD) components of the geometry matrix
-    :math:`\\mathbf{T}` and regularization matrix :math:`\\mathbf{H}`.
+) -> tuple[Any, Any, Any] | tuple[Any, Any, Any, Any]:
+    """Compute singular value decomposition (SVD) components of the generalized Tikhonov
+    regularization problem.
+
+    This function returns the :math:`\\mathbf{s}`, :math:`\\mathbf{U}`, :math:`\\tilde{\\mathbf{V}}`
+    and :math:`\\mathbf{B}` from the given matrix :math:`\\mathbf{T}`, :math:`\\mathbf{Q}`, and
+    :math:`\\mathbf{H}`.
 
     .. note::
 
-        The calculation procedure is based on the `inversion theory`_.
+        The mathmatical notation and calculation procedure is based on the `inversion theory`_.
 
         .. _inversion theory: ../user/theory/inversion.ipynb
 
     Parameters
     ----------
-    gmat : numpy.ndarray | scipy.sparse.spmatrix
-        matrix for a linear equation which is called geometry matrix in tomography field
-        spesifically, :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}`
-    hmat : scipy.sparse.spmatrix
-        regularization matrix :math:`\\mathbf{H} \\in \\mathbb{R}^{N\\times N}`.
-        :math:`\\mathbf{H}` must be a positive definite matrix.
+    T : (M, N) array_like
+        Matrix for a linear equation :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}`.
+    H : (N, N) array_like
+        Regularization matrix :math:`\\mathbf{H} \\in \\mathbb{R}^{N\\times N}` which must be a
+        symmetric positive semi-definite matrix.
+    Q : (M, M) array_like, optional
+        Weighted matrix for the residual norm :math:`\\mathbf{Q}\\in\\mathbb{R}^{M\\times M}`,
+        by default None (meaning :math:`\\mathbf{Q} = \\mathbf{I}`).
+        This matrix must be a symmetric positive semi-definite matrix.
     use_gpu : bool, optional
-        whether to use GPU or not, by default False.
-        If True, the :obj:`cupy` functionalities is used instead of numpy and scipy ones when
+        Whether to use GPU or not, by default False.
+        If True, the :obj:`cupy` functionalities is used instead of `numpy` and `scipy` ones when
         calculating the inverse of a sparse matrix, singular value decomposition,
         inverted solution basis :math:`\\tilde{\\mathbf{V}}`, etc.
         Please ensure :obj:`cupy` is installed before using this option,
-        otherwise an ModuleNotFoundError will be raised.
-    sp : Spinner or DummySpinner, optional
-        spinner object to show the progress of calculation, by default DummySpinner()
+        otherwise an `ModuleNotFoundError` will be raised.
+    dtype : str or numpy dtype, optional
+        Data type of the matrix elements, by default numpy.float64.
+        In case of using GPU, the data type numpy.float32 is a little bit faster and saves memory.
+    sp : `.Spinner` or `.DummySpinner`, optional
+        Spinner object to show the progress of calculation, by default `.DummySpinner`.
 
     Returns
     -------
-    tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-        singular value vector :math:`\\mathbf{s}\\in\\mathbb{R}^r`, left singular vectors
-        :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}` and inverted solution basis
-        :math:`\\tilde{\\mathbf{V}}`
+    s : { (r, ), (r-1, ) } array
+        Vector of singular values like
+        :math:`\\begin{bmatrix}\\sigma_1&\\cdots&\\sigma_r\\end{bmatrix}^\\mathsf{T}\\in\\mathbb{R}^r`.
+        If one set :math:`\\mathbf{T}` as a sparse matrix, :math:`r` is reduced by 1
+        (i.e. :math:`r \\to r-1`) because of the use of `scipy.sparse.linalg.eigsh` function to
+        calculate the singular values.
+    U : (M, r) array
+        Left singular vectors like :math:`\\mathbf{U}\\in\\mathbb{R}^{M\\times r}`.
+    basis : (N, r) array
+        Inverted solution basis like :math:`\\tilde{\\mathbf{V}} \\in \\mathbb{R}^{N\\times r}`.
+    B : (M, M) scipy.sparse.csr_matrix
+        Matrix :math:`\\mathbf{B}` coming from :math:`\\mathbf{Q} = \\mathbf{B}^\\mathsf{T}\\mathbf{B}`.
+        Only returned when :math:`\\mathbf{Q}` is given.
 
     Examples
     --------
     .. prompt:: python >>> auto
 
-        >>> s, u, basis = compute_svd(gmat, hmat, use_gpu=True)
+        >>> s, U, basis = compute_svd(T, H)
+
+        >>> s, U, basis, B = compute_svd(T, H, Q, dtype=np.float32, use_gpu=True)
     """
     # === Validation of input parameters ===========================================================
     # import modules
     if use_gpu:
         from cupy import asarray, eye, get_default_memory_pool, get_default_pinned_memory_pool, sqrt
         from cupy.linalg import svd
-        from cupyx.scipy.sparse import csr_matrix, diags
+        from cupyx.scipy.sparse import csc_matrix, csr_matrix, diags
         from cupyx.scipy.sparse.linalg import spsolve_triangular
         from scipy.sparse.linalg import eigsh  # NOTE: cupy eigsh has a bug
 
@@ -492,32 +555,16 @@ def compute_svd(
     else:
         from numpy import asarray, eye, sqrt
         from scipy.linalg import svd
-        from scipy.sparse import csr_matrix, diags
+        from scipy.sparse import csc_matrix, csr_matrix, diags
         from scipy.sparse.linalg import eigsh, spsolve_triangular
 
         _cupy_available = False
 
-    # check if hmat is a sparse matrix
-    if not issparse(hmat):
-        raise TypeError("hmat must be a scipy.sparse.spmatrix.")
+    # Set data type
+    if dtype is None:
+        dtype = float64
     else:
-        hmat = sp_csc_matrix(hmat)
-
-    # check matrix dimension
-    if hasattr(gmat, "ndim"):
-        if gmat.ndim != 2 or hmat.ndim != 2:
-            raise ValueError("gmat and hmat must be 2-dimensional arrays.")
-    else:
-        raise AttributeError("gmat and hmat must have the attribute 'ndim'.")
-
-    # check matrix shape
-    if hasattr(gmat, "shape"):
-        if gmat.shape[1] != hmat.shape[0]:
-            raise ValueError("the number of columns of gmat must be same as that of hmat")
-        if hmat.shape[0] != hmat.shape[1]:
-            raise ValueError("hmat must be a square matrix.")
-    else:
-        raise AttributeError("gmat and hmat must have the attribute 'shape'.")
+        dtype = np_dtype(dtype)
 
     # check spinner instance
     if sp is None:
@@ -525,43 +572,100 @@ def compute_svd(
     elif not isinstance(sp, (Spinner, DummySpinner)):
         raise TypeError("sp must be a Spinner or DummySpinner instance.")
 
+    # check T, H matrix dimension
+    if hasattr(T, "ndim"):
+        if T.ndim != 2 or H.ndim != 2:
+            raise ValueError("T and H must be 2-dimensional arrays.")
+    else:
+        raise AttributeError("T and H must have the attribute 'ndim'.")
+
+    # check T, H matrix shape
+    if hasattr(T, "shape"):
+        if T.shape[1] != H.shape[0]:
+            raise ValueError(
+                "the number of columns of T must be same as that of H "
+                f"({T.shape[1]=} != {H.shape[0]=})"
+            )
+        if H.shape[0] != H.shape[1]:
+            raise ValueError(f"H must be a square matrix. ({H.shape=})")
+        else:
+            H = sp_csc_matrix(H, dtype=dtype)
+    else:
+        raise AttributeError("T and H must have the attribute 'shape'.")
+
+    # check Q matrix
+    if Q is not None:
+        if hasattr(Q, "ndim"):
+            if Q.ndim != 2:
+                raise ValueError("Q must be a 2-dimensional array.")
+        else:
+            raise AttributeError("Q must have the attribute 'ndim'.")
+
+        # check Q matrix shape
+        if Q.shape[0] != T.shape[0] or Q.shape[1] != T.shape[0]:
+            raise ValueError(
+                "Q must be a square matrix with the same number of rows as T. "
+                f"({Q.shape[0]=} != {T.shape[0]=}) or ({Q.shape[1]=} != {T.shape[0]=})"
+            )
+        else:
+            Q = sp_csc_matrix(Q, dtype=dtype)
+
+    # Define the base text for the spinner
     _base_text = sp.text + " "
     _use_gpu_text = " by GPU" if _cupy_available else ""
-    # ==============================================================================================
 
-    # compute L and P^T using cholesekey decomposition
-    sp.text = _base_text + "(computing L and P^T using cholesekey decomposition)"
-    L_mat, Pt = _compute_L_Pt(hmat)
+    # === Cholesky decomposition of Q and H matrices ===============================================
+    sp.text = _base_text + "(executing cholesekey decomposition)"
 
-    # compute L^{-T} using triangular solver
-    sp.text = _base_text + f"(computing L^-T using triangular solver{_use_gpu_text})"
-    Lt_inv = spsolve_triangular(
-        csr_matrix(L_mat), eye(L_mat.shape[0]), lower=True, overwrite_b=True
-    ).T
+    # For Q
+    if Q is not None:
+        _L_Q_t, _P_Q = _cholesky(Q)
+        B = _L_Q_t.tocsr() @ _P_Q.tocsc()
+    else:
+        B = None
+
+    # For H
+    _L_H_t, _P_H = _cholesky(H)
+
+    # === Compute C^-1 matrix ======================================================================
+    sp.text = _base_text + f"(computing C^-1 using triangular solver{_use_gpu_text})"
+
+    # Compute L_H^T^-1
+    _L_H_t_inv = spsolve_triangular(
+        csr_matrix(_L_H_t, dtype=dtype),
+        eye(_L_H_t.shape[0], dtype=dtype),
+        lower=False,
+        overwrite_b=True,
+    )
+    # Compute C^-1 = P_H^T L_H^T^-1
+    C_inv = csc_matrix(_P_H.T, dtype=dtype) @ _L_H_t_inv
 
     # convert to numpy array from cupy array
     if _cupy_available:
-        Lt_inv = Lt_inv.get()
+        C_inv = C_inv.get()
 
         # free GPU memory pools
         mempool.free_all_blocks()
         pinned_mempool.free_all_blocks()
 
-    # compute Pt @ Lt^{-1}
-    # This calculation is performed in CPU because the performance of cupy is worse than numpy or
-    # scipy in this calculation.
-    sp.text = _base_text + "(computing Pt @ Lt^-1)"
-    Pt_Lt_inv: sp_csr_matrix = Pt @ sp_csr_matrix(Lt_inv)
-
-    if issparse(gmat):
-        # compute A = gmat @ Pt @ Lt^{-1}
-        sp.text = _base_text + "(computing A = gmat @ Pt @ L^-T)"
-        A_mat: sp_csr_matrix = gmat.tocsc() @ Pt_Lt_inv
+    # === Compute SVD components ===================================================================
+    if issparse(T):
+        # compute A = B @ T @ C^-1
+        if B is not None:
+            sp.text = _base_text + "(computing A = B @ T @ C^-1)"
+            A = (
+                csr_matrix(B, dtype=dtype)
+                @ csr_matrix(T, dtype=dtype)
+                @ csr_matrix(C_inv, dtype=dtype)
+            )
+        else:
+            sp.text = _base_text + "(computing A = T @ C^-1)"
+            A = csr_matrix(T, dtype=dtype) @ csr_matrix(C_inv, dtype=dtype)
 
         # compute AA^T
         sp.text = _base_text + "(computing AA^T)"
-        At = A_mat.T
-        AAt = A_mat @ At
+        At = A.T
+        AAt = A @ At
 
         # compute eigenvalues and eigenvectors of AA^T
         sp.text = _base_text + f"(computing eigenvalues and vectors of AA^T{_use_gpu_text})"
@@ -574,35 +678,49 @@ def compute_svd(
 
         # compute singular values and left vectors
         sp.text = _base_text + f"(computing singular values and left vectors{_use_gpu_text})"
-        singular, u_vecs = _compute_su(asarray(eigvals), asarray(u_vecs), sqrt)
+        singular, u_vecs = _compute_su(
+            asarray(eigvals, dtype=dtype), asarray(u_vecs, dtype=dtype), sqrt
+        )
 
         # compute right singular vectors
         sp.text = _base_text + f"(computing right singular vectors{_use_gpu_text})"
-        v_mat = asarray(At.A) @ asarray(u_vecs) @ diags(1 / singular)
+        v_mat = (
+            asarray(At.toarray(), dtype=dtype)  # type: ignore
+            @ asarray(u_vecs, dtype=dtype)
+            @ diags(1 / singular, dtype=dtype)
+        )
 
         # compute inverted solution basis
         sp.text = _base_text + f"(computing inverted solution basis{_use_gpu_text})"
-        basis = asarray(Pt_Lt_inv.A) @ v_mat
+        basis = asarray(C_inv, dtype=dtype) @ v_mat
 
     else:
-        # if gmat is a dense matrix, use SVD solver
-        # compute A = gmat @ Pt @ Lt^{-1}
-        sp.text = _base_text + "(computing A = gmat @ Pt @ L^-T)"
-        A_mat: ndarray = gmat @ Pt_Lt_inv.A
+        # if T is a dense matrix, use SVD solver
+        # compute A = B @ T @ C^-1
+        if B is not None:
+            sp.text = _base_text + "(computing A = B @ T @ C^-1)"
+            A = (
+                asarray(B.toarray(), dtype=dtype)  # type: ignore
+                @ asarray(T, dtype=dtype)
+                @ asarray(C_inv, dtype=dtype)
+            )
+        else:
+            sp.text = _base_text + "(computing A = T @ C^-1)"
+            A = asarray(T, dtype=dtype) @ asarray(C_inv, dtype=dtype)
 
         # compute SVD components
         sp.text = _base_text + f"(computing singular value decomposition{_use_gpu_text})"
         kwargs = dict(overwrite_a=True) if not _cupy_available else {}
-        u_vecs, singular, vh = svd(asarray(A_mat), full_matrices=False, **kwargs)
+        u_vecs, singular, vh = svd(A, full_matrices=False, **kwargs)  # type: ignore
 
         # compute inverted solution basis
         sp.text = _base_text + f"(computing inverted solution basis{_use_gpu_text})"
-        basis = asarray(Pt_Lt_inv.A) @ asarray(vh.T)
+        basis = asarray(C_inv, dtype=dtype) @ asarray(vh.T, dtype=dtype)
 
     if _cupy_available:
-        singular = singular.get()
-        u_vecs = u_vecs.get()
-        basis = basis.get()
+        singular = singular.get()  # type: ignore
+        u_vecs = u_vecs.get()  # type: ignore
+        basis = basis.get()  # type: ignore
 
         # free GPU memory pools
         mempool.free_all_blocks()
@@ -611,13 +729,30 @@ def compute_svd(
     # reset spinner text
     sp.text = _base_text
 
+    if B is not None:
+        return singular, u_vecs, basis, B
+
     return singular, u_vecs, basis
 
 
-def _compute_L_Pt(hmat: sp_csc_matrix) -> tuple[sp_csr_matrix, sp_csr_matrix]:
-    # cholesky decomposition of H
-    factor = cholesky(hmat)
-    L_mat = factor.L().tocsr()
+def _cholesky(mat: sp_csc_matrix) -> tuple[sp_csr_matrix, sp_csc_matrix]:
+    """Cholesky decomposition of a symmetric positive semi-definite matrix.
+
+    Parameters
+    ----------
+    mat : scipy.sparse.csc_matrix
+        Symmetric positive semi-definite matrix.
+
+    Returns
+    -------
+    L_mat_t : scipy.sparse.csr_matrix
+        Cholesky factor :math:`\\mathbf{L}^\\mathsf{T}`.
+    P_mat : scipy.sparse.csc_matrix
+        Permutation matrix :math:`\\mathbf{P}`.
+    """
+    # cholesky decomposition of a symmetric positive semi-definite matrix
+    factor = cholesky(mat)
+    L_mat_t = factor.L().T.tocsr()
 
     # compute the fill-reducing permutation matrix P
     P_vec = factor.P()
@@ -625,10 +760,10 @@ def _compute_L_Pt(hmat: sp_csc_matrix) -> tuple[sp_csr_matrix, sp_csr_matrix]:
     data = ones_like(rows)
     P_mat = sp_csc_matrix((data, (rows, P_vec)), dtype=float)
 
-    return L_mat, P_mat.T
+    return L_mat_t, P_mat
 
 
-def _compute_su(eigvals, eigvecs, sqrt: Callable):
+def _compute_su(eigvals, eigvecs, sqrt: Callable) -> tuple:
     # sort eigenvalues and eigenvectors in descending order
     decend_index = eigvals.argsort()[::-1]
     eigvals = eigvals[decend_index]

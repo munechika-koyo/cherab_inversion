@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import pickle
-from datetime import timedelta
+from collections.abc import Collection
 from pathlib import Path
 from time import time
 from typing import Type
 
 import numpy as np
-from scipy.sparse import csc_matrix, issparse, spmatrix
+from scipy.sparse import csc_matrix, issparse, sparray, spmatrix
 from scipy.sparse import diags as spdiags
 
 from .core import _SVDBase, compute_svd
 from .lcurve import Lcurve
-from .tools import Spinner
+from .tools.spinner import DummySpinner, Spinner
 
 __all__ = ["Mfr"]
 
@@ -29,74 +29,95 @@ class Mfr:
 
     Parameters
     ----------
-    gmat : numpy.ndarray (M, N) | scipy.sparse.spmatrix (M, N)
-        matrix :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}` of the forward problem
-        (geometry matrix, ray transfer matrix, etc.)
-    dmats : list[tuple[scipy.sparse.spmatrix, scipy.sparse.spmatrix]]
-        list of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j` along
-        to :math:`i` and :math:`j` coordinate directions, respectively
-    data : numpy.ndarray (M, ), optional
-        given data for inversion calculation, by default None
+    T : (M, N) array_like
+        Matrix :math:`\\mathbf{T}\\in\\mathbb{R}^{M\\times N}` of the forward problem
+        (geometry matrix, ray transfer matrix, etc.).
+    dmats : Collection[Collection[scipy.sparse.spmatrix, scipy.sparse.spmatrix]]
+        Iterable of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`
+        along to :math:`i` and :math:`j` coordinate directions, respectively.
+    Q : (M, M) array_like, optional
+        Weighted matrix for the residual norm :math:`\\mathbf{Q}\\in\\mathbb{R}^{M\\times M}`,
+        by default None (meaning :math:`\\mathbf{Q} = \\mathbf{I}`).
+        This matrix must be a symmetric positive semi-definite matrix.
+    data : (M, ) array_like, optional
+        Given data as a vector :math:`\\mathbf{b}\\in\\mathbb{R}^M`, by default None.
 
     Examples
     --------
-    >>> mfr = Mfr(gmat, dmats, data)
+    >>> mfr = Mfr(T, dmats, data=data)
     """
 
     def __init__(
-        self, gmat: np.ndarray | spmatrix, dmats: list[tuple[spmatrix, spmatrix]], data=None
+        self,
+        T,
+        dmats: Collection[Collection[spmatrix | sparray]],
+        *,
+        Q=None,
+        data=None,
     ):
         # validate arguments
-        if not isinstance(gmat, (np.ndarray, spmatrix)):
-            raise TypeError("gmat must be a numpy array or a scipy sparse matrix")
-        if gmat.ndim != 2:
-            raise ValueError("gmat must be a 2D array")
+        if not hasattr(T, "ndim"):
+            raise TypeError("T must be an array-like object")
+        if T.ndim != 2:
+            raise ValueError("T must be a 2D array")
 
-        if not isinstance(dmats, list):
-            raise TypeError("dmats must be a list of tuples")
+        if not isinstance(dmats, Collection):
+            raise TypeError("dmats must be a collection of derivative matrices pair.")
         for dmat1, dmat2 in dmats:
             if not issparse(dmat1):
                 raise TypeError("one of the matrices in dmats is not a scipy sparse matrix")
             if not issparse(dmat2):
                 raise TypeError("one of the matrices in dmats is not a scipy sparse matrix")
+            if dmat1.shape != dmat2.shape:
+                raise ValueError("dmats must have the same shape")
+            if dmat1.shape[0] != dmat1.shape[1] or dmat1.shape[0] != T.shape[1]:
+                raise ValueError("dmats must be square matrices with the same size as columns of T")
 
         # set matrix attributes
-        self._gmat = gmat
+        self._T = T
         self._dmats = dmats
+        self._Q = Q
 
         # set data attribute
         if data is not None:
             self.data = data
 
     @property
-    def gmat(self) -> np.ndarray | spmatrix:
-        """Geometry matrix :math:`\\mathbf{T}` of the forward problem."""
-        return self._gmat
+    def T(self) -> np.ndarray | spmatrix:
+        """Matrix :math:`\\mathbf{T}` of the forward problem."""
+        return self._T
 
     @property
-    def dmats(self) -> list[tuple[spmatrix, spmatrix]]:
-        """List of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`
-        along to :math:`i` and :math:`j` coordinate directions, respectively."""
+    def dmats(self) -> Collection[Collection[spmatrix | sparray]]:
+        """List of pairs of derivative matrices :math:`\\mathbf{D}_i` and :math:`\\mathbf{D}_j`.
+
+        Each derivative matrix's subscript represents the coordinate direction.
+        """
         return self._dmats
 
     @property
     def data(self) -> np.ndarray:
-        """Given data vector :math:`\\mathbf{b}` for inversion calculation."""
+        """Given data as a vector :math:`\\mathbf{b}`."""
         return self._data
+
+    @property
+    def Q(self) -> np.ndarray | spmatrix | sparray | None:
+        """Weighted matrix :math:`\\mathbf{Q}` for the residual norm."""
+        return self._Q
 
     @data.setter
     def data(self, value):
         data = np.asarray(value, dtype=float)
         if data.ndim != 1:
             raise ValueError("data must be a vector.")
-        if data.size != self._gmat.shape[0]:
+        if data.size != self._T.shape[0]:
             raise ValueError("data size must be the same as the number of rows of geometry matrix")
         self._data = data
 
     def solve(
         self,
         x0: np.ndarray | None = None,
-        derivative_weights: list[float] | tuple[float, ...] | None = None,
+        derivative_weights: Collection[float] | None = None,
         eps: float = 1.0e-6,
         tol: float = 1e-3,
         miter: int = 4,
@@ -104,10 +125,12 @@ class Mfr:
         store_regularizers: bool = False,
         path: str | Path | None = None,
         use_gpu: bool = False,
+        dtype=None,
         verbose: bool = False,
+        spinner: bool = True,
         **kwargs,
-    ) -> tuple[np.ndarray, dict]:
-        """Solves the inverse problem using MFR scheme.
+    ) -> tuple[np.ndarray | None, dict]:
+        """Solve the inverse problem using MFR scheme.
 
         MFR is an iterative scheme that combines Singular Value Decomposition (SVD) and a
         optimizer to find the optimal regularization parameter.
@@ -118,44 +141,50 @@ class Mfr:
 
         Parameters
         ----------
-        x0 : numpy.ndarray
-            initial solution vector, by default ones vector
-        derivative_weights
-            allows to specify anisotropy by assigning weights for each matrix, by default ones vector
-        eps
-            small number to avoid division by zero, by default 1e-6
-        tol
-            tolerance for solution convergence, by default 1e-3
-        miter
-            maximum number of MFR iterations, by default 4
-        regularizer
-            regularizer class to use, by default :obj:`~.Lcurve`
-        store_regularizers
-            if True, store regularizer objects at each iteration, by default False.
+        x0 : (N, ) array, optional
+            Initial solution vector, by default ones vector.
+        derivative_weights : Collection[float], optional
+            Allows to specify anisotropy by assigning weights for each matrix,
+            by default ones vector.
+        eps : float, optional
+            Small number to avoid division by zero, by default 1e-6.
+        tol : float, optional
+            Tolerance for solution convergence, by default 1e-3.
+        miter : int, optional
+            Maximum number of MFR iterations, by default 4.
+        regularizer : Type[_SVDBase], optional
+            Regularizer class to use, by default :obj:`~.Lcurve`.
+        store_regularizers : bool, optional
+            If True, store regularizer objects at each iteration, by default False.
             The path to store regularizer objects can be specified using `path` argument.
-        path
-            directory path to store regularizer objects, by default None.
+        path : str or `.~pathlib.Path`, optional
+            Directory path to store regularizer objects, by default None.
             If `path` is None, the regularizer objects will be stored in the current directory
             if `store_regularizers` is True.
-        use_gpu
-            same as :obj:`~.compute_svd`'s `use_gpu` argument, by default False
-        verbose
-            If True, print iteration information regarding SVD computation, by default False
-        **kwargs
-            additional keyword arguments passed to the regularizer class's :obj:`~._SVDBase.solve`
-            method
+        use_gpu : bool, optional
+            Same as :obj:`~.compute_svd`'s `use_gpu` argument, by default False.
+        dtype : str or numpy dtype, optional
+            Same as :obj:`~.compute_svd`'s `dtype` argument, by default numpy.float64.
+        verbose : bool, optional
+            If True, print iteration information regarding SVD computation, by default False.
+        spinner : bool, optional
+            If True, show spinner during the computation, by default True.
+        **kwargs : dict, optional
+            Additional keyword arguments passed to the regularizer class's :obj:`~._SVDBase.solve`
+            method.
 
         Returns
         -------
-        tuple[numpy.ndarray, dict]
-            optimal solution vector :math:`\\mathbf{x}` and status dictionary which includes
-            the following keys:
-
-            - `elapsed_time`: elapsed time for the inversion calculation
-            - `niter`: number of iterations
-            - `diffs`: list of differences between the current and previous solutions
-            - `converged`: boolean value indicating the convergence
-            - `regularizer`: regularizer object
+        x : (N, ) array or None
+            Optimal solution vector :math:`\\mathbf{x}` found by the MFR scheme.
+            If the unintended error occurs during the first MFR iteration, the solution will be None.
+        status : dict[str, Any]
+            Dictionary containing the following keys:
+            - `elapsed_time`: elapsed time for the inversion calculation.
+            - `niter`: number of iterations.
+            - `diffs`: list of differences between the current and previous solutions.
+            - `converged`: boolean value indicating the convergence.
+            - `regularizer`: regularizer object.
 
         Examples
         --------
@@ -171,12 +200,12 @@ class Mfr:
 
         # check initial solution
         if x0 is None:
-            x0 = np.ones(self._gmat.shape[1])
+            x0 = np.ones(self._T.shape[1])
         elif isinstance(x0, np.ndarray):
             if x0.ndim != 1:
                 raise ValueError("Initial solution must be a 1D array")
-            if x0.shape[0] != self._gmat.shape[1]:
-                raise ValueError("Initial solution must have same size as the rows of gmat")
+            if x0.shape[0] != self._T.shape[1]:
+                raise ValueError("Initial solution must have same size as the rows of T")
         else:
             raise TypeError("Initial solution must be a numpy array")
 
@@ -186,6 +215,12 @@ class Mfr:
                 path: Path = Path.cwd()
             else:
                 path: Path = Path(path)
+
+        # set spinner
+        if spinner:
+            _spinner = Spinner
+        else:
+            _spinner = DummySpinner
 
         # set iteration counter and status
         niter = 0
@@ -200,24 +235,28 @@ class Mfr:
 
         # start MFR iteration
         while niter < miter and not self._converged:
-            with Spinner(f"{niter:02}-th MFR iteration", timer=True) as sp:
+            with _spinner(f"{niter:02}-th MFR iteration", timer=True) as sp:
                 try:
                     sp_base_text = sp.text + " "
 
                     # compute regularization matrix
-                    hmat = self.regularization_matrix(
+                    H = self.regularization_matrix(
                         x0, eps=eps, derivative_weights=derivative_weights
                     )
 
                     # compute SVD components
-                    spinner = sp if verbose else None
-                    singular, u_vecs, basis = compute_svd(
-                        self._gmat, hmat, use_gpu=use_gpu, sp=spinner
+                    svds = compute_svd(
+                        self._T,
+                        H,
+                        Q=self._Q,
+                        dtype=dtype,
+                        use_gpu=use_gpu,
+                        sp=sp if verbose else None,
                     )
 
                     # find optimal solution using regularizer class
                     sp.text = sp_base_text + " (Solving regularizer)"
-                    reg = regularizer(singular, u_vecs, basis, data=self._data)
+                    reg = regularizer(*svds, data=self._data)
                     x, _ = reg.solve(**kwargs)
 
                     # check convergence
@@ -230,13 +269,11 @@ class Mfr:
 
                     # store regularizer object at each iteration
                     if store_regularizers:
-                        with (path / f"regularizer_{niter}.pickle").open("wb") as f:
+                        with (path / f"regularizer_{niter}.pickle").open("wb") as f:  # type: ignore
                             pickle.dump(reg, f)
 
                     # print iteration information
-                    _text = (
-                        f"(Diff: {diff:.3e}, Tolerance: {tol:.3e}, lambda: {reg.lambda_opt:.3e})"
-                    )
+                    _text = f"(Diff: {diff:.3e}, lambda: {reg.lambda_opt:.3e})"
                     sp.text = sp_base_text + _text
                     sp.ok()
 
@@ -257,17 +294,15 @@ class Mfr:
         status["converged"] = self._converged
         status["regularizer"] = reg
 
-        print(f"Total elapsed time: {timedelta(seconds=elapsed_time)}")
-
         return x, status
 
     def regularization_matrix(
         self,
         x: np.ndarray,
         eps: float = 1.0e-6,
-        derivative_weights: list[float] | tuple[float, ...] | None = None,
+        derivative_weights: Collection[float] | None = None,
     ) -> csc_matrix:
-        """Computes nonlinear regularization matrix from provided derivative matrices and a solution
+        """Compute nonlinear regularization matrix from provided derivative matrices and a solution
         vector.
 
         Multiple derivative matrices can be used allowing to combine matrices computed by
@@ -281,7 +316,11 @@ class Mfr:
         .. math::
 
             \\mathbf{H}(\\mathbf{x})
-                = \\sum_{\\mu,\\nu} \\alpha_{\\mu\\nu} \\mathbf{D}_\\mu^\\mathsf{T} \\mathbf{W}(\\mathbf{x}) \\mathbf{D}_\\nu
+                = \\sum_{\\mu,\\nu}
+                  \\alpha_{\\mu\\nu}
+                  \\mathbf{D}_\\mu^\\mathsf{T}
+                  \\mathbf{W}(\\mathbf{x})
+                  \\mathbf{D}_\\nu
 
         where :math:`\\mathbf{D}_\\mu` and :math:`\\mathbf{D}_\\nu` are derivative matrices along to
         :math:`\\mu` and :math:`\\nu` directions, respectively, :math:`\\alpha_{\\mu\\nu}` is the
@@ -299,18 +338,18 @@ class Mfr:
 
         Parameters
         ----------
-        x : numpy.ndarray
-            solution vector :math:`\\mathbf{x}`
-        eps
-            small number :math:`\\epsilon_0` to avoid division by zero, by default 1.0e-6
-        derivative_weights
-            allows to specify anisotropy by assigning weights :math:`\\alpha_{ij}` for each matrix,
-            by default ones vector (:math:`\\alpha_{ij}=1` for all matrices)
+        x : (N, ) array
+            Solution vector :math:`\\mathbf{x}`.
+        eps : float, optional
+            Small number :math:`\\epsilon_0` to avoid division by zero, by default 1.0e-6.
+        derivative_weights : Collection[float], optional
+            Allows to specify anisotropy by assigning weights :math:`\\alpha_{ij}` for each matrix,
+            by default ones vector (:math:`\\alpha_{ij}=1` for all matrices).
 
         Returns
         -------
         :obj:`scipy.sparse.csc_matrix`
-            regularization matrix :math:`\\mathbf{H}(\\mathbf{x})`
+            Regularization matrix :math:`\\mathbf{H}(\\mathbf{x})`.
         """
         # validate eps
         if eps <= 0:
@@ -329,7 +368,7 @@ class Mfr:
                 "Number of derivative weight coefficients must be equal to number of derivative matrices"
             )
 
-        regularization = csc_matrix(self._dmats[0][0].shape, dtype=float)
+        regularization = csc_matrix(w.shape, dtype=float)
 
         for (dmat1, dmat2), aniso in zip(self._dmats, derivative_weights):  # noqa: B905  for py39
             regularization += aniso * dmat1.T @ w @ dmat2

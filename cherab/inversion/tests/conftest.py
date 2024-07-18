@@ -1,9 +1,7 @@
-from pathlib import Path
-
 import numpy as np
 import pytest
 
-SCRIPT_DIR = Path(__file__).parent
+from ..data import get_sample_data
 
 
 def true_func(x):
@@ -44,15 +42,17 @@ class TestData:
         matrix[:, -1] *= 0.5
         matrix *= np.abs(_t[1] - _t[0])
 
+        # compute svd
+
         # set attributes
         self.matrix: np.ndarray = matrix
         self.x_true: np.ndarray = true_func(_t)
 
         # mesured exact unperturbed data and added white noise
         b_0 = matrix.dot(self.x_true)
-        rng = np.random.default_rng()
-        b_noise = rng.normal(0, 1.0e-4, b_0.size)
-        self.b = b_0 + b_noise
+        # rng = np.random.default_rng()
+        # b_noise = rng.normal(0, 1.0e-4, b_0.size)
+        self.b = b_0  # + b_noise
 
 
 class TestTomographyData:
@@ -80,7 +80,7 @@ class TestTomographyData:
     """
 
     def __init__(self):
-        grid_data = np.load(SCRIPT_DIR / "data" / "raytransfer_grid_data.npz")
+        grid_data = get_sample_data("bolo.npz")
         self.matrix = grid_data["sensitivity_matrix"]
         self.mask = grid_data["mask"].squeeze()
         self.grid_centres = grid_data["grid_centres"]
@@ -100,7 +100,7 @@ class TestTomographyData:
 
         # Create a 2D phantom
         phantom_2d = np.full(self.voxel_map.shape, np.nan)
-        phantom_2d[self.mask[:, :]] = phantom
+        phantom_2d[self.mask] = phantom
 
         self.phantom = phantom
         self.phantom2d = phantom_2d

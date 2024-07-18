@@ -1,4 +1,4 @@
-# This workflow will build wheel files using cibuildwheel and upload them as artifacts
+# This workflow will build wheel files and upload them as artifacts
 
 name: Build Wheel Distribution 📦
 
@@ -14,19 +14,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
+
+    - name: Set up Pixi 🟨
+      uses: prefix-dev/setup-pixi@v0.8.0
       with:
-        fetch-depth: 0
-        lfs: true
+        environments: build
 
     - name: Build 🐍 wheels
-      uses: pypa/cibuildwheel@v2.16.2
+      run: pixi run build-wheel
 
     - name: Upload distribution 📦 as artifact
       uses: actions/upload-artifact@v3
       with:
-        path: ./wheelhouse/*.whl
+        path: dist/*.whl

@@ -24,7 +24,7 @@ def mfr(test_tomography_data):
     dmat_z = derivative_matrix(vmap.shape, axis=1, scheme="backward", mask=mask)
     dmat_pair = [(dmat_r, dmat_r), (dmat_z, dmat_z)]
 
-    return Mfr(gmat, dmat_pair, test_tomography_data.b)
+    return Mfr(gmat, dmat_pair, data=test_tomography_data.b)
 
 
 class TestMfr:
@@ -41,7 +41,7 @@ class TestMfr:
         ],
     )
     def test_regularization_matrix(self, mfr, kwargs, expectation):
-        x0 = np.ones(mfr.gmat.shape[1])
+        x0 = np.ones(mfr.T.shape[1])
         with expectation:
             mfr.regularization_matrix(x0, **kwargs)
 

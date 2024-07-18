@@ -1,4 +1,4 @@
-name: Run pytest ✅
+name: Run test ✅
 
 on:
   pull_request:
@@ -6,57 +6,39 @@ on:
 
 jobs:
   pytest:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ['3.9', '3.10', '3.11', '3.12']
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-13]
+        environment: [py39, py310, py311, py312]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: check out repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+
+    - name: Set up Pixi 🟨
+      uses: prefix-dev/setup-pixi@v0.8.0
       with:
-        fetch-depth: 0
-        lfs: true
+        environments: ${{ matrix.environment }}
 
-    - name: Set up micromamba 🐍
-      uses: mamba-org/setup-micromamba@v1
-      with:
-        environment-file: environment.yaml
-        cache-environment: true
-
-    - name: Set up Python 🐍 ${{ matrix.python }}
+    - name: Execute pytest ✅ with 🐍 ${{ matrix.environment }} - ${{ matrix.os }}
+      env:
+        REPORT_OUTPUT: md_report.md
       run: |
-        micromamba install -y python=${{ matrix.python }}
-      shell: micromamba-shell {0}
-
-
-    - name: Build & Install package 📦
-      run: |
-        python dev.py build
-        python dev.py install
-      shell: micromamba-shell {0}
-
-    # pytest -> JUnit xml format
-    - name: Execute pytest ✅
-      run: |
-        python -m pytest --junit-xml results/pytest.xml
-      shell: micromamba-shell {0}
+        pixi run --environment ${{ matrix.environment }} pip install --upgrade pytest-md-report
+        pixi run --environment ${{ matrix.environment }} postinstall-e
+        echo "REPORT_FILE=${REPORT_OUTPUT}" >> "$GITHUB_ENV"
+        pixi run --environment ${{ matrix.environment }} test --md-report-flavor gfm --md-report-exclude-outcomes passed skipped xpassed --md-report-output "$REPORT_OUTPUT"
       continue-on-error: true
 
-    - name: Upload PyTest Results
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: PyTest Results (Python ${{ matrix.python }})
-        path: results/*.xml
-
-    - name: Download Artifacts
-      if: success() || failure()
-      uses: actions/download-artifact@v2
-      with:
-        path: artifacts
-
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      with:
-        junit_files: artifacts/**/*.xml
+    - name: Output reports to the job summary when tests fail
+      if: failure()
+      shell: bash
+      run: |
+        if [ -f "$REPORT_FILE" ]; then
+          echo "<details><summary>Failed Test Report</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat "$REPORT_FILE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+        fi

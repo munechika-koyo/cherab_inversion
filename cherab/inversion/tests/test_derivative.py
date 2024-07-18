@@ -3,165 +3,11 @@ from contextlib import nullcontext as does_not_raise
 import numpy as np
 import pytest
 
-from cherab.inversion.derivative import compute_dmat, derivative_matrix, diag_dict, laplacian_matrix
-
-# valid cases
-CASES = [
-    {
-        "vmap": np.arange(6).reshape(2, 3),
-        "kernel_type": "x",
-        "expected": np.array(
-            [
-                [1, 0, 0, 0, 0, 0],
-                [-1, 1, 0, 0, 0, 0],
-                [0, -1, 1, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0],
-                [0, 0, 0, -1, 1, 0],
-                [0, 0, 0, 0, -1, 1],
-            ]
-        ),
-    },
-    {
-        "vmap": np.arange(6).reshape(2, 3),
-        "kernel_type": "z",
-        "expected": np.array(
-            [
-                [1, 0, 0, 0, 0, 0],
-                [-1, 1, 0, 0, 0, 0],
-                [0, -1, 1, 0, 0, 0],
-                [0, 0, 0, 1, 0, 0],
-                [0, 0, 0, -1, 1, 0],
-                [0, 0, 0, 0, -1, 1],
-            ]
-        ),
-    },
-    {
-        "vmap": np.arange(6).reshape(3, 2),
-        "kernel_type": "y",
-        "expected": np.array(
-            [
-                [1, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0],
-                [-1, 0, 1, 0, 0, 0],
-                [0, -1, 0, 1, 0, 0],
-                [0, 0, -1, 0, 1, 0],
-                [0, 0, 0, -1, 0, 1],
-            ]
-        ),
-    },
-    {
-        "vmap": np.arange(6).reshape(3, 2),
-        "kernel_type": "r",
-        "expected": np.array(
-            [
-                [1, 0, 0, 0, 0, 0],
-                [0, 1, 0, 0, 0, 0],
-                [-1, 0, 1, 0, 0, 0],
-                [0, -1, 0, 1, 0, 0],
-                [0, 0, -1, 0, 1, 0],
-                [0, 0, 0, -1, 0, 1],
-            ]
-        ),
-    },
-    {
-        "vmap": np.arange(6).reshape(2, 1, 3),
-        "kernel_type": "laplacian4",
-        "expected": np.array(
-            [
-                [-4, 1, 0, 1, 0, 0],
-                [1, -4, 1, 0, 1, 0],
-                [0, 1, -4, 0, 0, 1],
-                [1, 0, 0, -4, 1, 0],
-                [0, 1, 0, 1, -4, 1],
-                [0, 0, 1, 0, 1, -4],
-            ]
-        ),
-    },
-    {
-        "vmap": np.arange(6).reshape(3, 1, 2),
-        "kernel_type": "laplacian8",
-        "expected": np.array(
-            [
-                [-8, 1, 1, 1, 0, 0],
-                [1, -8, 1, 1, 0, 0],
-                [1, 1, -8, 1, 1, 1],
-                [1, 1, 1, -8, 1, 1],
-                [0, 0, 1, 1, -8, 1],
-                [0, 0, 1, 1, 1, -8],
-            ]
-        ),
-    },
-    {
-        "vmap": np.arange(6).reshape(3, 1, 2),
-        "kernel_type": "custom",
-        "kernel": np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]]),
-        "expected": np.array(
-            [
-                [-4, 1, 1, 0, 0, 0],
-                [1, -4, 0, 1, 0, 0],
-                [1, 0, -4, 1, 1, 0],
-                [0, 1, 1, -4, 0, 1],
-                [0, 0, 1, 0, -4, 1],
-                [0, 0, 0, 1, 1, -4],
-            ]
-        ),
-    },
-]
-
-# invalid cases
-INVALID_CASES = [
-    {
-        "vmap": np.zeros((2, 2, 2)),  # invalid shape
-        "kernel_type": "x",
-        "error": ValueError,
-    },
-    {
-        "vmap": np.zeros((4, 3)),
-        "kernel_type": "_",  # invalid kernel type
-        "error": ValueError,
-    },
-    {
-        "vmap": np.zeros((3, 5)),
-        "kernel_type": "custom",
-        "kernel": np.zeros((2, 2, 2)),  # invalid kernel dimension
-        "error": ValueError,
-    },
-    {
-        "vmap": np.zeros((5, 5)),
-        "kernel_type": "custom",
-        "kernel": np.zeros((2, 2)),  # invalid kernel shape
-        "error": ValueError,
-    },
-]
-
-
-def test_compute_dmat():
-    # valid tests
-    for case in CASES:
-        vmap = case["vmap"]
-        kernel_type = case["kernel_type"]
-        if kernel_type == "custom":
-            kernel = case["kernel"]
-            dmat = compute_dmat(vmap, kernel_type=kernel_type, kernel=kernel)
-        else:
-            dmat = compute_dmat(vmap, kernel_type=kernel_type, kernel=None)
-        assert np.allclose(dmat.A, case["expected"])
-
-    # invalid tests
-    for case in INVALID_CASES:
-        vmap = case["vmap"]
-        kernel_type = case["kernel_type"]
-        if kernel_type == "custom":
-            kernel = case["kernel"]
-            with pytest.raises(case["error"]):
-                compute_dmat(vmap, kernel_type=kernel_type, kernel=kernel)
-        else:
-            with pytest.raises(case["error"]):
-                compute_dmat(vmap, kernel_type=kernel_type, kernel=None)
-
+from cherab.inversion.derivative import Derivative, derivative_matrix, diag_dict, laplacian_matrix
 
 ####################################################################################################
-
+# Test for diag_dict function
+# ---------------------------
 DIAG_CASE = {
     "2x2 grid": (
         (2, 2),
@@ -203,8 +49,12 @@ def test_diag_dict(grid_shape, expected, expectation):
     with expectation:
         diag = diag_dict(grid_shape)
         diag_mat = sum(diag.values())
-        np.testing.assert_array_equal(diag_mat.A, expected)
+        np.testing.assert_array_equal(diag_mat.toarray(), expected)
 
+
+####################################################################################################
+# Test for derivative_matrix function
+# -----------------------------------
 
 DMAT_CASE = {
     "2x2 grid, 1 steps, 0 axis, forward scheme, no mask": (
@@ -413,8 +263,12 @@ DMAT_CASE = {
 def test_derivative_matrix(grid_shape, grid_step, axis, scheme, mask, expected_dmat, expectation):
     with expectation:
         dmat = derivative_matrix(grid_shape, grid_step, axis, scheme, mask)
-        np.testing.assert_array_equal(dmat.A, expected_dmat)
+        np.testing.assert_array_equal(dmat.toarray(), expected_dmat)
 
+
+####################################################################################################
+# Test for laplacian_matrix function
+# ----------------------------------
 
 LMAT_CASE = {
     "2x2 grid, 1x1 steps, no diagonal, no mask": (
@@ -569,4 +423,252 @@ LMAT_CASE = {
 def test_laplacian_matrix(grid_shape, grid_steps, diagonal, mask, expected_lmat, expectation):
     with expectation:
         lmat = laplacian_matrix(grid_shape, grid_steps, diagonal, mask)
-        np.testing.assert_array_equal(lmat.A, expected_lmat)
+        np.testing.assert_array_equal(lmat.toarray(), expected_lmat)
+
+
+####################################################################################################
+# Test for Derivative class
+# -------------------------
+# Test for __init__ method to change grid
+@pytest.mark.parametrize(
+    ["setting_grid", "expected_grid", "expected_grid_map", "expectation"],
+    [
+        pytest.param(
+            [1, 2, 3],
+            np.array([1, 2, 3])[:, None],
+            np.array([0, 1, 2], dtype=np.int32),
+            does_not_raise(),
+            id="valid 1-D grid setting",
+        ),
+        pytest.param(
+            [[0, 0], [1, 1], [2, 2]],
+            np.array([[0, 0], [1, 1], [2, 2]]),
+            np.array([0, 1, 2], dtype=np.int32),
+            does_not_raise(),
+            id="valid 2-D grid setting",
+        ),
+        pytest.param(
+            [[0, 0], [1, 1], [2, 2]],
+            np.array([[0, 0], [1, 1], [2, 2]]),
+            np.array([0, 1, 2], dtype=np.int32),
+            does_not_raise(),
+            id="valid 2-D grid setting",
+        ),
+        pytest.param(
+            "invalid grid",
+            None,
+            None,
+            pytest.raises(ValueError),
+            id="invalid grid setting",
+        ),
+    ],
+)
+def test_derivative_set_grid(setting_grid, expected_grid, expected_grid_map, expectation):
+    with expectation:
+        derivative_instance = Derivative(setting_grid)
+        np.testing.assert_array_equal(derivative_instance.grid, expected_grid)
+        np.testing.assert_array_equal(derivative_instance.grid_map, expected_grid_map)
+
+
+# Test for __init__ method to change grid_map
+@pytest.mark.parametrize(
+    ["grid", "setting_grid_map", "expected_grid_map", "expectation"],
+    [
+        pytest.param(
+            [1, 2, 3],
+            [0, 1, 2],
+            np.array([0, 1, 2], dtype=np.int32),
+            does_not_raise(),
+            id="valid 1-D grid mapping",
+        ),
+        pytest.param(
+            [[[0, 0], [1, 0]], [[0, 1], [1, 1]]],
+            [[0, 1], [2, 3]],
+            np.arange(4, dtype=np.int32).reshape(2, 2),
+            does_not_raise(),
+            id="valid 2-D grid mapping",
+        ),
+        pytest.param(
+            [[[0, 0], [1, 0]], [[0, 1], [1, 1]]],
+            [0, 1, 2, 3],
+            None,
+            pytest.raises(ValueError),
+            id="invalid 2-D grid mapping (invalid shape)",
+        ),
+        pytest.param(
+            [1, 2, 3],
+            np.array([0, 1, 2], dtype=float),
+            None,
+            pytest.raises(TypeError),
+            id="invalid 1-D grid mapping (invalid dtype)",
+        ),
+    ],
+)
+def test_derivative_set_grid_map(grid, setting_grid_map, expected_grid_map, expectation):
+    with expectation:
+        derivative_instance = Derivative(grid, setting_grid_map)
+        np.testing.assert_array_equal(derivative_instance.grid_map, expected_grid_map)
+
+
+# Create a fixture for Derivative class
+@pytest.fixture
+def derivative_instance():
+    return Derivative([[[0, 0], [0, 1]], [[1, 0], [1, 1]]], [[0, 2], [1, 3]])
+
+
+# Test for matrix_along_axis method
+MATRIX_ALONG_AXIS_CASES = {
+    "axis: 0, default params": (
+        0,
+        "dirichlet",
+        "forward",
+        np.array(
+            [
+                [-1, 1, 0, 0],
+                [0, -1, 0, 0],
+                [0, 0, -1, 1],
+                [0, 0, 0, -1],
+            ]
+        ),
+        does_not_raise(),
+    ),
+    "axis: 0, boundary: 'neumann'": (
+        0,
+        "neumann",
+        "forward",
+        np.array(
+            [
+                [-1, 1, 0, 0],
+                [-1, 1, 0, 0],
+                [0, 0, -1, 1],
+                [0, 0, -1, 1],
+            ]
+        ),
+        does_not_raise(),
+    ),
+    "axis: 0, boundary: dirichlet, diff_type: backward": (
+        0,
+        "dirichlet",
+        "backward",
+        np.array(
+            [
+                [1, 0, 0, 0],
+                [-1, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, -1, 1],
+            ]
+        ),
+        does_not_raise(),
+    ),
+    "axis: 1, boundary: 'periodic'": (
+        1,
+        "periodic",
+        "forward",
+        np.array(
+            [
+                [-1, 0, 1, 0],
+                [0, -1, 0, 1],
+                [1, 0, -1, 0],
+                [0, 1, 0, -1],
+            ]
+        ),
+        does_not_raise(),
+    ),
+    "axis: 1, boundary: 'dirichlet', diff_type: 'forward'": (
+        1,
+        "dirichlet",
+        "forward",
+        np.array(
+            [
+                [-1, 0, 1, 0],
+                [0, -1, 0, 1],
+                [0, 0, -1, 0],
+                [0, 0, 0, -1],
+            ]
+        ),
+        does_not_raise(),
+    ),
+    "invalid axis": (2, None, None, None, pytest.raises(ValueError)),
+    "invalid boundary": (0, "invalid boundary", None, None, pytest.raises(ValueError)),
+    "invalid invalid diff_type": (0, None, "invalid diff_type", None, pytest.raises(ValueError)),
+}
+
+
+@pytest.mark.parametrize(
+    ["axis", "boundary", "diff_type", "expected_matrix", "expectation"],
+    [pytest.param(*case, id=key) for key, case in MATRIX_ALONG_AXIS_CASES.items()],
+)
+def test_derivative_matrix_along_axis(
+    derivative_instance, axis, boundary, diff_type, expected_matrix, expectation
+):
+    with expectation:
+        matrix = derivative_instance.matrix_along_axis(axis, boundary=boundary, diff_type=diff_type)
+        np.testing.assert_array_equal(matrix.toarray(), expected_matrix)
+
+
+# Test for matrix_gradient method
+DIAG_VALUE = 0.7071067811865475
+MATRIX_GRADIENT = {
+    "f(x, y) = x": (
+        lambda x, y: x,
+        np.array([[-1, 1, 0, 0], [0, -1, 0, 0], [0, 0, -1, 1], [0, 0, 0, -1]]),
+        np.array([[-1, 0, 1, 0], [0, -1, 0, 1], [0, 0, -1, 0], [0, 0, 0, -1]]),
+        False,
+        does_not_raise(),
+    ),
+    "f(x, y) = y": (
+        lambda x, y: y,
+        np.array([[-1, 0, 1, 0], [0, -1, 0, 1], [0, 0, -1, 0], [0, 0, 0, -1]]),
+        np.array([[-1, 0, 0, 0], [1, -1, 0, 0], [0, 0, -1, 0], [0, 0, 1, -1]]),
+        False,
+        does_not_raise(),
+    ),
+    "f(x, y) = x + y": (
+        lambda x, y: x + y,
+        np.array([[-2, 1, 1, 0], [0, -2, 0, 1], [0, 0, -2, 1], [0, 0, 0, -2]]),
+        np.array([[-2, 0, 1, 0], [1, -2, 0, 1], [0, 0, -2, 0], [0, 0, 1, -2]]),
+        False,
+        does_not_raise(),
+    ),
+    "f(x, y) = x + y (w/ diagonal)": (
+        lambda x, y: x + y,
+        np.array(
+            [
+                [-2.0 - DIAG_VALUE, 1, 1, DIAG_VALUE],
+                [0, -2.0 - DIAG_VALUE, 0, 1],
+                [0, 0, -2.0 - DIAG_VALUE, 1],
+                [0, 0, 0, -2.0 - DIAG_VALUE],
+            ]
+        ),
+        np.array(
+            [
+                [-2.0 - DIAG_VALUE, 0, 1, 0],
+                [1, -2.0 - DIAG_VALUE, DIAG_VALUE, 1],
+                [0, 0, -2.0 - DIAG_VALUE, 0],
+                [0, 0, 1, -2.0 - DIAG_VALUE],
+            ]
+        ),
+        True,
+        does_not_raise(),
+    ),
+    "invalid scalar function": (
+        lambda x: x,
+        None,
+        None,
+        None,
+        pytest.raises(TypeError),
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ["function", "expected_matrix_para", "expected_matrix_perp", "diagonal", "expectation"],
+    [pytest.param(*case, id=key) for key, case in MATRIX_GRADIENT.items()],
+)
+def test_derivative_matrix_gradient(
+    derivative_instance, function, expected_matrix_para, expected_matrix_perp, diagonal, expectation
+):
+    with expectation:
+        mat_para, mat_perp = derivative_instance.matrix_gradient(function, diagonal=diagonal)
+        np.testing.assert_array_equal(mat_para.toarray(), expected_matrix_para)
+        np.testing.assert_array_equal(mat_perp.toarray(), expected_matrix_perp)
