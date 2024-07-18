@@ -18,7 +18,7 @@ meson.add_dist_script(
   ['_build_utils/gitversion.py', '--meson-dist', '--write', 'cherab/inversion/version.py']
 )
 if not fs.exists('cherab/inversion/version.py')
-  generate_version = custom_target(
+  custom_target(
     'generate-version',
     input: '_build_utils/gitversion.py',
     output: 'version.py',
