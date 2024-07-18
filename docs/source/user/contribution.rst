@@ -35,16 +35,13 @@ in advance.
 
         To build the documentation, you can do so with::
 
-            pixi run -e docs docs
+            pixi run -e dev docs
 
         The documentation will be built in the ``docs/build/html`` directory.
-        You can use `dev` environment as well::
-
-            pixi run -e dev docs
 
         If you want to clean the documentation, you can do so with::
 
-            pixi run -e docs clean-docs
+            pixi run -e dev clean-docs
 
     .. tab-item:: format
 
