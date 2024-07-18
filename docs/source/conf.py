@@ -103,7 +103,7 @@ html_theme = "pydata_sphinx_theme"
 # html_favicon = "_static/favicon/favicon.ico"
 
 # Define the json_url for our version switcher.
-json_url = "https://cherab-inversion.readthedocs.io/en/latest/_static/switcher.json"
+json_url = "https://raw.githubusercontent.com/munechika-koyo/cherab_inversion/main/docs/source/_static/switcher.json"
 version_match = os.environ.get("READTHEDOCS_VERSION")
 # If READTHEDOCS_VERSION doesn't exist, we're not on RTD
 # If it is an integer, we're in a PR build and the version isn't correct.
