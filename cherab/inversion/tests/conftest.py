@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ..data import get_sample_data
+from cherab.inversion.data import get_sample_data
 
 
 def true_func(x):
