@@ -8,3 +8,5 @@ py.install_sources(
   python_sources,
   subdir: 'cherab/inversion/tools',
 )
+
+subdir('tests')

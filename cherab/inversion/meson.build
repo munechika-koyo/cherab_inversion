@@ -27,6 +27,7 @@ if not fs.exists('cherab/inversion/version.py')
     build_by_default: true,
     install: true,
     install_dir: py.get_install_dir() / 'cherab/inversion',
+    install_tag: 'python-runtime',
   )
 else
   # When building from sdist, version.py exists and should be included
@@ -39,3 +40,4 @@ endif
 # subdir('bayesian')
 subdir('tools')
 subdir('data')
+subdir('tests')

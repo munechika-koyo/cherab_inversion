@@ -1,5 +1,4 @@
 from contextlib import nullcontext as does_not_raise
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -9,8 +8,6 @@ from cherab.inversion.derivative import derivative_matrix
 from cherab.inversion.gcv import GCV
 from cherab.inversion.lcurve import Lcurve
 from cherab.inversion.mfr import Mfr
-
-BASE = Path(__file__).parent
 
 
 @pytest.fixture
