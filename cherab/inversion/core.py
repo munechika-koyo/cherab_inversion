@@ -478,7 +478,7 @@ def compute_svd(
     use_gpu=False,
     dtype=None,
     sp: Spinner | DummySpinner | None = None,
-) -> tuple[Any, Any, Any] | tuple[Any, Any, Any, Any]:
+) -> tuple[Any, ...]:
     """Compute singular value decomposition (SVD) components of the generalized Tikhonov
     regularization problem.
 
