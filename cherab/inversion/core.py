@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Callable, Collection
 from typing import Any
 
-from numpy import arange, asarray, float64, log10, ndarray, ones_like, sqrt
+from numpy import arange, asarray, log10, ndarray, ones_like, sqrt
 from numpy import dtype as np_dtype
 from scipy.optimize import basinhopping
 from scipy.sparse import csc_matrix as sp_csc_matrix
@@ -478,7 +478,7 @@ def compute_svd(
     use_gpu=False,
     dtype=None,
     sp: Spinner | DummySpinner | None = None,
-) -> tuple[Any, Any, Any] | tuple[Any, Any, Any, Any]:
+) -> tuple[Any, ...]:
     """Compute singular value decomposition (SVD) components of the generalized Tikhonov
     regularization problem.
 
@@ -511,7 +511,7 @@ def compute_svd(
         Please ensure :obj:`cupy` is installed before using this option,
         otherwise an `ModuleNotFoundError` will be raised.
     dtype : str or numpy dtype, optional
-        Data type of the matrix elements, by default numpy.float64.
+        Data type of the matrix elements, by default same as the input matrix `.T`.
         In case of using GPU, the data type numpy.float32 is a little bit faster and saves memory.
     sp : `.Spinner` or `.DummySpinner`, optional
         Spinner object to show the progress of calculation, by default `.DummySpinner`.
@@ -562,7 +562,7 @@ def compute_svd(
 
     # Set data type
     if dtype is None:
-        dtype = float64
+        dtype = T.dtype
     else:
         dtype = np_dtype(dtype)
 
