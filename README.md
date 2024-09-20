@@ -49,4 +49,4 @@ You can install the package from conda-forge:
 mamba install -c conda-forge cherab-inversion
 ```
 
-The rest of the installation methods are described in the [documentation](https://cherab-inversion.readthedocs.io/en/latest/installation.html).
+The rest of the installation methods are described in the [documentation](https://cherab-inversion.readthedocs.io/en/stable/user/installation.html).
