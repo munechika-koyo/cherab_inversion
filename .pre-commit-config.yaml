@@ -9,7 +9,7 @@ default_language_version:
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-ast
   - id: trailing-whitespace
@@ -20,32 +20,35 @@ repos:
   - id: check-symlinks
   - id: check-case-conflict
   - id: check-json
+  - id: pretty-format-json
+    args: [--autofix, --no-ensure-ascii]
+    exclude: .*\.ipynb
   - id: check-toml
   - id: check-yaml
 
 # validate pyproject.toml
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.18
+  rev: v0.23
   hooks:
   - id: validate-pyproject
 
 # format python codes by black
 - repo: https://github.com/psf/black-pre-commit-mirror
-  rev: 24.4.2
+  rev: 24.10.0
   hooks:
-  - id: black
-    language_version: python3.10
+  - id: black-jupyter
 
 # lint and format python codes by ruff
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.4.6
+  rev: v0.8.2
   hooks:
   - id: ruff
     args: [--fix]
+  - id: ruff-format
 
 # lint and format jupyter notebooks by nbqa-ruff
 - repo: https://github.com/nbQA-dev/nbQA
-  rev: 1.8.5
+  rev: 1.9.1
   hooks:
   - id: nbqa-ruff
     args: [--fix, --ignore=E402]
@@ -58,7 +61,7 @@ repos:
 
 # format yaml files
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.13.0
+  rev: v2.14.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
@@ -73,6 +76,13 @@ repos:
 
 # lint docstrings by numpydoc
 - repo: https://github.com/numpy/numpydoc
-  rev: v1.7.0
+  rev: v1.8.0
   hooks:
   - id: numpydoc-validation
+
+# check misspellings in codes and texts
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.3.0
+  hooks:
+  - id: codespell
+    additional_dependencies: [tomli]
