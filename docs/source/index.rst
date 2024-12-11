@@ -71,7 +71,7 @@ so this documentation is gradually updated, and welcome your contribution.
         Example Gallery
         ^^^^^^^^^^^^^^^
 
-        Here it containes a collection of examples to experiment
+        Here it contains a collection of examples to experiment
         with CHERAB-Inversion source code.
 
         +++

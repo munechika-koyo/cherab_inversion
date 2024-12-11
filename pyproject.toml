@@ -94,6 +94,9 @@ exclude = [ # don't report on objects that match any of these regex
 ]
 override_SS05 = ['^Process ', '^Assess ', '^Access ']
 
+[tool.codespell]
+skip = "*.bib"
+
 # --------------------------
 # === Pixi configuration ===
 # --------------------------

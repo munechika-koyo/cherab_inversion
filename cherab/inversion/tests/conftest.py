@@ -48,7 +48,7 @@ class TestData:
         self.matrix: np.ndarray = matrix
         self.x_true: np.ndarray = true_func(_t)
 
-        # mesured exact unperturbed data and added white noise
+        # measured exact unperturbed data and added white noise
         b_0 = matrix.dot(self.x_true)
         # rng = np.random.default_rng()
         # b_noise = rng.normal(0, 1.0e-4, b_0.size)
@@ -75,7 +75,7 @@ class TestTomographyData:
     voxel_map : numpy.ndarray(:math:`n_R`, :math:`n_Z`)
         Voxel map indicating which voxel each grid point belongs to.
     grid_centres : numpy.ndarray(:math:`n_R`, :math:`n_Z`, 2)
-        Coordinates of the grid points. Each grid point is represented by a 2D vectorin the
+        Coordinates of the grid points. Each grid point is represented by a 2D vector in the
         :math:`R-Z` plane.
     """
 

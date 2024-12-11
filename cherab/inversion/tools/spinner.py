@@ -79,7 +79,7 @@ class Spinner:
             time.sleep(1.0)
             sp.ok("✅")
 
-    Here is the result when the above script is excuted.
+    Here is the result when the above script is executed.
 
     .. image:: ../_static/images/spinner_example.gif
     """
@@ -177,7 +177,7 @@ class Spinner:
     @timer.setter
     def timer(self, value):
         if not isinstance(value, bool):
-            raise TypeError("timer must be a boolen type.")
+            raise TypeError("timer must be a boolean type.")
         self._timer = value
 
     @property

@@ -1,6 +1,6 @@
 """Module to offer the Core functionalities for the ill-posed inversion calculation.
 
-This module includes the usefull functions or base classes for the ill-posed inversion calculation
+This module includes the useful functions or base classes for the ill-posed inversion calculation
 based on Singular Value Decomposition (SVD) method.
 
 The implementation is based on the `inversion theory`_.
@@ -128,7 +128,7 @@ class _SVDBase:
     def U(self) -> ndarray:
         """Left singular vectors :math:`\\mathbf{U}`.
 
-        Left singular vactors form a matrix containing column vectors like
+        Left singular vectors form a matrix containing column vectors like
         :math:`\\mathbf{U}=\\begin{bmatrix}\\mathbf{u}_1 & \\cdots &\\mathbf{u}_r\\end{bmatrix}\\in\\mathbb{R}^{M\\times r}`.
         """
         return self._U
@@ -437,7 +437,7 @@ class _SVDBase:
         _lambda_opt: float = 10 ** res.x[0]
         self._lambda_opt = _lambda_opt
 
-        # optmized solution
+        # optimized solution
         sol = self.solution(_lambda_opt)
 
         return sol, res
@@ -488,7 +488,7 @@ def compute_svd(
 
     .. note::
 
-        The mathmatical notation and calculation procedure is based on the `inversion theory`_.
+        The mathematical notation and calculation procedure is based on the `inversion theory`_.
 
         .. _inversion theory: ../user/theory/inversion.ipynb
 

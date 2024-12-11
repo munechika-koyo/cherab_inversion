@@ -67,7 +67,7 @@ class Lcurve(_SVDBase):
             :math:`\\log_{10}\\sigma_1^2`.
             Raise an error if a >= b in (a, b).
         n_beta : int, optional
-            Nnumber of regularization parameters, by default 500.
+            Number of regularization parameters, by default 500.
         scatter_plot : int, optional
             Whether or not to plot some L-curve points as a 10 :sup:`x` format, by default None.
             If you want to manually define the number of points,
@@ -133,7 +133,7 @@ class Lcurve(_SVDBase):
                         zorder=2,
                     )
 
-        # plot L-curve corner if already optimize method excuted
+        # plot L-curve corner if already optimize method executed
         if self.lambda_opt is not None and plot_lambda_opt is True:
             _lambda_opt_sci = parse_scientific_notation(f"{self.lambda_opt:.2e}")
             axes.scatter(
