@@ -27,12 +27,11 @@ scikit-sparse = "*"
 # === Development Configuration ===
 # ---------------------------------
 [dependencies]
-# cherab-inversion = { path = "." }
+cherab-inversion = { path = "." }
 ipython = "*"
 
 # Type stubs
 scipy-stubs = "*"
-raysect-stubs = { path = "../../raysect/raysect-stubs/" }
 
 # For plotting publication quality figures
 ultraplot = ">=1.72.0"
