@@ -22,6 +22,7 @@ numpy = "*"
 scipy = "*"
 matplotlib-base = "*"
 scikit-sparse = "*"
+rich = "*"
 
 # ---------------------------------
 # === Development Configuration ===
@@ -35,6 +36,9 @@ scipy-stubs = "*"
 
 # For plotting publication quality figures
 ultraplot = ">=1.72.0"
+
+# For data downloading
+pooch = "*"
 
 # For JupyterLab and interactive plots
 ipykernel = "*"

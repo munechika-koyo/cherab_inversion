@@ -27,11 +27,11 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["numpy", "scipy", "matplotlib", "scikit-sparse"]
+dependencies = ["numpy", "scipy", "matplotlib", "scikit-sparse", "rich"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov", "pooch", "rich"]
+test = ["pytest", "pytest-cov", "pooch"]
 
 [project.urls]
 Homepage = "https://cherab-inversion.readthedocs.io/"
