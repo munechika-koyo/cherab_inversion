@@ -10,7 +10,13 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "BSD-3-Clause"
 license-files = ["LICEN[SC]E*"]
-keywords = ["cherab", "IMAS", "imas", "tokamak", "fusion", "plasma"]
+keywords = [
+  "cherab",
+  "inversion",
+  "tomography",
+  "mathematics",
+  "regularization",
+]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Science/Research",
