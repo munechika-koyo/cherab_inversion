@@ -279,7 +279,7 @@ LMAT_CASE = {
         np.array([[-4, 1, 1, 0], [1, -4, 0, 1], [1, 0, -4, 1], [0, 1, 1, -4]]),
         does_not_raise(),
     ),
-    "3x3 grid, 1x1 steps, no diagnonal, no mask": (
+    "3x3 grid, 1x1 steps, no diagonal, no mask": (
         (3, 3),
         (1, 1),
         False,
