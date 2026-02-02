@@ -765,9 +765,9 @@ def _cholesky(mat: sp_csc_matrix) -> tuple[sp_csr_matrix, sp_csc_matrix]:
 
 def _compute_su(eigvals, eigvecs, sqrt: Callable) -> tuple:
     # sort eigenvalues and eigenvectors in descending order
-    decend_index = eigvals.argsort()[::-1]
-    eigvals = eigvals[decend_index]
-    eigvecs = eigvecs[:, decend_index]
+    descend_index = eigvals.argsort()[::-1]
+    eigvals = eigvals[descend_index]
+    eigvecs = eigvecs[:, descend_index]
 
     # calculate singular values and left vectors (w/o zero eigenvalues)
     singular = sqrt(eigvals[eigvals > 0])

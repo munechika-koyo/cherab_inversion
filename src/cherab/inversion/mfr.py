@@ -6,7 +6,6 @@ import pickle
 from collections.abc import Collection
 from pathlib import Path
 from time import time
-from typing import Type
 
 import numpy as np
 from scipy.sparse import csc_matrix, issparse, sparray, spmatrix
@@ -121,7 +120,7 @@ class Mfr:
         eps: float = 1.0e-6,
         tol: float = 1e-3,
         miter: int = 4,
-        regularizer: Type["_SVDBase"] = Lcurve,
+        regularizer: type[_SVDBase] = Lcurve,
         store_regularizers: bool = False,
         path: str | Path | None = None,
         use_gpu: bool = False,
