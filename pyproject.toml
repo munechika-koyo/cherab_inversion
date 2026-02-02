@@ -40,6 +40,11 @@ source = "vcs"
 
 [tool.hatch.metadata.hooks.vcs]
 
+# ----------------------------
+# === Build/Package config ===
+# ----------------------------
+[tool.hatch.build.targets.wheel]
+packages = ["src/cherab"]
 
 # -----------------------
 # === Cov/Test config ===
