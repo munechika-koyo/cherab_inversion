@@ -103,6 +103,9 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["cherab"]
 
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["T", "U", "B", "plot_L_curve"]
+
 [tool.ruff.lint.per-file-ignores]
 "**/*.ipynb" = [
   "W292",
