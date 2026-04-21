@@ -117,6 +117,7 @@ shellcheck = "*"
 validate-pyproject = "*"
 blacken-docs = "*"
 taplo = "*"
+nbstripout = ">=0.9.1,<0.10"
 
 [feature.lint.tasks]
 lefthook = { cmd = "lefthook", description = "🔗 Run lefthook" }
