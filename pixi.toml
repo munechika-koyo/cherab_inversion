@@ -69,8 +69,6 @@ sphinx-immaterial = "*"
 linkify-it-py = "*"
 myst-parser = "*"
 # For notebook support
-ipykernel = "*"
-ipywidgets = "*"
 nbsphinx = "*"
 pandoc = "*"
 
@@ -88,12 +86,6 @@ doc-build = { cmd = [
 ], cwd = "docs", args = [
   { arg = "target", default = "html" },
 ], description = "📝 Build the docs" }
-doc-clean = { cmd = [
-  "rm",
-  "-rf",
-  "build",
-  "source/_api",
-], cwd = "docs", description = "🔥 Clean the docs build & api directory" }
 doc-serve = { cmd = [
   "python",
   "-m",
@@ -103,6 +95,14 @@ doc-serve = { cmd = [
   "build/html",
 ], cwd = "docs", description = "🚀 Start a local server for the docs" }
 
+[feature.tools.tasks]
+doc-clean = { cmd = [
+  "rm",
+  "-rf",
+  "build",
+  "source/_api",
+], cwd = "docs", description = "🔥 Clean the docs build & api directory" }
+
 
 # === Linting feature ===
 [feature.lint.dependencies]
@@ -110,7 +110,6 @@ dprint = "*"
 lefthook = "*"
 ruff = "*"
 typos = "*"
-mypy = "*"
 pyrefly = "*"
 actionlint = "*"
 shellcheck = "*"
@@ -123,7 +122,6 @@ nbstripout = ">=0.9.1,<0.10"
 lefthook = { cmd = "lefthook", description = "🔗 Run lefthook" }
 hooks = { cmd = "lefthook install", description = "🔗 Install pre-commit hooks" }
 pre-commit = { cmd = "lefthook run pre-commit", description = "🔗 Run pre-commit checks" }
-mypy = { cmd = "mypy", description = "Type check with mypy" }
 pyrefly-check = { cmd = "pyrefly check", description = "Type check with pyrefly" }
 ruff-check = { cmd = "ruff check --fix", description = "Lint with ruff" }
 ruff-format = { cmd = "ruff format", description = "Format with ruff" }
@@ -162,5 +160,6 @@ test-py314 = { features = [
   "test",
 ], solve-group = "py314" } # alias of test
 test-py310 = ["py310", "test"]
-lint = { features = ["lint"], no-default-feature = true }
+lint = ["default", "lint"]
 build = { features = ["build"], no-default-feature = true }
+tools = { features = ["tools"], no-default-feature = true }
