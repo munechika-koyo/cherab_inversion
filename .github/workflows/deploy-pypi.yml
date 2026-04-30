@@ -64,7 +64,7 @@ jobs:
       id-token: write
     steps:
     - name: Download distribution 📦 from artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v8
       with:
           # unpacks default artifact into dist/
           # if `name: artifact` is omitted, the action will create extra parent dir
