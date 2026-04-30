@@ -29,6 +29,6 @@ jobs:
       run: pixi run build-wheel
 
     - name: Upload distribution 📦 as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         path: dist/*.whl
