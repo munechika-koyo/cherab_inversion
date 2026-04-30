@@ -31,7 +31,7 @@ jobs:
       run: pixi run -e build build-wheel
 
     - name: Upload distribution 📦 as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         path: dist/*.whl
 
@@ -51,7 +51,7 @@ jobs:
       run: pixi run -e build build-sdist
 
     - name: Upload distribution 📦 as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         path: dist/*.tar.gz
 
