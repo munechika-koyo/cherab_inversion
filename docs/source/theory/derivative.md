@@ -14,9 +14,8 @@ f'_i &= \frac{f_{i+1} - f_{i-1}}{2h} \quad \mathrm{central}
 \end{align}
 $$
 
-where $f_i \equiv f(x_i)$, $f'_i \equiv df/dx|_{x=x_i}$ and $h \equiv x_i - x_{i-1}$ is the step
-size between adjacent grid points $x_i$ and $x_{i-1}$. The grid points are assumed to be equally
-spaced.
+where $f_i \equiv f(x_i)$, $f'_i \equiv df/dx|_{x=x_i}$ and $h \equiv x_i - x_{i-1}$ is the step size between adjacent grid points $x_i$ and $x_{i-1}$.
+The grid points are assumed to be equally spaced.
 
 ## 1-D Derivative Matrix
 
@@ -54,8 +53,13 @@ where we regarded out-of-boundary values as zero (dirichlet boundary condition).
 
 Similarly, we can obtain the derivative matrix for the backward difference:
 
-# $$\begin{bmatrix}f'_0 \\f'_1 \\f'_2\end{bmatrix}
-
+$$
+\begin{bmatrix}
+f'_0 \\
+f'_1 \\
+f'_2
+\end{bmatrix}
+=
 \frac{1}{h}
 \begin{bmatrix}
 1 & 0 & 0 \\
@@ -77,14 +81,18 @@ $$
 f''_i
 = \frac{\frac{f_{i+1} - f_{i}}{h} - \frac{f_i - f_{i-1}}{h}}{h}
 = \frac{f_{i+1} - 2f_i + f_{i-1}}{h^2}.
-$$
-
-(second-derivative)
+$$ (second-derivative)
 
 Then, the second derivative matrix with $i=0, 1, 2, 3$ is given by
 
-# $$\begin{bmatrix}f_0'' \\f_1'' \\f_2'' \\f_3''\end{bmatrix}
-
+$$
+\begin{bmatrix}
+f_0'' \\
+f_1'' \\
+f_2'' \\
+f_3''
+\end{bmatrix}
+=
 \frac{1}{h^2}
 \begin{bmatrix}
 -2 & 1 & 0 & 0 \\
@@ -112,7 +120,7 @@ $i, j = 0, 1, 2$, where $i$ and $j$ are indices for $x$ and $y$ directions, resp
 
 The grid configuration looks like the following:
 
-:::{figure-md}
+:::\{figure-md}
 ![2d-grid-image](../_static/images/2d_image_grid.svg){align="center"}
 
 The example $3\times 3$ grid of images.
@@ -130,8 +138,9 @@ $$
 So, the derivative matrix $\mathbf{D}_y^{(\mathrm{f})}$ along $y$ direction using the forward scheme can be
 expressed as follows:
 
-# $$\mathbf{D}_y^{(\mathrm{f})}
-
+$$
+\mathbf{D}_y^{(\mathrm{f})}
+=
 \frac{1}{h_y}
 \begin{bmatrix}
 -1 & 1 & & & & & & & \\

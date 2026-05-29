@@ -22,7 +22,7 @@ pre-commit:
     - name: dprint
       glob: "*.{json,jsonc,md,yaml,yml}"
       stage_fixed: true
-      run: pixi {run} dprint {staged_files}
+      run: pixi {run} dprint --allow-no-files {staged_files}
 
     - name: taplo
       glob: "*.toml"
