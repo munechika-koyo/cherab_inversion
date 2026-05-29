@@ -41,6 +41,7 @@ jobs:
       - name: 🧪 Execute pytest
         env:
           pytest_github_report: true
+          PYTHONUTF8: 1
         run: pixi run -e ${{ matrix.environment }} test --cov-report xml
 
       - name: 📦 Disambiguate coverage filename by environment and OS
