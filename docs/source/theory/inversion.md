@@ -306,22 +306,21 @@ $$
 \| \mathbf{T}\mathbf{x}_\lambda - \mathbf{b} \|_\mathbf{Q}^2\\
 &=
 \| \mathbf{B}\mathbf{T}\tilde{\mathbf{V}}\mathbf{F}_\lambda\mathbf{S}^{-1}\mathbf{U}^\mathsf{T}\mathbf{b}
-
 - \mathbf{B}\mathbf{b} \|^2\\
-  &=
-  \| \mathbf{U}\mathbf{S}\mathbf{F}_\lambda\mathbf{S}^{-1}\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} - \hat{\mathbf{b}} \|^2
-  \qquad(\because \mathbf{B}\mathbf{T}\tilde{\mathbf{V}} = \mathbf{U}\mathbf{S})\\
-  &=
-  \| \mathbf{U}\mathbf{F}_\lambda\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} - \hat{\mathbf{b}} \|^2
-  \qquad(\because \mathbf{S}\mathbf{F}_\lambda = \mathbf{F}_\lambda\mathbf{S})\\
-  &=
-  \| \mathbf{U}(\mathbf{F}_\lambda - \mathbf{I}_r)\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} \|^2\\
-  &=
-  \| (\mathbf{F}_\lambda - \mathbf{I}_r)\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} \|^2
-  \qquad(\because \| \mathbf{Uy} \|^2_2 = \mathbf{y}^\mathsf{T}\mathbf{U}^\mathsf{T}\mathbf{U}\mathbf{y} = \| \mathbf{y} \|^2,\; \text{where } \forall\mathbf{y}\in\mathbb{R}^r)\\
-  &=
-  \sum_{i=1}^r (f_{\lambda, i} - 1)^2 (\mathbf{u}_i^\mathsf{T}\hat{\mathbf{b}})^2.
-  \end{align}
+&=
+\| \mathbf{U}\mathbf{S}\mathbf{F}_\lambda\mathbf{S}^{-1}\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} - \hat{\mathbf{b}} \|^2
+\qquad(\because \mathbf{B}\mathbf{T}\tilde{\mathbf{V}} = \mathbf{U}\mathbf{S})\\
+&=
+\| \mathbf{U}\mathbf{F}_\lambda\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} - \hat{\mathbf{b}} \|^2
+\qquad(\because \mathbf{S}\mathbf{F}_\lambda = \mathbf{F}_\lambda\mathbf{S})\\
+&=
+\| \mathbf{U}(\mathbf{F}_\lambda - \mathbf{I}_r)\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} \|^2\\
+&=
+\| (\mathbf{F}_\lambda - \mathbf{I}_r)\mathbf{U}^\mathsf{T}\hat{\mathbf{b}} \|^2
+\qquad(\because \| \mathbf{Uy} \|^2_2 = \mathbf{y}^\mathsf{T}\mathbf{U}^\mathsf{T}\mathbf{U}\mathbf{y} = \| \mathbf{y} \|^2,\; \text{where } \forall\mathbf{y}\in\mathbb{R}^r)\\
+&=
+\sum_{i=1}^r (f_{\lambda, i} - 1)^2 (\mathbf{u}_i^\mathsf{T}\hat{\mathbf{b}})^2.
+\end{align}
 $$
 
 Also the $\eta$ is expressed as follows:

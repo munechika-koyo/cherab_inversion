@@ -80,4 +80,3 @@ The solver supports both single-vector data and multi-column data (multiple time
 ## Example
 
 The example is shown in [a notebook](../notebooks/iterative/03-melm).
-\$\$

@@ -247,7 +247,6 @@ $$
 The L-curve is monotonically decreasing varying $\lambda$ from $0$ to $\infty$.
 
 ```{admonition} Proof
-collapsible: open
 
 Let us calculate the derivative of $\sqrt{\eta}$ as a function of $\sqrt{\rho}$ using the relation {eq}`rho'-eta'`:
 
@@ -281,7 +280,6 @@ $$
 where $\mathbf{x}_0 = (\mathbf{T}^\mathsf{T}\mathbf{Q}\mathbf{T})^{-1}\mathbf{T}^\mathsf{T}\mathbf{Q}\mathbf{b}$, which is the least-squares solution.
 
 ```{admonition} Proof
-collapsible: open
 
 The filter factor $f_{\lambda, i}$ is expressed as follows:
 
@@ -343,8 +341,9 @@ $\bar{\mathbf{x}}$ represents the exact solution,
 and $\mathbf{e}$ represents the errors in the data.
 
 ```{important}
+---
 title: Assumptions
-
+---
 Assuming the following conditions:
 
 1. $|\mathbf{u}_i^\mathsf{T}\mathbf{B}\bar{\mathbf{b}}|$ decay faster than $\sigma_i$. (Discrete Picard condition (**DPC**))

@@ -48,7 +48,7 @@ for ax, f, title in zip(
     ["Original", "$R$-derivative", "$\\phi$-derivative"],
     strict=True,
 ):
-    vmax = np.amax(np.abs(f))
+    vmax = np.max(np.abs(f))
     ax.pcolormesh(
         angles,
         radius,
@@ -65,4 +65,4 @@ axes.format(
     thetaformatter="null",
 )
 
-uplt.show()
+fig.show()

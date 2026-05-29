@@ -1,5 +1,6 @@
 [default.extend-words]
 iz = "iz"
+arange = "arange"
 
 [files]
 extend-exclude = ["*.bib", "*.drawio", "*.svg"]

@@ -77,8 +77,8 @@ for ax, f, title in zip(
             centers[0, :, 0, 1],
             f[..., 0].T,
             discrete=False,
-            vmax=np.amax(np.abs(f)),
-            vmin=-np.amax(np.abs(f)),
+            vmax=np.max(np.abs(f)),
+            vmin=-np.max(np.abs(f)),
         )
     else:
         ax.quiver(
@@ -97,4 +97,4 @@ axes.format(
     tickdir="in",
 )
 
-uplt.show()
+fig.show()
