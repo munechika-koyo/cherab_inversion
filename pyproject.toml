@@ -112,7 +112,9 @@ ignore-names = ["T", "U", "B", "Q", "plot_L_curve"]
   "D",
   "DOC",
 ] # no newline at end of file and skip docstring checks
-"tests/**" = ["D", "DOC"] # skip docstring checks in tests
+# skip docstring checks
+"tests/**" = ["D", "DOC"]
+"docs/scripts/**" = ["D", "DOC"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -124,4 +126,5 @@ docstring-code-format = true
 # === Type checking settings ===
 # ------------------------------
 [tool.pyrefly]
-project-includes = ["src"]
+project-includes = ["src/**"]
+project-excludes = ["tests/**"]
