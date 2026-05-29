@@ -87,7 +87,7 @@ class MLEM:
         x0
             Initial guess of the solution :math:`\mathbf{x}\in\mathbb{R}^N` or
             :math:`\mathbf{x}\in\mathbb{R}^{N \times K}`.
-            If not given, a vector of ones is used.
+            If not given, it defaults to a vector of ones.
         tol
             Tolerance for convergence, by default 1e-5.
             The iteration stops when the maximum difference between the current and previous
@@ -129,7 +129,7 @@ class MLEM:
             else:
                 raise ValueError("x0 must be a vector or a matrix.")
             if size != self._T.shape[1]:
-                raise ValueError("x0 must have the same size as the rows of T")
+                raise ValueError("x0 must have the same size as the columns of T")
 
         assert x0 is not None
 
@@ -157,7 +157,9 @@ class MLEM:
         T_t = self._T.T  # transpose of T
         if isinstance(T_t, csc_array):
             T_t = T_t.tocsr()  # convert to csr for faster row access
-        T_t1_recip: NDArray[np.float64] = 1.0 / T_t.sum(axis=1)  # 1 / (T^T @ 1)
+        T_t1_recip: NDArray[np.float64] = 1.0 / (T_t.sum(axis=1))  # 1 / (T^T @ 1)
+        if self._data.ndim == 2:
+            T_t1_recip = T_t1_recip[:, np.newaxis]
 
         # start iteration
         with progress:
@@ -167,7 +169,7 @@ class MLEM:
             while niter < max_iter and not self._converged:
                 data: NDArray[np.float64] = self._T @ x0  # type: ignore[bad-assignment]
                 ratio = self._data / data
-                x: NDArray[np.float64] = x0 * (T_t @ ratio * T_t1_recip)  # type: ignore[bad-assignment]
+                x: NDArray[np.float64] = x0 * (T_t @ ratio) * T_t1_recip  # type: ignore[bad-assignment]
 
                 # store temporary solution
                 x_temp.append(x) if store_temp else None
