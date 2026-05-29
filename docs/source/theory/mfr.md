@@ -7,9 +7,7 @@ The Fisher information is expressed as
 
 $$
 O(x) = \int_{\mathbb{R}^3}\frac{\|\nabla x(\mathbf{r})\|_2^2}{x(\mathbf{r})}\mathrm{d}^3\mathbf{r},
-$$
-
-(MFR_functional)
+$$ (MFR_functional)
 
 where $x(\mathbf{r})$ is the unknown function parameterized by $\mathbf{r} \in \mathbb{R}^3$.
 Using this functional has the advantage of seeking a solution that is smooth and has a localized structure.
@@ -28,9 +26,7 @@ $$
 \cdots,\frac{1}{\max\left\{\mathbf{x}_\mathit{i}, \epsilon_0\right\}},\cdots
 \right),
 \end{gather}
-$$
-
-(MFR_H)
+$$ (MFR_H)
 
 where $\mathbf{D}_{i,j}$ is derivative matrices along the $i$ or $j$ coordinate direction, $\alpha_{ij}$ is the anisotropic parameter, $\mathbf{W}$ is the weight matrix, $\mathbf{x}_\mathit{i}$ is the $i$-th element of the unknown solution $\mathbf{x}$, and $\epsilon_0$ is a small positive number to avoid division by zero and to push the solution to be positive.
 
@@ -39,19 +35,20 @@ where $\mathbf{D}_{i,j}$ is derivative matrices along the $i$ or $j$ coordinate 
 The MFR method is the iterative method, and the iteration formula is:
 
 1. Put $\mathbf{x}^{(0)} = \mathbf{1}$ as the initial guess;
-2. Compute $\mathbf{W}^{(k)}, \mathbf{H}^{(k)}$ with $\mathbf{x}^{(k)}$;
-3. Solve $\mathbf{x}^{(k+1)}$ optimizing regularization parameter $\lambda$ by non-iterative inversion methods;
+1. Compute $\mathbf{W}^{(k)}, \mathbf{H}^{(k)}$ with $\mathbf{x}^{(k)}$;
+1. Solve $\mathbf{x}^{(k+1)}$ optimizing regularization parameter $\lambda$ by non-iterative inversion methods;
 
 where $k$ is the iteration number, and the iteration between step 2 and 3 is repeated until the convergence criterion is satisfied or the maximum iteration number is reached.
 
 Several non-iterative inversion methods (e.g. L-curve method) can be used in step 3.
 This workflow is illustrated in the following figure.
 
-:::{figure-md}
-![mfr_workflow](../_static/images/mfr_workflow.svg)
-
+```{figure} ../_static/images/mfr_workflow.svg
+---
+alt: MFR Workflow
+---
 The MFR solution is derived iteratively in the above workflow.
-:::
+```
 
 ## Example
 

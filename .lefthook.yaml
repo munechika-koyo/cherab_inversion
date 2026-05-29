@@ -77,7 +77,7 @@ pre-commit:
 
     - name: mdformat
       glob: "docs/source/**/*.md"
-      stage_fixed: true
+      stage_fixed: false
       skip:
         - run: test ${CI} -eq 1
       run: pixi {run} mdformat {staged_files}

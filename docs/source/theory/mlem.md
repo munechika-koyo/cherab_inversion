@@ -2,7 +2,7 @@
 
 ## Definition
 
-Maximum Likelihood Expectation Maximization (MLEM) {footcite}`` is an iterative method for solving the inverse problem
+Maximum Likelihood Expectation Maximization (MLEM) \{footcite}\`\` is an iterative method for solving the inverse problem
 
 $$
 \mathbf{T}\mathbf{x} = \mathbf{b},
@@ -13,8 +13,9 @@ In that setting, MLEM seeks a non-negative solution by maximizing the likelihood
 
 For a current estimate $\mathbf{x}^{(k)}$, the update used in this package is
 
-# $$\mathbf{x}^{(k+1)}
-
+$$
+\mathbf{x}^{(k+1)}
+=
 \mathbf{x}^{(k)}
 \odot
 \left[
@@ -27,7 +28,7 @@ For a current estimate $\mathbf{x}^{(k)}$, the update used in this package is
 \right],
 $$ (mlem_update)
 
-where $\odot$ and $\oslash$ denote element-wise product and division ([Hadamard product](wiki:Hadamard_product_(matrices))).
+where $\odot$ and $\oslash$ denote element-wise product and division ([Hadamard product](<wiki:Hadamard_product_(matrices)>)).
 This multiplicative update keeps non-negative iterates non-negative when the initial guess is non-negative.
 
 ## Derivation (outline)
@@ -35,8 +36,9 @@ This multiplicative update keeps non-negative iterates non-negative when the ini
 Assume independent Poisson observations $b_m \sim \mathrm{Poisson}((\mathbf{T}\mathbf{x})_m)$ for $m=1,\dots,M$.
 Ignoring constants independent of $\mathbf{x}$, the log-likelihood is
 
-# $$\log \mathcal{L}(\mathbf{x})
-
+$$
+\log \mathcal{L}(\mathbf{x})
+=
 \sum_{m=1}^{M}
 \left[
 b_m \log (\mathbf{T}\mathbf{x})_m - (\mathbf{T}\mathbf{x})_m
@@ -51,11 +53,11 @@ The factor $(\mathbf{T}^\mathsf{T}\mathbf{1}_M)^{-1}$ acts as a sensitivity norm
 The implementation of `cherab.inversion.statistical.MLEM` follows the update in {eq}`mlem_update` with the following procedure:
 
 1. Set an initial guess $\mathbf{x}^{(0)}$ (default is ones).
-2. Compute forward projection $\mathbf{T}\mathbf{x}^{(k)}$.
-3. Form the ratio $\mathbf{b} \oslash (\mathbf{T}\mathbf{x}^{(k)})$.
-4. Back-project and normalize by $(\mathbf{T}^\mathsf{T}\mathbf{1}_M)$.
-5. Update $\mathbf{x}^{(k+1)}$ multiplicatively.
-6. Stop when
+1. Compute forward projection $\mathbf{T}\mathbf{x}^{(k)}$.
+1. Form the ratio $\mathbf{b} \oslash (\mathbf{T}\mathbf{x}^{(k)})$.
+1. Back-project and normalize by $(\mathbf{T}^\mathsf{T}\mathbf{1}_M)$.
+1. Update $\mathbf{x}^{(k+1)}$ multiplicatively.
+1. Stop when
 
 $$
 
@@ -78,4 +80,4 @@ The solver supports both single-vector data and multi-column data (multiple time
 ## Example
 
 The example is shown in [a notebook](../notebooks/iterative/03-melm).
-$$
+\$\$

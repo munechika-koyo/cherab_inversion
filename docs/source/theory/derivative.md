@@ -120,11 +120,13 @@ $i, j = 0, 1, 2$, where $i$ and $j$ are indices for $x$ and $y$ directions, resp
 
 The grid configuration looks like the following:
 
-:::\{figure-md}
-![2d-grid-image](../_static/images/2d_image_grid.svg){align="center"}
-
+```{figure} ../_static/images/2d_image_grid.svg
+---
+align: center
+alt: 2D image grid
+---
 The example $3\times 3$ grid of images.
-:::
+```
 
 When applying the derivative matrix to an image, we need to flatten the image to a 1-D
 vector:

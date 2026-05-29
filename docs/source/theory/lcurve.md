@@ -14,8 +14,9 @@ $$
 
 The L-curve is precisely following points curve:
 
-# $$\left(\| \mathbf{T}\mathbf{x}*\lambda - \mathbf{b} \|*\mathbf{Q},\;\|\mathbf{x}*\lambda\|*\mathbf{H}\right)
-
+$$
+\left(\| \mathbf{T}\mathbf{x}_\lambda - \mathbf{b} \|_\mathbf{Q},\;\|\mathbf{x}_\lambda\|_\mathbf{H}\right)
+=
 \left(\sqrt{\rho}, \sqrt{\eta}\right).
 $$
 
@@ -26,18 +27,19 @@ This curve is monotonically decreasing varying $\lambda$ from $0$ to $\infty$.
 The L-curve criterion gives a way to choose the optimal regularization parameter $\lambda$ by finding the corner of the L-curve plotted in the log-log scale in figure below.
 The reason way the corner of the L-curve is optimal is discussed in the [below section](#miscellaneous).
 
-:::{figure-md}
-![lcurve](../_static/images/l_curve.svg)
-
+```{figure} ../_static/images/l_curve.svg
+---
+align: center
+alt: L-curve
+---
 The schematic diagram of the L-curve. The dot on the curve represents the corner of the L-curve, which is the point where the curvature is maximal.
-:::
+```
 
 ## Derivation of the curvature of the L-curve
 
 To mathematically determine the L-curve's corner, its curvature is derived, and the corner is defined as the point where the curvature is maximal.
 
-Recall the definition of the [series-expansion form of the solution](inversion.md#series-expansion-of-the-solution),
-and Let
+Recall the definition of the [series-expansion form of the solution](inversion.md#series-expansion-of-the-solution), and let
 
 $$
 \hat{\rho} \equiv \log \rho,
@@ -72,9 +74,7 @@ $$
     \right]^{3/2}
     },
 \end{align}
-$$
-
-(curvature-original)
+$$ (curvature-original)
 
 where the prime denotes the derivative with respect to $\lambda$.
 If $\kappa(\lambda) > 0$, the L-curve is convex at $\lambda$, and if $\kappa(\lambda) < 0$, the L-curve is concave at $\lambda$.
@@ -91,9 +91,7 @@ f_{\lambda, i} - 1
 &=
 -\frac{\lambda}{\sigma_i^2}f_{\lambda, i},
 \end{align}
-$$
-
-(flambra-1)
+$$ (flambra-1)
 
 $$
 \begin{align*}
@@ -127,9 +125,7 @@ $$
 &=
 -\lambda \eta'.
 \end{align}
-$$
-
-(rho'-eta')
+$$ (rho'-eta')
 
 Now let us represent $\hat{\rho}', \hat{\rho}'', \hat{\eta}', \hat{\eta}''$ in terms of $\rho, \eta, \eta', \eta''$:
 
@@ -144,8 +140,9 @@ $$
 
 Substituting these into the curvature $\kappa(\lambda)$ {eq}`curvature-original`, we obtain the following:
 
-## $$\begin{align*}\text{numerator of } \frac{\kappa(\lambda)}{2}&=\hat{\rho}''\hat{\eta}' - \hat{\rho}'\hat{\eta}''\\&=\left(-\frac{\eta'}{\rho} - \lambda\frac{\eta''}{\rho} - \lambda^2\frac{(\eta')^2}{\rho^2}\right)\left(\frac{\eta'}{\eta}\right)
-
+$$
+\begin{align*}\text{numerator of } \frac{\kappa(\lambda)}{2}&=\hat{\rho}''\hat{\eta}' - \hat{\rho}'\hat{\eta}''\\&=\left(-\frac{\eta'}{\rho} - \lambda\frac{\eta''}{\rho} - \lambda^2\frac{(\eta')^2}{\rho^2}\right)\left(\frac{\eta'}{\eta}\right)
+=
 \left(
 -\lambda\frac{\eta'}{\rho}
 \right)
@@ -197,8 +194,9 @@ $$
 \end{align*}
 $$
 
-# $$\therefore\kappa(\lambda)
-
+$$
+\therefore\kappa(\lambda)
+=
 -2\rho\eta\frac{\lambda^2\eta + \lambda\rho + \rho\eta/\eta'}{(\lambda^2\eta^2 + \rho^2)^{3/2}}.
 $$ (curvature)
 
@@ -248,8 +246,9 @@ $$
 
 The L-curve is monotonically decreasing varying $\lambda$ from $0$ to $\infty$.
 
-:::{admonition} Proof
-:collapsible: open
+```{admonition} Proof
+collapsible: open
+
 Let us calculate the derivative of $\sqrt{\eta}$ as a function of $\sqrt{\rho}$ using the relation {eq}`rho'-eta'`:
 
 $$
@@ -265,23 +264,24 @@ $$
 \end{align*}
 $$
 
-:::
+```
 
 ### Theorem 2.
 
 The following asymptotic behavior of the L-curve is obtained:
 
-# $$\lim_{\lambda \to 0} \left(\sqrt{\rho},\; \sqrt{\eta} \right)
-
-\left(0,\; \|\mathbf{x}*0\|*\mathbf{H}\right),
+$$
+\lim_{\lambda \to 0} \left(\sqrt{\rho},\; \sqrt{\eta} \right)
+=
+\left(0,\; \|\mathbf{x}_0\|_\mathbf{H}\right),
 \quad
 \lim_{\lambda \to \infty} \left(\sqrt{\rho},\; \sqrt{\eta}\right) = \left(\|\hat{\mathbf{b}}\|,\; 0 \right).
 $$
 
 where $\mathbf{x}_0 = (\mathbf{T}^\mathsf{T}\mathbf{Q}\mathbf{T})^{-1}\mathbf{T}^\mathsf{T}\mathbf{Q}\mathbf{b}$, which is the least-squares solution.
 
-:::{admonition} Proof
-:collapsible: open
+```{admonition} Proof
+collapsible: open
 
 The filter factor $f_{\lambda, i}$ is expressed as follows:
 
@@ -304,7 +304,7 @@ $$
 \end{cases}.
 $$
 
-According to the [Expression of the squared norm using the series expansion](inversion.html#expression-of-the-squared-norm-using-the-series-expansion), $\rho$ and $\eta$ are asymptotically expressed as follows:
+According to the [Expression of the squared norm using the series expansion](inversion.md#expression-of-the-squared-norm-using-the-series-expansion), $\rho$ and $\eta$ are asymptotically expressed as follows:
 
 $$
 \begin{align*}
@@ -328,7 +328,7 @@ $$
 \end{align*}
 $$
 
-:::
+```
 
 ### Characteristics of the L-curve
 
@@ -342,29 +342,32 @@ where $\bar{\mathbf{b}}$ represents the exact unperturbed data,
 $\bar{\mathbf{x}}$ represents the exact solution,
 and $\mathbf{e}$ represents the errors in the data.
 
-:::{important}
-:title: Assumptions
+```{important}
+title: Assumptions
+
 Assuming the following conditions:
 
 1. $|\mathbf{u}_i^\mathsf{T}\mathbf{B}\bar{\mathbf{b}}|$ decay faster than $\sigma_i$. (Discrete Picard condition (**DPC**))
-2. $\mathbf{e}$ is the white noise.
-3. Sufficient SNR (Signal-to-Noise Ratio) is given, i.e. $\|\bar{\mathbf{b}}\|/\|\mathbf{e}\| \gg 1$.
-   Then the L-curve has the corner where the residual norm $\|\mathbf{T}\mathbf{x}_\lambda - \mathbf{b}\|_\mathbf{Q}$ is approximated to be equal to $\|\mathbf{e}\|_\mathbf{Q}$.
+1. $\mathbf{e}$ is the white noise.
+1. Sufficient SNR (Signal-to-Noise Ratio) is given, i.e. $\|\bar{\mathbf{b}}\|/\|\mathbf{e}\| \gg 1$.
 
-:::
+Then the L-curve has the corner where the residual norm $\|\mathbf{T}\mathbf{x}_\lambda - \mathbf{b}\|_\mathbf{Q}$ is approximated to be equal to $\|\mathbf{e}\|_\mathbf{Q}$.
+
+```
 
 **Description**<br>
 The $\eta$ is written as
 
-# $$\eta
-
+$$
+\eta
+=
 \sum_{i=1}^r
 \left(
-f_{\lambda, i} \frac{\mathbf{u}*i^\mathsf{T}\mathbf{B}\bar{\mathbf{b}}}{\sigma_i}
-
-- f*{\lambda, i} \frac{\mathbf{u}_i^\mathsf{T}\mathbf{B}\mathbf{e}}{\sigma_i}
-  \right)^2
-  $$
+f_{\lambda, i} \frac{\mathbf{u}_i^\mathsf{T}\mathbf{B}\bar{\mathbf{b}}}{\sigma_i}
+-
+f_{\lambda, i} \frac{\mathbf{u}_i^\mathsf{T}\mathbf{B}\mathbf{e}}{\sigma_i}
+\right)^2
+$$
 
 According to the first condition, $\frac{\mathbf{u}_i^\mathsf{T}\mathbf{B}\bar{\mathbf{b}}}{\sigma_i}$ does not become large as $i$ increases, while $\frac{\mathbf{u}_i^\mathsf{T}\mathbf{B}\mathbf{e}}{\sigma_i}$ becomes large because it does not satisfy the DPC. So, the $\eta$ is dominated by the second term in $\lambda \ll 1$.
 Increasing $\lambda$, the $\eta$ decreases because the high-frequency components of the second term are suppressed by the $f_{\lambda, i}$, then the $\eta$ is dominated by the first term where the L-curve is horizontal.
@@ -373,13 +376,13 @@ Somewhere in between, there is a range of $\lambda$-values that correspond to a 
 When we find the L-curve corner numerically, it is important to set the range of $\lambda$.
 Regińska proved that
 
-:::{quote} Theorem
+```{quote} Theorem
 The log-log L-curve is always strictly concave for
 
 $$ \sigma_r^2\leq \lambda\leq\sigma_1^2, $$
 
 where $\sigma_1$ and $\sigma_r$ are the largest and smallest singular values, respectively {footcite}`Reginska2012-dh`.
-:::
+```
 
 Hansen also presented the reason using the curvature expression {eq}`curvature` and modeling $|\mathbf{u}_i^\mathsf{T}\hat{\mathbf{b}}|$ as a power-law function of $\sigma_i$ at Section 6 in {footcite}`Hansen2000-zf`.
 

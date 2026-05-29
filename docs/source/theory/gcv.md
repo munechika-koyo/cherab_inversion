@@ -19,8 +19,9 @@ where $\mathbf{A}_\lambda \equiv \mathbf{B}\mathbf{T}(\mathbf{T}^\mathsf{T}\math
 
 Using [series-expansion form of the solution](inversion.md#series-expansion-of-the-solution), $\mathcal{G}(\lambda)$ can be written as
 
-# $$\mathcal{G}(\lambda)
-
+$$
+\mathcal{G}(\lambda)
+=
 \frac{\rho}
 {\left(r - \sum_{i=1}^r f_{\lambda,i} \right)^2}.
 $$ (gcv_series)
