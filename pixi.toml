@@ -118,6 +118,7 @@ validate-pyproject = "*"
 blacken-docs = "*"
 taplo = "*"
 nbstripout = ">=0.9.1,<0.10"
+mdformat-myst = ">=0.3.0,<0.4"
 
 [feature.lint.tasks]
 lefthook = { cmd = "lefthook", description = "🔗 Run lefthook" }
@@ -132,6 +133,7 @@ taplo = { cmd = "taplo fmt", description = "Format toml files with taplo" }
 actionlint = { cmd = "actionlint", description = "Lint actions with actionlint" }
 blacken-docs = { cmd = "blacken-docs", description = "Format Python markdown blocks with Black" }
 validate-pyproject = { cmd = "validate-pyproject pyproject.toml", description = "Validate pyproject.toml" }
+mdformat = { cmd = "mdformat", description = "Format markdown files with mdformat and myst plugin" }
 lint = { cmd = "lefthook run pre-commit --all-files --force", description = "🧹 Run all linters" }
 
 

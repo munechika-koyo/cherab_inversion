@@ -74,3 +74,10 @@ pre-commit:
       only:
         - run: test ${CI} -eq 1
       run: pixi {run} nbstripout --verify {staged_files}
+
+    - name: mdformat
+      glob: "docs/source/**/*.md"
+      stage_fixed: true
+      skip:
+        - run: test ${CI} -eq 1
+      run: pixi {run} mdformat {staged_files}
