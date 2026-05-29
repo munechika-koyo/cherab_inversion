@@ -2,7 +2,7 @@
 
 ## Definition
 
-Maximum Likelihood Expectation Maximization (MLEM) \{footcite}\`\` is an iterative method for solving the inverse problem
+Maximum Likelihood Expectation Maximization (MLEM) {footcite}`Shepp1982-ky` is an iterative method for solving the inverse problem
 
 $$
 \mathbf{T}\mathbf{x} = \mathbf{b},
@@ -80,3 +80,6 @@ The solver supports both single-vector data and multi-column data (multiple time
 ## Example
 
 The example is shown in [a notebook](../notebooks/iterative/03-melm).
+
+```{footbibliography} ../references.bib
+```
