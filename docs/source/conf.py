@@ -188,7 +188,7 @@ linkcode_url = repository_url
 linkcode_link_text = "Source"
 
 # -- NBSphinx configuration ---------------------------------------------------
-nbsphinx_execute = "never"
+# nbsphinx_execute = "never"
 nbsphinx_thumbnails = {}
 _nbsphinx_prolog_template = r"""
 {% set docname = 'docs/' + env.doc2path(env.docname, base=None)|string %}
