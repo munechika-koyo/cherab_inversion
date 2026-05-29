@@ -1,22 +1,17 @@
-[
-  {
-    "version": "dev",
-    "url": "https://cherab-inversion.readthedocs.io/en/latest/"
-  },
-  {
-    "name": "0.3",
-    "version": "v0.3.1",
-    "url": "https://cherab-inversion.readthedocs.io/en/v0.3.1/",
-    "preferred": true
-  },
-  {
-    "name": "0.2",
-    "version": "v0.2.0",
-    "url": "https://cherab-inversion.readthedocs.io/en/v0.2.0/"
-  },
-  {
-    "name": "0.1",
-    "version": "v0.1.5",
-    "url": "https://cherab-inversion.readthedocs.io/en/v0.1.5/"
-  }
-]
+[{
+  "url": "https://cherab-inversion.readthedocs.io/en/latest/",
+  "version": "dev"
+}, {
+  "name": "0.3",
+  "preferred": true,
+  "url": "https://cherab-inversion.readthedocs.io/en/v0.3.1/",
+  "version": "v0.3.1"
+}, {
+  "name": "0.2",
+  "url": "https://cherab-inversion.readthedocs.io/en/v0.2.0/",
+  "version": "v0.2.0"
+}, {
+  "name": "0.1",
+  "url": "https://cherab-inversion.readthedocs.io/en/v0.1.5/",
+  "version": "v0.1.5"
+}]

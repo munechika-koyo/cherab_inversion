@@ -1,110 +1,60 @@
-/* h2 color */
-h2 {
-    color: #4d77cf;
-    /* han blue */
-    letter-spacing: -.03em;
+/* Optional: Ensure image respects container boundaries */
+.output_area.docutils.container img {
+  height: auto !important;
+  display: block !important;
+  object-fit: contain;
 }
-
-
-/* Main index page overview cards */
-
-.sd-card {
-    background: #fff;
-    border-radius: 0;
-    padding: 30px 10px 20px 10px;
-    margin: 10px 0px;
-}
-
-.sd-card .sd-card-header {
-    text-align: center;
-}
-
-.sd-card .sd-card-header .sd-card-text {
-    margin: 0px;
-}
-
-.sd-card .sd-card-img-top {
-    height: 52px;
-    width: 52px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.sd-card .sd-card-header {
-    border: none;
-    background-color: white;
-    color: #150458 !important;
-    font-size: var(--pst-font-size-h5);
-    font-weight: bold;
-    padding: 2.5rem 0rem 0.5rem 0rem;
-}
-
-.sd-card .sd-card-footer {
-    border: none;
-    background-color: white;
-}
-
-.sd-card .sd-card-footer .sd-card-text {
-    max-width: 220px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.custom-button {
-    background-color: #DCDCDC;
-    border: none;
-    color: #484848;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 0.9rem;
-    border-radius: 0.5rem;
-    max-width: 120px;
-    padding: 0.5rem 0rem;
-}
-
-.custom-button a {
-    color: #484848;
-}
-
-.custom-button p {
-    margin-top: 0;
-    margin-bottom: 0rem;
-    color: #484848;
-}
-
 
 /* Dark theme tweaking
-Matplotlib images are in png and inverted while other output
-types are assumed to be normal images.
+Apply inversion when the page is in dark mode.
+Sphinx-Immaterial sets the active scheme on body[data-md-color-scheme].
 */
-html[data-theme=dark] img[src*='.png'] {
-    filter: invert(0.82) brightness(0.8) contrast(1.2) !important;
+html[color-scheme="dark"] img[src*=".png"],
+body[data-md-color-scheme="slate"] img[src*=".png"] {
+  filter: invert(0.82) brightness(0.8) contrast(1.2) !important;
 }
 
-html[data-theme=dark] img[src*='.svg'] {
-    filter: invert(0.82) brightness(0.8) contrast(1.2) !important;
+html[color-scheme="dark"] img[src*=".svg"],
+body[data-md-color-scheme="slate"] img[src*=".svg"] {
+  filter: invert(0.82) brightness(0.8) contrast(1.2) !important;
 }
 
-html[data-theme=dark] .MathJax_SVG * {
-    fill: var(--pst-color-text-base);
+/**
+ * Mathematics via MathJax.
+ *
+ * This is designed for MathJax v3
+ * ref: https://www.sphinx-doc.org/en/master/usage/extensions/math.html#module-sphinx.ext.mathjax
+ */
+
+div.math,
+span.math {
+  align-items: center;
+  display: flex;
+  max-width: 100%;
+  overflow: hidden;
 }
 
-/* Main index page overview cards */
-
-html[data-theme=dark] .sd-card {
-    background-color: var(--pst-color-background);
+span.math {
+  align-items: baseline;
+  display: inline-flex;
 }
 
-html[data-theme=dark] .sd-shadow-sm {
-    box-shadow: 0 .1rem 1rem rgba(250, 250, 250, .6) !important
+div.math {
+  flex-direction: row-reverse;
+  gap: 0.5em;
 }
 
-html[data-theme=dark] .sd-card .sd-card-header {
-    background-color: var(--pst-color-background);
-    color: #DCDCDC !important;
+div.math span.eqno a.headerlink {
+  font-size: 1em;
+  position: relative;
 }
 
-html[data-theme=dark] .sd-card .sd-card-footer {
-    background-color: var(--pst-color-background);
+div.math mjx-container {
+  flex-grow: 1;
+  overflow: auto;
+  padding-bottom: 0.2rem;
+}
+
+div.math mjx-container mjx-assistive-mml {
+  height: 0;
 }

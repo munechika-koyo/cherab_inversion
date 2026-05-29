@@ -1,0 +1,58 @@
+# Minimum Fisher Regularization
+
+## Derivation
+
+The MFR (Minimum Fisher Regularization) employs the Fisher information as a objective functional $O(x)$ introduced in the [Generalized Tikhonov Regularization](./inversion.md#generalized-tikhonov-regularization) section.
+The Fisher information is expressed as
+
+$$
+O(x) = \int_{\mathbb{R}^3}\frac{\|\nabla x(\mathbf{r})\|_2^2}{x(\mathbf{r})}\mathrm{d}^3\mathbf{r},
+$$ (MFR_functional)
+
+where $x(\mathbf{r})$ is the unknown function parameterized by $\mathbf{r} \in \mathbb{R}^3$.
+Using this functional has the advantage of seeking a solution that is smooth and has a localized structure.
+This non-linear functional can be linearized in the next section.
+
+## Definition
+
+The first application of the MFR method to a fusion device was developed to resolve the ill-posedness of the tomography problem for TCV tokamak plasma {footcite}`Anton1996-ik` and later for the ASDEX Upgrade tokamak {footcite}`Odstrcil2016-va`.
+In the MFR method, the linearized Fisher information is employed as a objective functional, and the regularization matrix $\mathbf{H}$ is defined as follows:
+
+$$
+\begin{gather}
+\mathbf{H} = \sum_{i, j} \alpha_{ij} \mathbf{D}_i^\mathsf{T} \mathbf{W} \mathbf{D}_j\\
+\mathbf{W} ≡ \rm{diag}
+\left(
+\cdots,\frac{1}{\max\left\{\mathbf{x}_\mathit{i}, \epsilon_0\right\}},\cdots
+\right),
+\end{gather}
+$$ (MFR_H)
+
+where $\mathbf{D}_{i,j}$ is derivative matrices along the $i$ or $j$ coordinate direction, $\alpha_{ij}$ is the anisotropic parameter, $\mathbf{W}$ is the weight matrix, $\mathbf{x}_\mathit{i}$ is the $i$-th element of the unknown solution $\mathbf{x}$, and $\epsilon_0$ is a small positive number to avoid division by zero and to push the solution to be positive.
+
+## Implementation
+
+The MFR method is the iterative method, and the iteration formula is:
+
+1. Put $\mathbf{x}^{(0)} = \mathbf{1}$ as the initial guess;
+1. Compute $\mathbf{W}^{(k)}, \mathbf{H}^{(k)}$ with $\mathbf{x}^{(k)}$;
+1. Solve $\mathbf{x}^{(k+1)}$ optimizing regularization parameter $\lambda$ by non-iterative inversion methods;
+
+where $k$ is the iteration number, and the iteration between step 2 and 3 is repeated until the convergence criterion is satisfied or the maximum iteration number is reached.
+
+Several non-iterative inversion methods (e.g. L-curve method) can be used in step 3.
+This workflow is illustrated in the following figure.
+
+```{figure} ../_static/images/mfr_workflow.svg
+---
+alt: MFR Workflow
+---
+The MFR solution is derived iteratively in the above workflow.
+```
+
+## Example
+
+The example shows in [a notebook](../notebooks/iterative/01-mfr-tomography).
+
+```{footbibliography} ../references.bib
+```

@@ -1,207 +1,130 @@
 [build-system]
-requires = ["wheel", "meson-python", "tomli; python_version < '3.11'"]
-build-backend = "mesonpy"
+requires = ["hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "cherab-inversion"
 description = "Cherab inversion framework"
-version = "0.3.2.dev"
+authors = [{ name = "munechika-koyo", email = "munechika.koyo@gmail.com" }]
 readme = "README.md"
-authors = [
-    { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
-]
-maintainers = [
-    { name = "Koyo Munechika", email = "munechika.koyo@torus.nr.titech.ac.jp" },
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+license-files = ["LICENSE.md"]
+keywords = [
+  "cherab",
+  "inversion",
+  "tomography",
+  "mathematics",
+  "regularization",
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Education",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: POSIX",
-    "Operating System :: Unix",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Physics",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-requires-python = ">= 3.9"
-dependencies = ["numpy", "scipy", "matplotlib", "scikit-sparse"]
-license = { file = "LICENSE.md" }
+dependencies = ["numpy", "scipy", "matplotlib", "scikit-sparse", "rich"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov", "pooch"]
 
 [project.urls]
 Homepage = "https://cherab-inversion.readthedocs.io/"
 documentation = "https://cherab-inversion.readthedocs.io/"
 repository = "https://github.com/munechika-koyo/cherab_inversion"
 
+# ----------------------
+# === Version config ===
+# ----------------------
+[tool.hatch.version]
+source = "vcs"
 
-[tool.black]
-line-length = 100
+[tool.hatch.metadata.hooks.vcs]
 
+# ----------------------------
+# === Build/Package config ===
+# ----------------------------
+[tool.hatch.build.targets.wheel]
+packages = ["src/cherab"]
+
+# -----------------------
+# === Cov/Test config ===
+# -----------------------
+[tool.coverage.run]
+source_pkgs = ["cherab.inversion"]
+branch = true
+parallel = true
+
+[tool.coverage.paths]
+test = ["src/test", "*/test/src/test"]
+tests = ["tests", "*/test/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov='cherab.inversion' --cov-report term-missing --no-cov-on-fail"
+
+
+# ------------------------------
+# === Lint & Format settings ===
+# ------------------------------
 [tool.ruff]
 line-length = 100
-target-version = "py311"
-namespace-packages = ["cherab/inversion"]
 
 [tool.ruff.lint]
-# Enable Pyflakes `E` and `F` codes by default.
-select = ["E", "F", "W", "I", "N", "B", "NPY"]
-ignore = ["E501", "N802", "N803", "N806"]
-
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["E", "F", "W", "I", "B", "NPY"]
-unfixable = ["E501"]
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
-
-[tool.mypy]
-follow-imports = "silent"
-ignore-missing-imports = true
-show-column-numbers = true
-no-pretty = true
-
-[tool.docformatter]
-recursive = true
-wrap-summaries = 100
-wrap-descriptions = 100
-blank = false
-
-[tool.numpydoc_validation]
-checks = [
-    "all",  # report on all checks, except the below
-    "GL01", # Docstring text (summary) should start in the line immediately
-    "EX01", # No examples section found
-    "SA01", # See Also section not found
-    "ES01", # No extended summary found
-    "GL08", # The object does not have a docstring
-    "RT01", # No Returns section found
-    "PR01", # Parameters {missing_params} not documented
-    "SS06", # Summary should fit in a single line
+select = [
+  "E",   # pycodestyle
+  "B",   # flake8-bugbear
+  "F",   # pyflakes
+  "I",   # isort (import order)
+  "N",   # pep8-naming
+  "W",   # Warning
+  "UP",  # pyupgrade
+  "NPY", # numpy specific rules
+  "D",   # pydocstyle
+  "DOC", # pydoclint
 ]
-# remember to use single quotes for regex in TOML
-exclude = [ # don't report on objects that match any of these regex
-    '\.__repr__$',
+preview = true
+ignore = [
+  # Recommended ignores by ruff when using formatter
+  "E501", # line too long
+  "N803", # argument name should be lowercase
+  "N806", # variable in function should be lowercase
+  "D107", # missing docstring in __init__
 ]
-override_SS05 = ['^Process ', '^Assess ', '^Access ']
 
-# --------------------------
-# === Pixi configuration ===
-# --------------------------
-[tool.pixi.project]
-channels = ["https://fast.prefix.dev/conda-forge"]
-platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+[tool.ruff.lint.isort]
+known-first-party = ["cherab"]
 
-[tool.pixi.dependencies]
-# Runtime dependencies
-numpy = "*"
-scipy = "*"
-matplotlib = "*"
-scikit-sparse = "*"
-pip = "*"           # Required for editable installs temporarily
-meson-python = "*"  # Required for editable installs temporarily
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["T", "U", "B", "Q", "plot_L_curve"]
 
-[tool.pixi.pypi-dependencies]
-# Built editable in development mode
-# cherab-inversion = { path = ".", editable = true }
+[tool.ruff.lint.per-file-ignores]
+"**/*.ipynb" = [
+  "W292",
+  "D",
+  "DOC",
+] # no newline at end of file and skip docstring checks
+# skip docstring checks
+"tests/**" = ["D", "DOC"]
+"docs/scripts/**" = ["D", "DOC"]
 
-[tool.pixi.tasks]
-postinstall-e = "python -m pip install --no-build-isolation --no-deps --disable-pip-version-check -e ."
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
 
+[tool.ruff.format]
+docstring-code-format = true
 
-# === JupyterLab Features ===
-[tool.pixi.feature.lab]
-dependencies = { jupyterlab = "*", ipython = "*", ipywidgets = "*" }
-pypi-dependencies = { cherab-inversion = { path = ".", editable = false } }
-tasks = { lab = "jupyter lab --notebook-dir docs/notebooks/" }
-
-# === Testing Features ===
-[tool.pixi.feature.test]
-dependencies = { pytest = "*" }
-tasks = { test = "pytest --pyargs cherab.inversion" }
-
-# === Documentation Features ===
-[tool.pixi.feature.docs.tasks]
-docs = "sphinx-build -b html docs/source/ docs/build/html"
-clean-docs = "rm -rf docs/build && rm -rf docs/source/_api"
-
-[tool.pixi.feature.docs.dependencies]
-docutils = "*"
-ipykernel = "*"
-ipywidgets = "*"
-jinja2 = "*"
-nbconvert = ">=7.3"
-nbsphinx = "*"
-numpydoc = "*"
-pillow = "*"
-pygments = ">=2.11.0"
-sphinx = "*"
-sphinx-prompt = "*"
-sphinx-copybutton = "*"
-pydata-sphinx-theme = "<0.16"
-sphinx-design = "*"
-pandoc = "*"
-sphinx-codeautolink = "*"
-sphinxcontrib-bibtex = "*"
-
-[tool.pixi.feature.docs.pypi-dependencies]
-sphinx-github-style = "*"
-
-# === Development Features ===
-[tool.pixi.feature.dev.dependencies]
-tomli = "*"
-ipython = "*"
-black = "*"
-ruff = "*"
-mypy = "*"
-pre-commit = "*"
-
-# === Build Features ===
-[tool.pixi.feature.build.dependencies]
-python-build = "*"
-wheel = "*"
-pkg-config = "*"
-[tool.pixi.feature.build.target]
-linux-64 = { dependencies = { patchelf = "*" } }
-osx-64 = { dependencies = { patchelf = "*" } }
-osx-arm64 = { dependencies = { patchelf = "*" } }
-
-[tool.pixi.feature.build.tasks]
-# Create a sdist/wheel for installation
-build-wheel = "python -m build --no-isolation --wheel"
-build-sdist = "python -m build --no-isolation --sdist"
-
-
-# === Python Version Features ===
-[tool.pixi.feature.py39.dependencies]
-python = "3.9.*"
-[tool.pixi.feature.py310.dependencies]
-python = "3.10.*"
-[tool.pixi.feature.py311.dependencies]
-python = "3.11.*"
-[tool.pixi.feature.py312.dependencies]
-python = "3.12.*"
-
-
-[tool.pixi.environments]
-default = { solve-group = "default" }
-lab = { features = ["lab"], solve-group = "default" }
-dev = { features = ["build", "dev", "test", "docs"], solve-group = "default" }
-test = { features = ["test"], solve-group = "default" }
-docs = { features = ["docs"], solve-group = "default" }
-build = { features = ["build"], solve-group = "default" }
-
-# For Test on Github actions
-py39 = { features = ["test", "py39"] }
-py310 = { features = ["test", "py310"] }
-py311 = { features = ["test", "py311"] }
-py312 = { features = ["test", "py312"] }
+# ------------------------------
+# === Type checking settings ===
+# ------------------------------
+[tool.pyrefly]
+project-includes = ["src/**"]
+project-excludes = ["tests/**"]
