@@ -1,3 +1,72 @@
+@ARTICLE{Shepp1982-ky,
+  title     = "Maximum likelihood reconstruction for emission tomography",
+  author    = "Shepp, L A and Vardi, Y",
+  journal   = "IEEE Trans. Med. Imaging",
+  publisher = "Institute of Electrical and Electronics Engineers (IEEE)",
+  volume    =  1,
+  number    =  2,
+  pages     = "113--122",
+  abstract  = "Previous models for emission tomography (ET) do not distinguish
+               the physics of ET from that of transmission tomography. We give a
+               more accurate general mathematical model for ET where an unknown
+               emission density lambda = lambda(x, y, z) generates, and is to be
+               reconstructed from, the number of counts n(*)(d) in each of D
+               detector units d. Within the model, we give an algorithm for
+               determining an estimate lambdainsertion mark of lambda which
+               maximizes the probability p(n(*)|lambda) of observing the actual
+               detector count data n(*) over all possible densities lambda. Let
+               independent Poisson variables n(b) with unknown means lambda(b),
+               b = 1, ..., B represent the number of unobserved emissions in
+               each of B boxes (pixels) partitioning an object containing an
+               emitter. Suppose each emission in box b is detected in detector
+               unit d with probability p(b, d), d = 1, ..., D with p(b,d) a
+               one-step transition matrix, assumed known. We observe the total
+               number n(*) = n(*)(d) of emissions in each detector unit d and
+               want to estimate the unknown lambda = lambda(b), b = 1, ..., B.
+               For each lambda, the observed data n(*) has probability or
+               likelihood p(n(*)|lambda). The EM algorithm of mathematical
+               statistics starts with an initial estimate lambda(0) and gives
+               the following simple iterative procedure for obtaining a new
+               estimate lambdainsertion mark(new), from an old estimate
+               lambdainsertion mark(old), to obtain lambdainsertion mark(k), k =
+               1, 2, ..., lambdainsertion mark(new)(b)= lambdainsertion
+               mark(old)(b)Sum of (n(*)p(b,d) from d=1 to D/Sum of
+               lambdainsertion mark()old(b('))p(b('),d) from b(')=1 to B),
+               b=1,...B.",
+  year      =  1982,
+  doi       = "10.1109/TMI.1982.4307558",
+  pmid      =  18238264,
+  issn      = "0278-0062,1558-254X",
+  language  = "en"
+}
+
+@ARTICLE{Hansen1992-pf,
+  title    = "Analysis of Discrete Ill-Posed Problems by Means of the {L}-Curve",
+  author   = "Hansen, Per Christian",
+  journal  = "SIAM Rev.",
+  volume   =  34,
+  number   =  4,
+  pages    = "561--580",
+  abstract = "When discrete ill-posed problems are analyzed and solved by
+              various numerical regularization techniques, a very convenient way
+              to display information about the regularized solution is to plot
+              the norm or seminorm of the solution versus the norm of the
+              residual vector. In particular, the graph associated with Tikhonov
+              regularization plays a central role. The main purpose of this
+              paper is to advocate the use of this graph in the numerical
+              treatment of discrete ill-posed problems. The graph is
+              characterized quantitatively, and several important relations
+              between regularized solutions and the graph are derived. It is
+              also demonstrated that several methods choosing for the
+              regularization parameter are related to locating a characteristic
+              L-shaped ``corner'' of the graph",
+  year     =  1992,
+  keywords = "discrete ill-posed problems; generalized SVD; least squares;
+              regularization",
+  doi      = "10.1137/1034115",
+  issn     = "0036-1445"
+}
+
 @ARTICLE{Ingesson2008-ve,
   title     = "Chapter 7: Tomography Diagnostics: Bolometry and Soft-{X}-Ray
                Detection",
@@ -210,56 +279,6 @@
   issn      = "0168-9002"
 }
 
-@ARTICLE{Hansen1992-pf,
-  title    = "Analysis of Discrete Ill-Posed Problems by Means of the {L}-Curve",
-  author   = "Hansen, Per Christian",
-  journal  = "SIAM Rev.",
-  volume   =  34,
-  number   =  4,
-  pages    = "561--580",
-  abstract = "When discrete ill-posed problems are analyzed and solved by
-              various numerical regularization techniques, a very convenient way
-              to display information about the regularized solution is to plot
-              the norm or seminorm of the solution versus the norm of the
-              residual vector. In particular, the graph associated with Tikhonov
-              regularization plays a central role. The main purpose of this
-              paper is to advocate the use of this graph in the numerical
-              treatment of discrete ill-posed problems. The graph is
-              characterized quantitatively, and several important relations
-              between regularized solutions and the graph are derived. It is
-              also demonstrated that several methods choosing for the
-              regularization parameter are related to locating a characteristic
-              L-shaped ``corner'' of the graph",
-  year     =  1992,
-  keywords = "discrete ill-posed problems; generalized SVD; least squares;
-              regularization",
-  doi      = "10.1137/1034115",
-  issn     = "0036-1445"
-}
-
-@ARTICLE{Reginska2012-dh,
-  title     = "A Regularization Parameter in Discrete Ill-Posed Problems",
-  author    = "Regińska, Teresa",
-  journal   = "SIAM Journal on Scientific Computing",
-  publisher = "Society for Industrial and Applied Mathematics",
-  abstract  = "The Tikhonov regularization method for discrete ill-posed
-               problems is considered. For the practical choice of the
-               regularization parameter $\alpha$, some authors use a plot of the
-               norm of the regularized solution versus the norm of the residual
-               vector for all $\alpha$ considered. This paper contains an
-               analysis of the shape of this plot and gives a theoretical
-               justification for choosing the regularization parameter so it is
-               related to the ``L-corner'' of the plot considered in the
-               logarithmic scale. Moreover, a new criterion for choosing
-               $\alpha$ is introduced (independent of the shape of the plot)
-               which gives a new interpretation of the ``corner criterion''
-               mentioned above. The existence of ``L-corner'' is discussed.",
-  month     =  feb,
-  year      =  2012,
-  doi       = "10.1137/S1064827593252672",
-  language  = "en"
-}
-
 @ARTICLE{Golub1979-gf,
   title     = "Generalized Cross-Validation as a Method for Choosing a Good
                Ridge Parameter",
@@ -322,4 +341,27 @@
   year      =  1974,
   doi       = "10.1080/00401706.1974.10489157",
   issn      = "0040-1706"
+}
+
+@ARTICLE{Reginska2012-dh,
+  title     = "A Regularization Parameter in Discrete Ill-Posed Problems",
+  author    = "Regińska, Teresa",
+  journal   = "SIAM Journal on Scientific Computing",
+  publisher = "Society for Industrial and Applied Mathematics",
+  abstract  = "The Tikhonov regularization method for discrete ill-posed
+               problems is considered. For the practical choice of the
+               regularization parameter $\alpha$, some authors use a plot of the
+               norm of the regularized solution versus the norm of the residual
+               vector for all $\alpha$ considered. This paper contains an
+               analysis of the shape of this plot and gives a theoretical
+               justification for choosing the regularization parameter so it is
+               related to the ``L-corner'' of the plot considered in the
+               logarithmic scale. Moreover, a new criterion for choosing
+               $\alpha$ is introduced (independent of the shape of the plot)
+               which gives a new interpretation of the ``corner criterion''
+               mentioned above. The existence of ``L-corner'' is discussed.",
+  month     =  feb,
+  year      =  2012,
+  doi       = "10.1137/S1064827593252672",
+  language  = "en"
 }
