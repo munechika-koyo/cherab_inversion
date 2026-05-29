@@ -7,7 +7,7 @@
 | CI/CD   | [![CI][ci-badge]][ci] [![PyPI Publish][PyPI-publish-badge]][PyPi-publish] [![codecov][codecov-badge]][codecov]        |
 | Docs    | [![Read the Docs (version)][Docs-dev-badge]][Docs-dev] [![Read the Docs (version)][Docs-release-badge]][Docs-release] |
 | Package | [![PyPI - Version][pypi-badge]][pypi] [![Conda][conda-badge]][conda] [![PyPI - Python Version][python-badge]][pypi]   |
-| Meta    | [![License - BSD-3-Clause][license-badge]][license] [![Pixi Badge][pixi-badge]][pixi-url]                             |
+| Meta    | [![DOI][DOI-badge]][DOI] [![License - BSD-3-Clause][license-badge]][license] [![Pixi Badge][pixi-badge]][pixi-url]    |
 
 [ci]: https://github.com/munechika-koyo/cherab_inversion/actions/workflows/ci.yaml
 [ci-badge]: https://img.shields.io/github/actions/workflow/status/munechika-koyo/cherab_inversion/ci.yaml?style=flat-square&logo=GitHub&label=CI
@@ -19,6 +19,8 @@
 [Docs-dev]: https://cherab-inversion.readthedocs.io/en/latest/?badge=latest
 [Docs-release-badge]: https://img.shields.io/readthedocs/cherab-inversion/stable?style=flat-square&logo=readthedocs&label=release
 [Docs-release]: https://cherab-inversion.readthedocs.io/en/stable/?badge=stable
+[DOI-badge]: https://zenodo.org/badge/DOI/10.5281/zenodo.10118752.svg
+[DOI]: https://doi.org/10.5281/zenodo.10118752
 [license]: https://opensource.org/licenses/BSD-3-Clause
 [license-badge]: https://img.shields.io/github/license/munechika-koyo/cherab_inversion?style=flat-square
 [pixi-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json&style=flat-square

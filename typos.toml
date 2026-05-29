@@ -1,0 +1,5 @@
+[default.extend-words]
+iz = "iz"
+
+[files]
+extend-exclude = ["*.bib", "*.drawio", "*.svg"]

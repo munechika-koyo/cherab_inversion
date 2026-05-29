@@ -1,9 +1,7 @@
-Developers
-----------
+## Developers
 
-* Koyo Munechika
+- Koyo Munechika
 
+## Contributors
 
-Contributors
-------------
-* Anyone is welcome!!
+- Anyone is welcome!!

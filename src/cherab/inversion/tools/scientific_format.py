@@ -1,25 +1,27 @@
-"""This module provides a function for parsing a string in scientific notation."""
+"""Module providing a function for parsing a string in scientific notation."""
 
 from decimal import Decimal
 
 __all__ = ["parse_scientific_notation"]
 
 
-def parse_scientific_notation(sci_str: str, scilimits: tuple = (-1, 1), useLatex=True) -> str:
-    """Parse a string in scientific notation and return a formatted string.
+def parse_scientific_notation(
+    sci_str: str, scilimits: tuple = (-1, 1), useLatex: bool = True
+) -> str:
+    r"""Parse a string in scientific notation and return a formatted string.
 
-    Strings like `'1.23e-4'` are converted to `'1.23x10^-4'` or `'1.23 \\\\times 10^{-4}'`
+    Strings like `'1.23e-4'` are converted to `r'1.23x10^-4'` or `r'1.23 \\\\times 10^{-4}'`
     if `useLatex` is True.
 
     Parameters
     ----------
-    sci_str : str
-        A string in scientific notation.
+    sci_str
+        String in scientific notation.
         Must be in the form of 'mantissa' + 'e' + 'exponent'.
-    scilimits : tuple, (m, n), optional
+    scilimits
         Scientific notation parsing is conducted only for numbers outside the range 10 :sup:`m` to
         10 :sup:`n`, by default (-1, 1).
-    useLatex : bool, optional
+    useLatex
         If True, the output string will be formatted using LaTeX.
 
     Returns
@@ -27,9 +29,14 @@ def parse_scientific_notation(sci_str: str, scilimits: tuple = (-1, 1), useLatex
     str
         The formatted string.
 
+    Raises
+    ------
+    ValueError
+        If the input string does not contain an 'e' character.
+
     Examples
     --------
-    >>> parse_scientific_notation('1.23e-4')
+    >>> parse_scientific_notation("1.23e-4")
     '1.23 \\\\times 10^{-4}'
     """
     # find the index of the 'e' character

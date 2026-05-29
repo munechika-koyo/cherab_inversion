@@ -66,6 +66,7 @@ sphinx-copybutton = "*"
 sphinx-codeautolink = "*"
 sphinx-design = "*"
 sphinx-immaterial = "*"
+sphinxcontrib-bibtex = "*"
 linkify-it-py = "*"
 myst-parser = "*"
 # For notebook support

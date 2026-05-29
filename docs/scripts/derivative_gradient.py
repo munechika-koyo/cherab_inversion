@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib import pyplot as plt
+import ultraplot as uplt
 
 from cherab.inversion import Derivative
 
@@ -50,8 +50,7 @@ grad_profile = np.gradient(profile[..., 0], centers[:, 0, 0, 0], centers[0, :, 0
 grad_profile = np.hypot(grad_profile[0], grad_profile[1])[:, :, None]
 
 # Plot the profiles
-fig, axes = plt.subplots(2, 3, sharex=True, sharey=True, layout="constrained")
-axes = axes.ravel().tolist()
+fig, axes = uplt.subplots(nrows=2, ncols=3)
 for ax, f, title in zip(
     axes,
     [
@@ -77,7 +76,7 @@ for ax, f, title in zip(
             centers[:, 0, 0, 0],
             centers[0, :, 0, 1],
             f[..., 0].T,
-            cmap="RdBu_r",
+            discrete=False,
             vmax=np.amax(np.abs(f)),
             vmin=-np.amax(np.abs(f)),
         )
@@ -89,11 +88,13 @@ for ax, f, title in zip(
             f[1][::8, ::8].T,
             scale=10,
         )
-    ax.set_title(title)
-    ax.set_xlabel("X") if axes.index(ax) >= 3 else None
-    ax.set_ylabel("Y") if axes.index(ax) % 3 == 0 else None
-    ax.tick_params(axis="both", which="both", direction="in", top=True, right=True)
-    ax.set_aspect("equal")
+    ax.format(title=title)
 
+axes.format(
+    aspect="equal",
+    xlabel="X",
+    ylabel="Y",
+    tickdir="in",
+)
 
-plt.show()
+uplt.show()

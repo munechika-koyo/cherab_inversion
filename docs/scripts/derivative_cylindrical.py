@@ -1,6 +1,5 @@
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.gridspec import GridSpec
+import ultraplot as uplt
 
 from cherab.inversion import Derivative
 
@@ -42,27 +41,28 @@ profile_dr = profile_dr.reshape(centers.shape[:3])
 profile_dp = profile_dp.reshape(centers.shape[:3])
 
 # Plot the profiles
-fig = plt.figure(layout="constrained")
-gs = GridSpec(1, 3, figure=fig)
-for i, (f, title) in enumerate(
-    zip(
-        [profile, profile_dr, profile_dp],
-        ["Original", "$R$-derivative", "$\\phi$-derivative"],
-        strict=True,
-    )
+fig, axes = uplt.subplots(ncols=3, proj="polar")
+for ax, f, title in zip(
+    axes,
+    [profile, profile_dr, profile_dp],
+    ["Original", "$R$-derivative", "$\\phi$-derivative"],
+    strict=True,
 ):
-    ax = fig.add_subplot(gs[i], projection="polar")
-    ax.grid(False)
+    vmax = np.amax(np.abs(f))
     ax.pcolormesh(
         angles,
         radius,
         f[..., 0],
-        cmap="RdBu_r",
-        vmax=np.amax(np.abs(f)),
-        vmin=-np.amax(np.abs(f)),
+        vmax=vmax,
+        vmin=-vmax,
+        discrete=False,
     )
-    ax.set_rticks([])
-    ax.set_thetagrids([])
-    ax.set_title(title)
+    ax.format(title=title)
 
-plt.show()
+axes.format(
+    grid=False,
+    rformatter="null",
+    thetaformatter="null",
+)
+
+uplt.show()

@@ -24,11 +24,11 @@ def get_sample_data(fname: str, asfileobj=True, *, np_load=True):
 
     Parameters
     ----------
-    fname : str
+    fname
         Path relative to the ``cherab/inversion/data`` directory.
-    asfileobj : bool, optional
+    asfileobj
         If `True`, return a file object, otherwise return a file path.
-    np_load : bool, optional
+    np_load
         If `True`, load .npy or .npz files with `numpy.load`.
 
     Returns
