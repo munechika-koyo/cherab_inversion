@@ -27,6 +27,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Temporary directories
+.tmp/
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -166,9 +169,6 @@ cython_debug/
 
 # Python object files (.pickle)
 **/regularizer*.pickle
-
-# version.py created at build time
-**/version.py
 
 # Pixi package management
 .pixi/
