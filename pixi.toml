@@ -21,7 +21,7 @@ hatch-vcs = "*"
 numpy = "*"
 scipy = "*"
 matplotlib-base = "*"
-scikit-sparse = "*"
+scikit-sparse = ">=0.5.0,<0.6"
 rich = "*"
 
 # ---------------------------------
