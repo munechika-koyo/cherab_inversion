@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import overload
 
-from numpy import arange, asarray, float64, ones_like
+from numpy import arange, float64, ones_like
 from numpy import dtype as np_dtype
 from numpy.typing import DTypeLike, NDArray
 from rich.progress import Progress, TaskID
@@ -348,16 +348,16 @@ def _cholesky(mat: sp_csc_array) -> tuple[sp_csr_array, sp_csc_array]:
         Permutation matrix :math:`\mathbf{P}`.
     """
     # cholesky decomposition of a symmetric positive semi-definite matrix
-    factor = cholesky(mat)
-    L_mat_t = factor.L().T.tocsr()
+    L, p = cholesky(mat, order="default", lower=True)
+    L: sp_csc_array
+    p: NDArray
 
     # compute the fill-reducing permutation matrix P
-    P_vec = asarray(factor.P())
-    rows = arange(P_vec.size)
+    rows = arange(p.size)
     data = ones_like(rows, dtype=float64)
-    P_mat = sp_csc_array((data, (rows, P_vec)))
+    P_mat = sp_csc_array((data, (rows, p)))
 
-    return L_mat_t, P_mat
+    return L.T.tocsr(), P_mat
 
 
 def _compute_su(eigvals, eigvecs, sqrt: Callable) -> tuple:
