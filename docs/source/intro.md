@@ -18,13 +18,7 @@ This page gives a quick overview of how to get started with `cherab-inversion`, 
 Explore the various methods below to install `cherab-inversion` using your preferred package manager.
 
 ::::{md-tab-set}
-:::{md-tab-item} pip
 
-```bash
-pip install cherab-inversion
-```
-
-:::
 :::{md-tab-item} conda
 
 ```bash
@@ -32,17 +26,66 @@ conda install -c conda-forge cherab-inversion
 ```
 
 :::
+:::{md-tab-item} pixi
+
+```bash
+pixi add cherab-inversion
+```
+
+:::
 :::{md-tab-item} uv
+
+It is necessary to install the [SuiteSparse](https://people.engr.tamu.edu/davis/suitesparse.html) library manually.
+On MacOS:
+
+```bash
+brew install suite-sparse
+```
+
+On Debian/Ubuntu systems:
+
+```bash
+sudo apt-get install libsuitesparse-dev
+```
+
+On Arch Linux:
+
+```bash
+sudo pacman -S suitesparse
+```
+
+Then, you can install `cherab-inversion` using the following command:
 
 ```bash
 uv add cherab-inversion
 ```
 
 :::
-:::{md-tab-item} pixi
+:::{md-tab-item} pip
+
+It is necessary to install the [SuiteSparse](https://people.engr.tamu.edu/davis/suitesparse.html) library manually.
+On MacOS:
 
 ```bash
-pixi add cherab-inversion
+brew install suite-sparse
+```
+
+On Debian/Ubuntu systems:
+
+```bash
+sudo apt-get install libsuitesparse-dev
+```
+
+On Arch Linux:
+
+```bash
+sudo pacman -S suitesparse
+```
+
+Then, you can install `cherab-inversion` using the following command:
+
+```bash
+pip install cherab-inversion
 ```
 
 :::
